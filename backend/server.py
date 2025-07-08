@@ -41,272 +41,283 @@ db = client[DB_NAME]
 security = HTTPBearer()
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-for-jwt-impact-methodology-2024")
 
-# Enhanced IMPACT Phases Configuration with Complete Workflows
+# Enhanced IMPACT Phases Configuration for Manufacturing EAM Implementations
 IMPACT_PHASES = {
-    "identify": {
-        "name": "Identify",
-        "description": "Define the change initiative and its scope",
+    "investigate": {
+        "name": "Investigate & Assess",
+        "description": "Understanding current state and establishing implementation foundation",
         "order": 1,
-        "newton_law": "First Law - Overcoming Organizational Inertia",
-        "newton_insight": "Organizations at rest tend to stay at rest. Significant force is required to overcome initial inertia and establish change momentum.",
+        "newton_law": "First Law - Overcoming Manufacturing Organizational Inertia",
+        "newton_insight": "Manufacturing organizations at rest tend to stay at rest. Significant force is required to overcome initial inertia and establish maintenance excellence momentum.",
         "objectives": [
-            "Clearly define the change vision and objectives",
-            "Establish the business case for change",
-            "Identify key stakeholders and their interests",
-            "Assess current state and desired future state",
-            "Create project governance structure"
+            "Comprehensively evaluate current maintenance practices and operational performance",
+            "Assess organizational readiness for change across all levels",
+            "Identify stakeholders and analyze maintenance-operations relationships",
+            "Establish baseline measurements for manufacturing performance",
+            "Map cultural factors affecting maintenance excellence adoption"
         ],
         "key_activities": [
-            "Conduct change vision workshops",
-            "Develop business case and ROI analysis",
-            "Create comprehensive stakeholder map",
-            "Perform current state assessment",
-            "Establish project charter and governance",
-            "Define scope boundaries and constraints",
-            "Identify change drivers and barriers"
+            "Conduct stakeholder analysis across maintenance and operations teams",
+            "Execute comprehensive change readiness assessment",
+            "Perform maintenance-operations alignment evaluation",
+            "Assess current state manufacturing performance metrics",
+            "Identify risks specific to manufacturing environments",
+            "Map informal networks and influence patterns",
+            "Evaluate technical infrastructure and capabilities"
         ],
         "deliverables": [
-            {"name": "Change Charter", "type": "document", "required": True},
-            {"name": "Business Case", "type": "document", "required": True},
-            {"name": "Stakeholder Analysis", "type": "analysis", "required": True},
-            {"name": "Current State Assessment", "type": "assessment", "required": True},
-            {"name": "Project Scope Statement", "type": "document", "required": True},
-            {"name": "Initial Risk Assessment", "type": "assessment", "required": False}
+            {"name": "Stakeholder Analysis Report", "type": "analysis", "required": True},
+            {"name": "Change Readiness Assessment", "type": "assessment", "required": True},
+            {"name": "Manufacturing Performance Baseline", "type": "baseline", "required": True},
+            {"name": "Risk Assessment Matrix", "type": "assessment", "required": True},
+            {"name": "Cultural Assessment Report", "type": "analysis", "required": True},
+            {"name": "Technical Readiness Evaluation", "type": "assessment", "required": False}
         ],
         "tools": [
-            "Stakeholder Mapping Template",
-            "Business Case Canvas",
-            "Current State Analysis Framework",
-            "Change Vision Worksheet"
+            "Stakeholder Analysis Template",
+            "Change Readiness Assessment Survey",
+            "Risk Assessment Matrix",
+            "Cultural Assessment Framework",
+            "Manufacturing Performance Baseline Tool"
         ],
         "completion_criteria": [
-            "Change charter approved by sponsors",
-            "Stakeholder map validated by key leaders",
-            "Business case demonstrates clear ROI",
-            "Scope boundaries clearly defined"
+            "All stakeholders identified and analyzed across maintenance and operations",
+            "Change readiness score of 3.5+ achieved or improvement plan established",
+            "Manufacturing performance baseline documented with maintenance connections",
+            "Critical risks identified with mitigation strategies",
+            "Cultural factors mapped with engagement strategies"
         ],
-        "ai_focus": "Analyze organizational inertia and recommend force application strategies to initiate change momentum."
+        "manufacturing_focus": "Understand how maintenance issues currently impact manufacturing performance and identify the greatest opportunities for improvement through maintenance excellence."
     },
-    "measure": {
-        "name": "Measure",
-        "description": "Assess organizational readiness and establish baselines",
+    "mobilize": {
+        "name": "Mobilize & Prepare", 
+        "description": "Building infrastructure and preparing for implementation success",
         "order": 2,
-        "newton_law": "Second Law - Measuring Forces and Acceleration",
-        "newton_insight": "Acceleration equals force applied divided by organizational mass. Measure resistance to calculate required force accurately.",
+        "newton_law": "Second Law - Measuring Forces and Preparing for Acceleration",
+        "newton_insight": "Acceleration equals force applied divided by organizational mass. Prepare the right resources and remove resistance to calculate required force accurately.",
         "objectives": [
-            "Conduct comprehensive change readiness assessment",
-            "Establish baseline metrics and KPIs",
-            "Quantify organizational capability gaps",
-            "Measure communication effectiveness",
-            "Assess resource adequacy and constraints"
+            "Develop comprehensive change management strategy",
+            "Establish governance structures spanning maintenance and operations",
+            "Create communication plans that connect maintenance to manufacturing excellence",
+            "Design role-based training programs for manufacturing environments",
+            "Build change champion networks across all shifts and departments"
         ],
         "key_activities": [
-            "Execute change readiness assessment across all dimensions",
-            "Establish baseline performance metrics",
-            "Conduct organizational capability assessment",
-            "Analyze communication channels and effectiveness",
-            "Evaluate resource capacity and constraints",
-            "Measure cultural readiness for change",
-            "Assess leadership alignment and commitment"
+            "Develop detailed change management plan emphasizing maintenance-operations integration",
+            "Create manufacturing-specific communication strategy",
+            "Design training programs for shift work and manufacturing constraints",
+            "Establish change champion network covering all areas and shifts",
+            "Develop success metrics linking maintenance improvements to manufacturing performance",
+            "Create resource allocation plans and timeline",
+            "Establish issue escalation and support procedures"
         ],
         "deliverables": [
-            {"name": "Change Readiness Report", "type": "assessment", "required": True},
-            {"name": "Baseline Metrics Dashboard", "type": "dashboard", "required": True},
-            {"name": "Capability Gap Analysis", "type": "analysis", "required": True},
-            {"name": "Communication Audit", "type": "audit", "required": True},
-            {"name": "Resource Assessment", "type": "assessment", "required": True},
-            {"name": "Cultural Readiness Analysis", "type": "analysis", "required": False}
+            {"name": "Change Management Plan", "type": "plan", "required": True},
+            {"name": "Communication Strategy and Plan", "type": "plan", "required": True},
+            {"name": "Training Program Design", "type": "plan", "required": True},
+            {"name": "Change Champion Network Plan", "type": "plan", "required": True},
+            {"name": "Success Metrics Framework", "type": "framework", "required": True},
+            {"name": "Resource Allocation Plan", "type": "plan", "required": False}
         ],
         "tools": [
-            "5-Dimension Readiness Assessment",
-            "Newton's Laws Calculator",
-            "Capability Maturity Framework",
-            "Communication Effectiveness Audit"
+            "Change Management Plan Template",
+            "Communication Plan Template", 
+            "Training Strategy Framework",
+            "Champion Network Development Guide",
+            "Manufacturing Success Metrics Template"
         ],
         "completion_criteria": [
-            "All five readiness dimensions assessed",
-            "Baseline metrics established and approved",
-            "Capability gaps identified and quantified",
-            "Communication audit completed with recommendations"
+            "Comprehensive change plan approved by leadership spanning maintenance and operations",
+            "Champion network established covering all shifts and key areas",
+            "Communication strategy tested and validated with target audiences",
+            "Training materials developed and tested for manufacturing environment",
+            "Success metrics defined linking maintenance to manufacturing performance"
         ],
-        "ai_focus": "Calculate precise force requirements using Newton's laws and predict change acceleration based on organizational mass."
+        "manufacturing_focus": "Ensure all stakeholders understand the connection between maintenance excellence and manufacturing performance, and are prepared to support the transformation."
     },
-    "plan": {
-        "name": "Plan",
-        "description": "Develop comprehensive change management strategy",
+    "pilot": {
+        "name": "Pilot & Adapt",
+        "description": "Testing approach with limited group and refining strategies",
         "order": 3,
-        "newton_law": "Third Law - Planning for Action-Reaction",
-        "newton_insight": "For every action, there is an equal and opposite reaction. Plan comprehensively for predictable resistance patterns.",
+        "newton_law": "Third Law - Testing Action-Reaction in Controlled Environment", 
+        "newton_insight": "For every action, there is an equal and opposite reaction. Test with pilot group to measure and understand resistance patterns before full deployment.",
         "objectives": [
-            "Develop detailed change management strategy",
-            "Create implementation roadmap with timelines",
-            "Design communication and engagement plans",
-            "Plan training and capability development",
-            "Establish resistance management approaches"
+            "Validate change strategies in real manufacturing environment",
+            "Test maintenance-operations integration in controlled setting",
+            "Identify and resolve issues before full-scale deployment", 
+            "Build confidence through demonstrated maintenance excellence results",
+            "Refine approaches based on manufacturing-specific feedback"
         ],
         "key_activities": [
-            "Develop comprehensive change strategy",
-            "Create detailed implementation roadmap",
-            "Design multi-channel communication plan",
-            "Plan training and development programs",
-            "Develop resistance management strategy",
-            "Create stakeholder engagement plan",
-            "Design success metrics and monitoring approach"
+            "Select representative pilot group from maintenance and operations",
+            "Execute pilot implementation with intensive support",
+            "Monitor pilot performance and gather comprehensive feedback",
+            "Demonstrate connection between maintenance improvements and operational results", 
+            "Capture lessons learned and refine strategies",
+            "Develop success stories proving maintenance-manufacturing excellence connection",
+            "Prepare scaling plan based on pilot learnings"
         ],
         "deliverables": [
-            {"name": "Change Management Strategy", "type": "strategy", "required": True},
-            {"name": "Implementation Roadmap", "type": "plan", "required": True},
-            {"name": "Communication Plan", "type": "plan", "required": True},
-            {"name": "Training and Development Plan", "type": "plan", "required": True},
-            {"name": "Resistance Management Plan", "type": "plan", "required": True},
-            {"name": "Stakeholder Engagement Plan", "type": "plan", "required": True},
-            {"name": "Success Metrics Framework", "type": "framework", "required": False}
+            {"name": "Pilot Implementation Plan", "type": "plan", "required": True},
+            {"name": "Pilot Results Analysis", "type": "analysis", "required": True},
+            {"name": "Lessons Learned Report", "type": "report", "required": True},
+            {"name": "Success Stories Documentation", "type": "documentation", "required": True},
+            {"name": "Refined Implementation Strategy", "type": "strategy", "required": True},
+            {"name": "Scaling Preparation Plan", "type": "plan", "required": False}
         ],
         "tools": [
-            "Change Strategy Canvas",
-            "Implementation Planning Template",
-            "Communication Plan Template",
-            "Resistance Management Toolkit"
+            "Pilot Implementation Guide",
+            "Pilot Feedback Collection Tools",
+            "Performance Measurement Dashboard",
+            "Success Story Template",
+            "Strategy Refinement Framework"
         ],
         "completion_criteria": [
-            "Change strategy approved by steering committee",
-            "Implementation roadmap with clear milestones",
-            "Communication plan covers all stakeholder groups",
-            "Training plans address all capability gaps"
+            "Pilot success metrics achieved demonstrating maintenance-operations benefits", 
+            "Key learnings captured and strategies refined",
+            "Pilot participants serve as advocates for full deployment",
+            "Success stories document clear maintenance-manufacturing performance connection",
+            "Scaling plan validated and approved"
         ],
-        "ai_focus": "Apply Third Law principles to predict resistance patterns and develop proactive mitigation strategies."
+        "manufacturing_focus": "Prove that maintenance improvements directly drive operational benefits in your specific manufacturing environment."
     },
-    "act": {
-        "name": "Act",
-        "description": "Execute the change management plan",
+    "activate": {
+        "name": "Activate & Deploy",
+        "description": "Full-scale implementation with comprehensive support",
         "order": 4,
         "newton_law": "Applied Force - Implementation in Motion",
-        "newton_insight": "Apply consistent force to maintain momentum and overcome organizational inertia during implementation.",
+        "newton_insight": "Apply consistent force to maintain momentum and overcome organizational inertia during full manufacturing implementation.",
         "objectives": [
-            "Execute communication campaigns effectively",
-            "Deliver training and skill development",
-            "Implement new processes and systems",
-            "Maintain stakeholder engagement",
-            "Address resistance and barriers actively"
+            "Execute full-scale deployment across entire manufacturing organization",
+            "Maintain momentum while managing resistance effectively", 
+            "Ensure maintenance excellence becomes embedded in operations",
+            "Track performance improvements and demonstrate manufacturing impact",
+            "Provide intensive support during transition period"
         ],
         "key_activities": [
-            "Launch multi-channel communication campaigns",
-            "Execute training and development programs",
-            "Implement new processes and systems",
-            "Facilitate change adoption activities",
-            "Monitor stakeholder engagement levels",
-            "Address resistance and remove barriers",
-            "Collect and act on continuous feedback"
+            "Launch full deployment with manufacturing-appropriate sequencing",
+            "Execute comprehensive training across all shifts and departments",
+            "Monitor adoption rates and performance metrics continuously",
+            "Manage resistance with manufacturing-specific strategies",
+            "Support maintenance and operations teams through transition",
+            "Collect and communicate success stories regularly",
+            "Maintain focus on maintenance-manufacturing excellence connection"
         ],
         "deliverables": [
-            {"name": "Communication Campaign Materials", "type": "materials", "required": True},
-            {"name": "Training Records and Assessments", "type": "records", "required": True},
-            {"name": "Implementation Progress Reports", "type": "reports", "required": True},
-            {"name": "Stakeholder Feedback Analysis", "type": "analysis", "required": True},
-            {"name": "Issue Resolution Log", "type": "log", "required": True},
-            {"name": "Change Adoption Metrics", "type": "metrics", "required": False}
+            {"name": "Deployment Execution Plan", "type": "plan", "required": True},
+            {"name": "Training Delivery Records", "type": "records", "required": True},
+            {"name": "Performance Monitoring Reports", "type": "reports", "required": True},
+            {"name": "Resistance Management Log", "type": "log", "required": True},
+            {"name": "Success Communication Materials", "type": "materials", "required": True},
+            {"name": "Manufacturing Impact Analysis", "type": "analysis", "required": False}
         ],
         "tools": [
-            "Communication Campaign Toolkit",
-            "Training Delivery Framework",
-            "Implementation Tracking Dashboard",
-            "Feedback Collection System"
+            "Deployment Management Dashboard",
+            "Resistance Management Toolkit", 
+            "Performance Tracking System",
+            "Communication Campaign Tools",
+            "Manufacturing Metrics Monitor"
         ],
         "completion_criteria": [
-            "Communication campaigns achieving target reach",
-            "Training completion rates above 90%",
-            "Key implementation milestones achieved",
-            "Stakeholder satisfaction above baseline"
+            "90%+ user adoption achieved across maintenance and operations",
+            "Manufacturing performance improvements documented and validated",
+            "Resistance successfully managed with minimal operational disruption",
+            "Training completion rates above 95% across all shifts",
+            "Maintenance-operations collaboration demonstrably improved"
         ],
-        "ai_focus": "Monitor force application effectiveness and recommend adjustments to maintain optimal change momentum."
+        "manufacturing_focus": "Ensure that maintenance excellence becomes embedded throughout the organization and drives measurable manufacturing performance improvements."
     },
-    "control": {
-        "name": "Control",
-        "description": "Monitor progress and maintain momentum",
+    "cement": {
+        "name": "Cement & Transfer",
+        "description": "Institutionalizing change and transferring ownership",
         "order": 5,
-        "newton_law": "Continuous Force Application",
+        "newton_law": "Continuous Force Application for Sustainable Motion",
         "newton_insight": "Continuous force application prevents the organization from returning to its original state due to natural inertia.",
         "objectives": [
-            "Monitor implementation progress continuously",
-            "Track adoption and compliance metrics",
-            "Manage issues and implement corrections",
-            "Maintain stakeholder engagement momentum",
-            "Ensure sustainable change adoption"
+            "Institutionalize maintenance excellence as part of organizational culture",
+            "Transfer ownership from implementation team to operational management",
+            "Embed new practices in organizational systems and processes",
+            "Establish sustainable maintenance-operations collaboration",
+            "Create self-reinforcing systems for continuous improvement"
         ],
         "key_activities": [
-            "Monitor KPIs and success metrics continuously",
-            "Track change adoption across organization",
-            "Conduct regular stakeholder pulse surveys",
-            "Identify and resolve implementation issues",
-            "Adjust plans based on performance data",
-            "Maintain communication momentum",
-            "Celebrate milestones and quick wins"
+            "Document and standardize new maintenance excellence practices",
+            "Transfer knowledge and ownership to internal teams",
+            "Integrate new practices into performance management systems",
+            "Establish ongoing governance and oversight structures",
+            "Create sustainability plans for maintenance excellence culture",
+            "Implement internal capability development programs",
+            "Establish mechanisms for continuous improvement"
         ],
         "deliverables": [
-            {"name": "Progress Monitoring Dashboard", "type": "dashboard", "required": True},
-            {"name": "Adoption Metrics Reports", "type": "reports", "required": True},
-            {"name": "Issue Management Log", "type": "log", "required": True},
-            {"name": "Stakeholder Pulse Survey Results", "type": "results", "required": True},
-            {"name": "Course Correction Plans", "type": "plans", "required": True},
-            {"name": "Success Stories Documentation", "type": "documentation", "required": False}
+            {"name": "Process Documentation and Standards", "type": "documentation", "required": True},
+            {"name": "Knowledge Transfer Plan", "type": "plan", "required": True},
+            {"name": "Sustainability Framework", "type": "framework", "required": True},
+            {"name": "Internal Capability Development Plan", "type": "plan", "required": True},
+            {"name": "Governance Structure Documentation", "type": "documentation", "required": True},
+            {"name": "Continuous Improvement Procedures", "type": "procedures", "required": False}
         ],
         "tools": [
-            "KPI Monitoring Dashboard",
-            "Adoption Tracking System",
-            "Issue Management Platform",
-            "Stakeholder Pulse Survey Tool"
-        ],
-        "completion_criteria": [
-            "All KPIs trending toward targets",
-            "Adoption rates meet or exceed expectations",
-            "Critical issues resolved within SLA",
-            "Stakeholder engagement sustained above baseline"
-        ],
-        "ai_focus": "Analyze performance data to predict trajectory and recommend course corrections to maintain momentum."
-    },
-    "transform": {
-        "name": "Transform",
-        "description": "Institutionalize change and capture benefits",
-        "order": 6,
-        "newton_law": "New Equilibrium State",
-        "newton_insight": "The organization has reached a new equilibrium state with the change fully integrated and sustainable.",
-        "objectives": [
-            "Measure and validate benefits realization",
-            "Institutionalize new ways of working",
-            "Capture and share lessons learned",
-            "Celebrate successes and recognize contributors",
-            "Establish sustainable operating model"
-        ],
-        "key_activities": [
-            "Conduct comprehensive benefits assessment",
-            "Institutionalize new processes and behaviors",
-            "Document lessons learned and best practices",
-            "Recognize and celebrate change champions",
-            "Transfer ownership to business operations",
-            "Establish continuous improvement processes",
-            "Plan for future change readiness"
-        ],
-        "deliverables": [
-            {"name": "Benefits Realization Report", "type": "report", "required": True},
-            {"name": "Standard Operating Procedures", "type": "procedures", "required": True},
-            {"name": "Lessons Learned Documentation", "type": "documentation", "required": True},
-            {"name": "Success Recognition Program", "type": "program", "required": True},
-            {"name": "Business Transition Plan", "type": "plan", "required": True},
-            {"name": "Continuous Improvement Framework", "type": "framework", "required": False}
-        ],
-        "tools": [
-            "Benefits Tracking Framework",
             "Process Documentation Templates",
-            "Lessons Learned Capture Tool",
-            "Recognition Program Toolkit"
+            "Knowledge Transfer Checklist",
+            "Sustainability Planning Guide",
+            "Governance Framework Template",
+            "Continuous Improvement Toolkit"
         ],
         "completion_criteria": [
-            "Target benefits achieved and validated",
-            "New processes fully documented and embedded",
-            "Lessons learned captured and shared",
-            "Business ownership successfully transferred"
+            "New practices fully documented and embedded in organizational systems",
+            "Internal teams capable of sustaining maintenance excellence independently",
+            "Performance management systems reflect maintenance-manufacturing connection",
+            "Governance structures functioning effectively",
+            "Continuous improvement culture established and functioning"
         ],
-        "ai_focus": "Analyze transformation success and provide recommendations for sustainable change and future readiness."
+        "manufacturing_focus": "Ensure that the connection between maintenance excellence and operational performance becomes part of your organizational culture."
+    },
+    "track": {
+        "name": "Track & Optimize",
+        "description": "Long-term monitoring and continuous improvement",
+        "order": 6,
+        "newton_law": "New Equilibrium State with Continuous Optimization",
+        "newton_insight": "The organization has reached a new equilibrium state with maintenance excellence integrated and sustainable, enabling continuous optimization.",
+        "objectives": [
+            "Monitor long-term performance and sustain improvements",
+            "Validate implementation guarantee commitments",
+            "Identify opportunities for additional manufacturing performance gains",
+            "Share best practices and lessons learned",
+            "Plan for future manufacturing excellence initiatives"
+        ],
+        "key_activities": [
+            "Monitor KPIs and manufacturing performance metrics continuously",
+            "Conduct regular assessment of maintenance excellence sustainability",
+            "Identify and implement additional improvement opportunities",
+            "Validate guarantee commitments and document achievement",
+            "Share success stories and best practices across organization",
+            "Plan for advanced maintenance excellence capabilities",
+            "Establish long-term strategic planning for manufacturing excellence"
+        ],
+        "deliverables": [
+            {"name": "Performance Monitoring Dashboard", "type": "dashboard", "required": True},
+            {"name": "Guarantee Validation Report", "type": "report", "required": True},
+            {"name": "Optimization Opportunities Analysis", "type": "analysis", "required": True},
+            {"name": "Best Practices Documentation", "type": "documentation", "required": True},
+            {"name": "Strategic Planning Report", "type": "report", "required": True},
+            {"name": "ROI and Benefits Realization Report", "type": "report", "required": False}
+        ],
+        "tools": [
+            "Performance Dashboard System",
+            "Guarantee Validation Framework",
+            "Optimization Analysis Tools",
+            "Best Practice Capture Templates",
+            "Strategic Planning Framework"
+        ],
+        "completion_criteria": [
+            "All guarantee commitments met and validated",
+            "Manufacturing performance improvements sustained over 12+ months",
+            "Continuous improvement processes functioning effectively",
+            "Organization recognized as maintenance excellence leader",
+            "Strategic plan developed for future manufacturing excellence initiatives"
+        ],
+        "manufacturing_focus": "Demonstrate that maintenance excellence continues to drive manufacturing performance improvements and creates sustainable competitive advantage."
     }
 }
 
