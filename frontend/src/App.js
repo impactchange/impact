@@ -1321,64 +1321,67 @@ function App() {
               <h3 className="text-xl font-semibold text-gray-900 mb-6 border-b border-gray-200 pb-2">
                 Core Readiness Dimensions
               </h3>
-              {assessmentTypes[selectedAssessmentType].dimensions
-                .filter(dim => dim.category === 'core')
-                .map((dimension) => (
-                  <div key={dimension.id} className="mb-8 p-6 bg-gray-50 rounded-lg">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h4 className="text-lg font-medium text-gray-900">{dimension.name}</h4>
-                        <p className="text-sm text-gray-600 mt-1">{dimension.description}</p>
+              {assessmentTypes[selectedAssessmentType]?.dimensions
+                ?.filter(dim => dim.category === 'core')
+                ?.map((dimension) => {
+                  const dimensionData = assessmentData[dimension.id] || { score: 3, notes: '' };
+                  return (
+                    <div key={dimension.id} className="mb-8 p-6 bg-gray-50 rounded-lg">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h4 className="text-lg font-medium text-gray-900">{dimension.name}</h4>
+                          <p className="text-sm text-gray-600 mt-1">{dimension.description}</p>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Score (1=Poor, 5=Excellent)
-                      </label>
-                      <div className="flex space-x-4">
-                        {[1, 2, 3, 4, 5].map((score) => (
-                          <label key={score} className="flex items-center">
-                            <input
-                              type="radio"
-                              name={`${dimension.id}_score`}
-                              value={score}
-                              checked={assessmentData[dimension.id]?.score === score}
-                              onChange={(e) => setAssessmentData({
-                                ...assessmentData,
-                                [dimension.id]: { 
-                                  ...assessmentData[dimension.id], 
-                                  score: parseInt(e.target.value) 
-                                }
-                              })}
-                              className="mr-2 text-green-600"
-                            />
-                            <span className="text-sm">{score}</span>
-                          </label>
-                        ))}
+                      
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Score (1=Poor, 5=Excellent)
+                        </label>
+                        <div className="flex space-x-4">
+                          {[1, 2, 3, 4, 5].map((score) => (
+                            <label key={score} className="flex items-center">
+                              <input
+                                type="radio"
+                                name={`${dimension.id}_score`}
+                                value={score}
+                                checked={dimensionData.score === score}
+                                onChange={(e) => setAssessmentData({
+                                  ...assessmentData,
+                                  [dimension.id]: { 
+                                    ...dimensionData, 
+                                    score: parseInt(e.target.value) 
+                                  }
+                                })}
+                                className="mr-2 text-green-600"
+                              />
+                              <span className="text-sm">{score}</span>
+                            </label>
+                          ))}
+                        </div>
                       </div>
-                    </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Notes (Optional)
-                      </label>
-                      <textarea
-                        value={assessmentData[dimension.id]?.notes || ''}
-                        onChange={(e) => setAssessmentData({
-                          ...assessmentData,
-                          [dimension.id]: { 
-                            ...assessmentData[dimension.id], 
-                            notes: e.target.value 
-                          }
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                        rows="2"
-                        placeholder="Add any specific notes or context..."
-                      />
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Notes (Optional)
+                        </label>
+                        <textarea
+                          value={dimensionData.notes || ''}
+                          onChange={(e) => setAssessmentData({
+                            ...assessmentData,
+                            [dimension.id]: { 
+                              ...dimensionData, 
+                              notes: e.target.value 
+                            }
+                          })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                          rows="2"
+                          placeholder="Add any specific notes or context..."
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
             </div>
 
             {/* Specialized Dimensions */}
