@@ -58,6 +58,7 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
             "password": self.test_user["password"]
         }
         response = requests.post(f"{self.base_url}/auth/login", json=login_data)
+        print(f"Login response: {response.status_code} - {response.text}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("token", data)
