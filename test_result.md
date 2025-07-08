@@ -148,8 +148,8 @@ Conduct thorough end-user and application testing to identify and fix multiple e
         agent: "main"
         comment: "New project CRUD endpoints implemented - needs comprehensive testing"
       - working: true
-        agent: "testing"
-        comment: "Successfully tested project management API including creation, retrieval (list and by ID), and updates. Projects are correctly created with the universal IMPACT phases (investigate as initial phase) and can be updated with new properties."
+        agent: "deep_testing_backend_v2"
+        comment: "PASSED: Project creation, listing, retrieval, and updates all working with proper validation"
         
   - task: "Universal IMPACT Phases"
     implemented: true
