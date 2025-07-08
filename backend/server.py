@@ -1,7 +1,7 @@
 import os
 import asyncio
 from datetime import datetime, timedelta
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 import uuid
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -80,6 +80,8 @@ class ChangeReadinessAssessment(BaseModel):
     ai_analysis: Optional[str] = None
     recommendations: Optional[List[str]] = None
     success_probability: Optional[float] = None
+    newton_analysis: Optional[Dict[str, Any]] = None
+    risk_factors: Optional[List[str]] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -94,6 +96,13 @@ class Project(BaseModel):
     team_members: List[str] = []
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+
+class AdvancedAnalytics(BaseModel):
+    trend_analysis: Dict[str, Any]
+    newton_laws_data: Dict[str, Any]
+    predictive_insights: Dict[str, Any]
+    dimension_breakdown: Dict[str, Any]
+    organizational_benchmarks: Dict[str, Any]
 
 # Helper functions
 def hash_password(password: str) -> str:
@@ -134,60 +143,107 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Authentication error: {str(e)}")
 
-async def get_ai_analysis(assessment: ChangeReadinessAssessment) -> dict:
-    """Get AI analysis from Claude for the assessment"""
+def calculate_newton_laws_analysis(assessment: ChangeReadinessAssessment) -> Dict[str, Any]:
+    """Calculate Newton's laws analysis for organizational change"""
+    scores = [
+        assessment.change_management_maturity.score,
+        assessment.communication_effectiveness.score,
+        assessment.leadership_support.score,
+        assessment.workforce_adaptability.score,
+        assessment.resource_adequacy.score
+    ]
+    avg_score = sum(scores) / len(scores)
+    
+    # First Law (Inertia) - resistance to change
+    organizational_inertia = (5 - avg_score) * 20  # Higher score = lower inertia
+    
+    # Second Law (Force) - effort required
+    force_required = 100 - (avg_score * 15)  # Higher readiness = less force needed
+    acceleration_potential = avg_score * 20  # How fast change can happen
+    
+    # Third Law (Action-Reaction) - expected resistance
+    resistance_magnitude = organizational_inertia * 0.8
+    
+    return {
+        "inertia": {
+            "value": round(organizational_inertia, 1),
+            "interpretation": "Low" if organizational_inertia < 40 else "Medium" if organizational_inertia < 70 else "High",
+            "description": f"Organization shows {'low' if organizational_inertia < 40 else 'medium' if organizational_inertia < 70 else 'high'} resistance to change"
+        },
+        "force": {
+            "required": round(force_required, 1),
+            "acceleration": round(acceleration_potential, 1),
+            "description": f"{'Low' if force_required < 50 else 'Medium' if force_required < 75 else 'High'} effort required for successful change"
+        },
+        "reaction": {
+            "resistance": round(resistance_magnitude, 1),
+            "description": f"Expect {'minimal' if resistance_magnitude < 30 else 'moderate' if resistance_magnitude < 60 else 'significant'} organizational pushback"
+        }
+    }
+
+async def get_enhanced_ai_analysis(assessment: ChangeReadinessAssessment) -> dict:
+    """Get enhanced AI analysis from Claude with structured insights"""
     try:
         # Create AI chat instance
         chat = LlmChat(
             api_key=ANTHROPIC_API_KEY,
-            session_id=f"assessment_{assessment.id}",
-            system_message="""You are an expert organizational change management consultant specializing in the IMPACT Methodology. 
-            You analyze change readiness assessments using Newton's laws of motion principles:
-            - First Law (Inertia): Organizations resist change
-            - Second Law (Force): Change requires proportional effort
-            - Third Law (Action-Reaction): Every change creates resistance
-            
-            Provide detailed analysis, actionable recommendations, and success probability."""
+            session_id=f"enhanced_assessment_{assessment.id}",
+            system_message="""You are an expert organizational change management consultant specializing in the IMPACT Methodology and Newton's laws of motion applied to organizational change. 
+
+            Provide comprehensive analysis using these principles:
+            - First Law (Inertia): Organizations at rest tend to stay at rest
+            - Second Law (Force): Change acceleration = Force applied / Organizational mass (resistance)
+            - Third Law (Action-Reaction): Every change action produces equal opposite resistance
+
+            Structure your response as detailed but actionable insights."""
         ).with_model("anthropic", "claude-sonnet-4-20250514")
 
-        # Create analysis prompt
+        # Calculate Newton's laws data
+        newton_data = calculate_newton_laws_analysis(assessment)
+
+        # Create enhanced analysis prompt
         prompt = f"""
-        Analyze this organizational change readiness assessment:
-        
-        Project: {assessment.project_name}
-        Organization: {assessment.organization}
-        
-        Assessment Scores (1-5 scale):
-        1. Change Management Maturity: {assessment.change_management_maturity.score}/5
-           Notes: {assessment.change_management_maturity.notes or 'None'}
-        
-        2. Communication Effectiveness: {assessment.communication_effectiveness.score}/5
-           Notes: {assessment.communication_effectiveness.notes or 'None'}
-        
-        3. Leadership Support: {assessment.leadership_support.score}/5
-           Notes: {assessment.leadership_support.notes or 'None'}
-        
-        4. Workforce Adaptability: {assessment.workforce_adaptability.score}/5
-           Notes: {assessment.workforce_adaptability.notes or 'None'}
-        
-        5. Resource Adequacy: {assessment.resource_adequacy.score}/5
-           Notes: {assessment.resource_adequacy.notes or 'None'}
+        Analyze this comprehensive organizational change readiness assessment for {assessment.project_name}:
+
+        ASSESSMENT SCORES (1-5 scale):
+        • Change Management Maturity: {assessment.change_management_maturity.score}/5 - {assessment.change_management_maturity.notes or 'No notes'}
+        • Communication Effectiveness: {assessment.communication_effectiveness.score}/5 - {assessment.communication_effectiveness.notes or 'No notes'}
+        • Leadership Support: {assessment.leadership_support.score}/5 - {assessment.leadership_support.notes or 'No notes'}
+        • Workforce Adaptability: {assessment.workforce_adaptability.score}/5 - {assessment.workforce_adaptability.notes or 'No notes'}
+        • Resource Adequacy: {assessment.resource_adequacy.score}/5 - {assessment.resource_adequacy.notes or 'No notes'}
+
+        NEWTON'S LAWS ANALYSIS:
+        • Organizational Inertia: {newton_data['inertia']['value']} ({newton_data['inertia']['interpretation']})
+        • Force Required: {newton_data['force']['required']} units
+        • Expected Resistance: {newton_data['reaction']['resistance']} units
 
         Please provide:
-        1. Detailed analysis applying Newton's laws to organizational change
-        2. Top 5 specific actionable recommendations
-        3. Success probability percentage (0-100%)
-        4. Key risk factors and mitigation strategies
-        5. IMPACT methodology phase recommendations
 
-        Keep the analysis concise but insightful.
+        1. EXECUTIVE SUMMARY (2-3 sentences)
+        A concise overview of the organization's change readiness and key findings.
+
+        2. NEWTON'S LAWS INSIGHTS
+        - How organizational inertia affects this change initiative
+        - Force and acceleration recommendations
+        - Expected resistance patterns and mitigation
+
+        3. STRATEGIC RECOMMENDATIONS (5 specific actions)
+        Prioritized, actionable recommendations with expected impact.
+
+        4. RISK ANALYSIS (3-4 key risks)
+        Primary risks with specific mitigation strategies.
+
+        5. SUCCESS STRATEGIES
+        Proven approaches for this specific readiness profile.
+
+        Keep responses practical, science-based, and immediately actionable.
         """
 
         # Get AI response
         user_message = UserMessage(text=prompt)
         response = await chat.send_message(user_message)
         
-        # Calculate success probability based on scores
+        # Calculate success probability based on scores and Newton's analysis
         scores = [
             assessment.change_management_maturity.score,
             assessment.communication_effectiveness.score,
@@ -196,28 +252,66 @@ async def get_ai_analysis(assessment: ChangeReadinessAssessment) -> dict:
             assessment.resource_adequacy.score
         ]
         avg_score = sum(scores) / len(scores)
-        success_probability = (avg_score / 5) * 100
         
-        # Extract recommendations (simple parsing)
+        # Adjust success probability based on Newton's laws
+        base_probability = (avg_score / 5) * 100
+        inertia_adjustment = (100 - newton_data['inertia']['value']) * 0.2
+        success_probability = min(95, base_probability + inertia_adjustment)
+        
+        # Generate structured recommendations
         recommendations = [
-            "Strengthen change management processes",
-            "Improve communication strategies",
-            "Secure leadership buy-in",
-            "Enhance workforce capabilities",
-            "Ensure adequate resource allocation"
+            f"Address organizational inertia through {['communication', 'leadership alignment', 'gradual implementation'][int(newton_data['inertia']['value']) // 25]}",
+            f"Apply {['minimal', 'moderate', 'significant'][int(newton_data['force']['required']) // 35]} change force through structured approach",
+            f"Prepare for {['low', 'medium', 'high'][int(newton_data['reaction']['resistance']) // 30]} resistance with specific mitigation plans",
+            "Leverage high-scoring dimensions to accelerate change adoption",
+            "Focus immediate efforts on lowest-scoring assessment areas"
         ]
+        
+        # Identify risk factors based on low scores
+        risk_factors = []
+        if assessment.change_management_maturity.score <= 2:
+            risk_factors.append("Immature change management processes")
+        if assessment.communication_effectiveness.score <= 2:
+            risk_factors.append("Poor communication infrastructure")
+        if assessment.leadership_support.score <= 2:
+            risk_factors.append("Lack of leadership commitment")
+        if assessment.workforce_adaptability.score <= 2:
+            risk_factors.append("Workforce resistance to new ways of working")
+        if assessment.resource_adequacy.score <= 2:
+            risk_factors.append("Insufficient resources for change initiative")
+        
+        if not risk_factors:
+            risk_factors = ["Overconfidence due to high scores", "Maintaining momentum during implementation"]
         
         return {
             "analysis": response,
             "recommendations": recommendations,
-            "success_probability": success_probability,
-            "risks": ["Change resistance", "Resource limitations"],
-            "impact_phases": ["Focus on Measure and Plan phases"]
+            "success_probability": round(success_probability, 1),
+            "newton_analysis": newton_data,
+            "risk_factors": risk_factors,
+            "insights": {
+                "strongest_dimension": max([(d, s) for d, s in [
+                    ("Change Management Maturity", assessment.change_management_maturity.score),
+                    ("Communication Effectiveness", assessment.communication_effectiveness.score),
+                    ("Leadership Support", assessment.leadership_support.score),
+                    ("Workforce Adaptability", assessment.workforce_adaptability.score),
+                    ("Resource Adequacy", assessment.resource_adequacy.score)
+                ]], key=lambda x: x[1]),
+                "weakest_dimension": min([(d, s) for d, s in [
+                    ("Change Management Maturity", assessment.change_management_maturity.score),
+                    ("Communication Effectiveness", assessment.communication_effectiveness.score),
+                    ("Leadership Support", assessment.leadership_support.score),
+                    ("Workforce Adaptability", assessment.workforce_adaptability.score),
+                    ("Resource Adequacy", assessment.resource_adequacy.score)
+                ]], key=lambda x: x[1]),
+                "improvement_potential": round((5 - avg_score) * 20, 1)
+            }
         }
     
     except Exception as e:
-        print(f"AI Analysis Error: {str(e)}")
-        # Fallback analysis
+        print(f"Enhanced AI Analysis Error: {str(e)}")
+        # Fallback analysis with Newton's laws calculation
+        newton_data = calculate_newton_laws_analysis(assessment)
         scores = [
             assessment.change_management_maturity.score,
             assessment.communication_effectiveness.score,
@@ -229,17 +323,22 @@ async def get_ai_analysis(assessment: ChangeReadinessAssessment) -> dict:
         success_probability = (avg_score / 5) * 100
         
         return {
-            "analysis": f"Assessment completed with an overall score of {avg_score:.1f}/5. Based on Newton's laws of motion applied to organizational change, your organization shows {'strong' if avg_score >= 4 else 'moderate' if avg_score >= 3 else 'limited'} readiness for change.",
+            "analysis": f"Comprehensive assessment analysis: Overall readiness score of {avg_score:.1f}/5 indicates {'strong' if avg_score >= 4 else 'moderate' if avg_score >= 3 else 'developing'} organizational change readiness. Newton's laws analysis shows {newton_data['inertia']['interpretation'].lower()} organizational inertia requiring {newton_data['force']['required']:.0f} units of change force.",
             "recommendations": [
-                "Strengthen change management processes",
-                "Improve communication strategies",
-                "Secure leadership buy-in",
-                "Enhance workforce capabilities",
-                "Ensure adequate resource allocation"
+                "Strengthen change management processes and capabilities",
+                "Improve communication strategies and channels",
+                "Secure stronger leadership commitment and sponsorship",
+                "Enhance workforce adaptability through training",
+                "Ensure adequate resource allocation for success"
             ],
-            "success_probability": success_probability,
-            "risks": ["Change resistance", "Resource limitations"],
-            "impact_phases": ["Focus on Measure and Plan phases"]
+            "success_probability": round(success_probability, 1),
+            "newton_analysis": newton_data,
+            "risk_factors": ["Change resistance", "Resource constraints", "Communication gaps"],
+            "insights": {
+                "strongest_dimension": ("Overall Assessment", avg_score),
+                "weakest_dimension": ("Areas for Improvement", 5 - avg_score),
+                "improvement_potential": round((5 - avg_score) * 20, 1)
+            }
         }
 
 # API Routes
@@ -339,11 +438,13 @@ async def create_assessment(
         assessment.created_at = now
         assessment.updated_at = now
         
-        # Get AI analysis
-        ai_result = await get_ai_analysis(assessment)
+        # Get enhanced AI analysis
+        ai_result = await get_enhanced_ai_analysis(assessment)
         assessment.ai_analysis = ai_result.get("analysis", "")
         assessment.recommendations = ai_result.get("recommendations", [])
         assessment.success_probability = ai_result.get("success_probability", 0.0)
+        assessment.newton_analysis = ai_result.get("newton_analysis", {})
+        assessment.risk_factors = ai_result.get("risk_factors", [])
         
         # Save to database
         assessment_dict = assessment.dict()
@@ -372,6 +473,116 @@ async def get_assessment(assessment_id: str, current_user: User = Depends(get_cu
         raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to retrieve assessment: {str(e)}")
+
+@app.get("/api/analytics/advanced")
+async def get_advanced_analytics(current_user: User = Depends(get_current_user)):
+    try:
+        # Get all assessments for the organization
+        assessments = await db.assessments.find({"organization": current_user.organization}).to_list(100)
+        
+        if not assessments:
+            return {
+                "trend_analysis": {"message": "No data available for trend analysis"},
+                "newton_laws_data": {"message": "No assessments to analyze"},
+                "predictive_insights": {"message": "Insufficient data for predictions"},
+                "dimension_breakdown": {"message": "No dimension data available"},
+                "organizational_benchmarks": {"message": "No benchmark data available"}
+            }
+        
+        # Trend Analysis
+        trend_data = []
+        for assessment in sorted(assessments, key=lambda x: x.get('created_at', datetime.utcnow())):
+            trend_data.append({
+                "date": assessment.get('created_at', datetime.utcnow()).isoformat(),
+                "overall_score": assessment.get('overall_score', 0),
+                "success_probability": assessment.get('success_probability', 0),
+                "project_name": assessment.get('project_name', 'Unknown')
+            })
+        
+        # Newton's Laws Aggregate Data
+        total_inertia = 0
+        total_force = 0
+        total_resistance = 0
+        newton_count = 0
+        
+        for assessment in assessments:
+            newton_data = assessment.get('newton_analysis', {})
+            if newton_data:
+                total_inertia += newton_data.get('inertia', {}).get('value', 0)
+                total_force += newton_data.get('force', {}).get('required', 0)
+                total_resistance += newton_data.get('reaction', {}).get('resistance', 0)
+                newton_count += 1
+        
+        avg_newton_data = {
+            "average_inertia": round(total_inertia / newton_count, 1) if newton_count > 0 else 0,
+            "average_force_required": round(total_force / newton_count, 1) if newton_count > 0 else 0,
+            "average_resistance": round(total_resistance / newton_count, 1) if newton_count > 0 else 0,
+            "assessments_count": newton_count
+        }
+        
+        # Dimension Breakdown
+        dimensions = {
+            "change_management_maturity": [],
+            "communication_effectiveness": [],
+            "leadership_support": [],
+            "workforce_adaptability": [],
+            "resource_adequacy": []
+        }
+        
+        for assessment in assessments:
+            dimensions["change_management_maturity"].append(assessment.get('change_management_maturity', {}).get('score', 0))
+            dimensions["communication_effectiveness"].append(assessment.get('communication_effectiveness', {}).get('score', 0))
+            dimensions["leadership_support"].append(assessment.get('leadership_support', {}).get('score', 0))
+            dimensions["workforce_adaptability"].append(assessment.get('workforce_adaptability', {}).get('score', 0))
+            dimensions["resource_adequacy"].append(assessment.get('resource_adequacy', {}).get('score', 0))
+        
+        dimension_averages = {
+            dim: round(sum(scores) / len(scores), 2) if scores else 0
+            for dim, scores in dimensions.items()
+        }
+        
+        # Predictive Insights
+        recent_assessments = sorted(assessments, key=lambda x: x.get('created_at', datetime.utcnow()))[-5:]
+        avg_recent_score = sum(a.get('overall_score', 0) for a in recent_assessments) / len(recent_assessments) if recent_assessments else 0
+        
+        predictive_insights = {
+            "trajectory": "improving" if len(assessments) > 1 and assessments[-1].get('overall_score', 0) > assessments[0].get('overall_score', 0) else "stable",
+            "predicted_next_score": min(5.0, avg_recent_score + 0.2),
+            "confidence_level": min(95, len(assessments) * 10),
+            "recommendations": [
+                "Continue focus on lowest-scoring dimensions",
+                "Maintain momentum in high-performing areas",
+                "Consider advanced change management training",
+                "Implement regular assessment cycles"
+            ]
+        }
+        
+        # Organizational Benchmarks
+        org_benchmarks = {
+            "industry_comparison": {
+                "your_average": round(sum(a.get('overall_score', 0) for a in assessments) / len(assessments), 2),
+                "industry_average": 3.2,  # Simulated benchmark
+                "top_quartile": 4.1,
+                "performance_percentile": min(95, max(5, (sum(a.get('overall_score', 0) for a in assessments) / len(assessments)) * 25))
+            },
+            "maturity_level": "Developing" if avg_recent_score < 3 else "Proficient" if avg_recent_score < 4 else "Advanced",
+            "areas_of_strength": [dim for dim, avg in dimension_averages.items() if avg >= 4],
+            "improvement_opportunities": [dim for dim, avg in dimension_averages.items() if avg < 3]
+        }
+        
+        return {
+            "trend_analysis": {
+                "data": trend_data,
+                "summary": f"Analyzed {len(assessments)} assessments showing {predictive_insights['trajectory']} trend"
+            },
+            "newton_laws_data": avg_newton_data,
+            "predictive_insights": predictive_insights,
+            "dimension_breakdown": dimension_averages,
+            "organizational_benchmarks": org_benchmarks
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to retrieve advanced analytics: {str(e)}")
 
 @app.post("/api/projects")
 async def create_project(project: Project, current_user: User = Depends(get_current_user)):

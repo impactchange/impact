@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { TrendingUp, Activity, Target, Users, Zap, Shield, AlertTriangle, CheckCircle } from 'lucide-react';
 import './App.css';
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+
+// Color schemes for charts
+const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
+const NEWTON_COLORS = {
+  inertia: '#ef4444',
+  force: '#f59e0b', 
+  reaction: '#8b5cf6'
+};
 
 function App() {
   const [user, setUser] = useState(null);
@@ -35,11 +45,13 @@ function App() {
   const [dashboardMetrics, setDashboardMetrics] = useState({});
   const [assessments, setAssessments] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [advancedAnalytics, setAdvancedAnalytics] = useState(null);
 
   useEffect(() => {
     if (token) {
       fetchUserProfile();
       fetchDashboardData();
+      fetchAdvancedAnalytics();
     }
   }, [token]);
 
@@ -74,6 +86,17 @@ function App() {
       setProjects(projectsRes.data);
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
+    }
+  };
+
+  const fetchAdvancedAnalytics = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/analytics/advanced`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAdvancedAnalytics(response.data);
+    } catch (err) {
+      console.error('Failed to fetch advanced analytics:', err);
     }
   };
 
@@ -131,7 +154,8 @@ function App() {
       });
       
       fetchDashboardData();
-      setActiveTab('assessments');
+      fetchAdvancedAnalytics();
+      setActiveTab('analytics');
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to submit assessment');
     } finally {
@@ -254,31 +278,258 @@ function App() {
   );
 
   const renderDashboard = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Assessments</h3>
-        <p className="text-3xl font-bold text-green-600">{dashboardMetrics.total_assessments || 0}</p>
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
+      
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700">Total Assessments</h3>
+              <p className="text-3xl font-bold text-green-600">{dashboardMetrics.total_assessments || 0}</p>
+            </div>
+            <Activity className="h-8 w-8 text-green-600" />
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700">Active Projects</h3>
+              <p className="text-3xl font-bold text-blue-600">{dashboardMetrics.total_projects || 0}</p>
+            </div>
+            <Target className="h-8 w-8 text-blue-600" />
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700">Avg Readiness</h3>
+              <p className="text-3xl font-bold text-purple-600">{dashboardMetrics.average_readiness_score || 0}/5</p>
+            </div>
+            <TrendingUp className="h-8 w-8 text-purple-600" />
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700">Success Rate</h3>
+              <p className="text-3xl font-bold text-orange-600">{dashboardMetrics.average_success_probability || 0}%</p>
+            </div>
+            <CheckCircle className="h-8 w-8 text-orange-600" />
+          </div>
+        </div>
       </div>
+
+      {/* IMPACT Methodology Overview */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-700 mb-2">Active Projects</h3>
-        <p className="text-3xl font-bold text-blue-600">{dashboardMetrics.total_projects || 0}</p>
-      </div>
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-700 mb-2">Avg Readiness Score</h3>
-        <p className="text-3xl font-bold text-purple-600">{dashboardMetrics.average_readiness_score || 0}/5</p>
-      </div>
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-700 mb-2">Success Probability</h3>
-        <p className="text-3xl font-bold text-orange-600">{dashboardMetrics.average_success_probability || 0}%</p>
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">IMPACT Methodology Framework</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {['Identify', 'Measure', 'Plan', 'Act', 'Control', 'Transform'].map((phase, index) => (
+            <div key={phase} className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg hover:shadow-md transition-shadow">
+              <div className="text-2xl font-bold text-green-600 mb-2">{phase.charAt(0)}</div>
+              <div className="text-sm text-gray-700 font-medium">{phase}</div>
+              <div className="text-xs text-gray-500 mt-1">Phase {index + 1}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
+
+  const renderAdvancedAnalytics = () => {
+    if (!advancedAnalytics) {
+      return (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="animate-pulse">
+            <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+            <div className="h-32 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      );
+    }
+
+    const trendData = advancedAnalytics.trend_analysis?.data || [];
+    const newtonData = advancedAnalytics.newton_laws_data || {};
+    const dimensionData = advancedAnalytics.dimension_breakdown || {};
+    const benchmarks = advancedAnalytics.organizational_benchmarks || {};
+
+    // Prepare radar chart data
+    const radarData = [{
+      dimension: 'Change Mgmt',
+      score: dimensionData.change_management_maturity || 0
+    }, {
+      dimension: 'Communication',
+      score: dimensionData.communication_effectiveness || 0
+    }, {
+      dimension: 'Leadership',
+      score: dimensionData.leadership_support || 0
+    }, {
+      dimension: 'Adaptability',
+      score: dimensionData.workforce_adaptability || 0
+    }, {
+      dimension: 'Resources',
+      score: dimensionData.resource_adequacy || 0
+    }];
+
+    // Newton's Laws data for visualization
+    const newtonVisualizationData = [
+      { law: 'Inertia', value: newtonData.average_inertia || 0, color: NEWTON_COLORS.inertia },
+      { law: 'Force', value: newtonData.average_force_required || 0, color: NEWTON_COLORS.force },
+      { law: 'Resistance', value: newtonData.average_resistance || 0, color: NEWTON_COLORS.reaction }
+    ];
+
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold text-gray-900">Advanced AI Analytics</h1>
+
+        {/* Newton's Laws Visualization */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+            <Zap className="h-5 w-5 mr-2" />
+            Newton's Laws Applied to Organizational Change
+          </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={newtonVisualizationData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="law" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="value" fill="#8884d8">
+                    {newtonVisualizationData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="space-y-4">
+              <div className="p-4 bg-red-50 rounded-lg border-l-4 border-red-400">
+                <h3 className="font-semibold text-red-800">First Law: Organizational Inertia</h3>
+                <p className="text-sm text-red-700">Average: {newtonData.average_inertia || 0} units</p>
+                <p className="text-xs text-red-600 mt-1">Organizations at rest tend to stay at rest</p>
+              </div>
+              <div className="p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
+                <h3 className="font-semibold text-yellow-800">Second Law: Force Required</h3>
+                <p className="text-sm text-yellow-700">Average: {newtonData.average_force_required || 0} units</p>
+                <p className="text-xs text-yellow-600 mt-1">Change = Force applied / Organizational mass</p>
+              </div>
+              <div className="p-4 bg-purple-50 rounded-lg border-l-4 border-purple-400">
+                <h3 className="font-semibold text-purple-800">Third Law: Resistance</h3>
+                <p className="text-sm text-purple-700">Average: {newtonData.average_resistance || 0} units</p>
+                <p className="text-xs text-purple-600 mt-1">Every action produces equal opposite reaction</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Trend Analysis */}
+        {trendData.length > 0 && (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+              <TrendingUp className="h-5 w-5 mr-2" />
+              Assessment Trends Over Time
+            </h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={trendData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" tickFormatter={(date) => new Date(date).toLocaleDateString()} />
+                <YAxis />
+                <Tooltip labelFormatter={(date) => new Date(date).toLocaleDateString()} />
+                <Line type="monotone" dataKey="overall_score" stroke="#10b981" strokeWidth={2} name="Overall Score" />
+                <Line type="monotone" dataKey="success_probability" stroke="#3b82f6" strokeWidth={2} name="Success Probability" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* 5-Dimension Radar Chart */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+              <Target className="h-5 w-5 mr-2" />
+              Organizational Readiness Profile
+            </h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <RadarChart data={radarData}>
+                <PolarGrid />
+                <PolarAngleAxis dataKey="dimension" />
+                <PolarRadiusAxis angle={90} domain={[0, 5]} />
+                <Radar name="Score" dataKey="score" stroke="#10b981" fill="#10b981" fillOpacity={0.3} strokeWidth={2} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Organizational Benchmarks */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+              <Users className="h-5 w-5 mr-2" />
+              Industry Benchmarks
+            </h2>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                <span className="text-sm font-medium">Your Average</span>
+                <span className="text-lg font-bold text-green-600">{benchmarks.industry_comparison?.your_average || 0}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                <span className="text-sm font-medium">Industry Average</span>
+                <span className="text-lg font-bold text-blue-600">{benchmarks.industry_comparison?.industry_average || 0}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                <span className="text-sm font-medium">Top Quartile</span>
+                <span className="text-lg font-bold text-purple-600">{benchmarks.industry_comparison?.top_quartile || 0}</span>
+              </div>
+              <div className="mt-4 p-4 bg-green-50 rounded-lg">
+                <h3 className="font-semibold text-green-800">Maturity Level</h3>
+                <p className="text-lg font-bold text-green-700">{benchmarks.maturity_level || 'Assessment Required'}</p>
+                <p className="text-sm text-green-600">{benchmarks.industry_comparison?.performance_percentile || 0}th percentile</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Predictive Insights */}
+        {advancedAnalytics.predictive_insights && (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+              <Shield className="h-5 w-5 mr-2" />
+              AI-Powered Predictive Insights
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="font-semibold text-gray-700 mb-2">Trajectory Analysis</h3>
+                <p className="text-sm text-gray-600 mb-2">Current trend: <span className="font-medium capitalize">{advancedAnalytics.predictive_insights.trajectory}</span></p>
+                <p className="text-sm text-gray-600 mb-2">Predicted next score: <span className="font-bold text-green-600">{advancedAnalytics.predictive_insights.predicted_next_score}</span></p>
+                <p className="text-sm text-gray-600">Confidence: <span className="font-medium">{advancedAnalytics.predictive_insights.confidence_level}%</span></p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-700 mb-2">Strategic Recommendations</h3>
+                <ul className="space-y-1">
+                  {advancedAnalytics.predictive_insights.recommendations?.map((rec, index) => (
+                    <li key={index} className="text-sm text-gray-600 flex items-start">
+                      <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                      {rec}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderAssessmentForm = () => (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Change Readiness Assessment</h2>
       <p className="text-gray-600 mb-6">
-        Evaluate your organization's readiness for change using our scientifically-backed assessment framework.
+        Evaluate your organization's readiness for change using our scientifically-backed assessment framework based on Newton's laws of motion.
       </p>
 
       {error && (
@@ -300,7 +551,7 @@ function App() {
         </div>
 
         {Object.keys(assessmentData).filter(key => key !== 'project_name').map(dimension => (
-          <div key={dimension} className="space-y-3">
+          <div key={dimension} className="space-y-3 p-4 bg-gray-50 rounded-lg">
             <h3 className="text-lg font-semibold text-gray-800 capitalize">
               {dimension.replace(/_/g, ' ')}
             </h3>
@@ -318,10 +569,10 @@ function App() {
                       ...assessmentData,
                       [dimension]: {...assessmentData[dimension], score}
                     })}
-                    className={`w-12 h-12 rounded-full font-semibold ${
+                    className={`w-12 h-12 rounded-full font-semibold transition-all ${
                       assessmentData[dimension].score === score
-                        ? 'bg-green-600 text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        ? 'bg-green-600 text-white scale-110'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300 hover:scale-105'
                     }`}
                   >
                     {score}
@@ -349,9 +600,16 @@ function App() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 disabled:opacity-50 font-semibold"
+          className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 px-6 rounded-lg hover:from-green-700 hover:to-green-800 disabled:opacity-50 font-semibold flex items-center justify-center"
         >
-          {loading ? 'Analyzing with AI...' : 'Submit Assessment'}
+          {loading ? (
+            <>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+              Analyzing with AI...
+            </>
+          ) : (
+            'Submit Assessment'
+          )}
         </button>
       </form>
     </div>
@@ -362,50 +620,102 @@ function App() {
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Assessment Results</h2>
       
       {assessments.length === 0 ? (
-        <p className="text-gray-600">No assessments completed yet.</p>
+        <div className="text-center py-8">
+          <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-600">No assessments completed yet.</p>
+          <button
+            onClick={() => setActiveTab('assessment')}
+            className="mt-4 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700"
+          >
+            Create Your First Assessment
+          </button>
+        </div>
       ) : (
         <div className="space-y-4">
           {assessments.map(assessment => (
-            <div key={assessment.id} className="border border-gray-200 rounded-lg p-4">
-              <div className="flex justify-between items-start mb-3">
+            <div key={assessment.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-4">
                 <h3 className="text-lg font-semibold text-gray-800">{assessment.project_name}</h3>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  assessment.overall_score >= 4 ? 'bg-green-100 text-green-800' :
-                  assessment.overall_score >= 3 ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-red-100 text-red-800'
-                }`}>
-                  {assessment.overall_score?.toFixed(1)}/5
-                </span>
+                <div className="flex space-x-2">
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    assessment.overall_score >= 4 ? 'bg-green-100 text-green-800' :
+                    assessment.overall_score >= 3 ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {assessment.overall_score?.toFixed(1)}/5
+                  </span>
+                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                    {assessment.success_probability?.toFixed(1)}% Success
+                  </span>
+                </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <p className="text-sm text-gray-600">Success Probability</p>
-                  <p className="text-lg font-semibold text-purple-600">
-                    {assessment.success_probability?.toFixed(1)}%
-                  </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="text-center p-3 bg-gray-50 rounded">
+                  <p className="text-sm text-gray-600">Overall Score</p>
+                  <p className="text-xl font-bold text-green-600">{assessment.overall_score?.toFixed(1)}/5</p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">Date</p>
+                <div className="text-center p-3 bg-gray-50 rounded">
+                  <p className="text-sm text-gray-600">Success Probability</p>
+                  <p className="text-xl font-bold text-purple-600">{assessment.success_probability?.toFixed(1)}%</p>
+                </div>
+                <div className="text-center p-3 bg-gray-50 rounded">
+                  <p className="text-sm text-gray-600">Assessment Date</p>
                   <p className="text-lg font-semibold text-gray-800">
                     {new Date(assessment.created_at).toLocaleDateString()}
                   </p>
                 </div>
               </div>
 
+              {assessment.newton_analysis && (
+                <div className="mb-4 p-4 bg-blue-50 rounded-lg">
+                  <h4 className="font-semibold text-blue-800 mb-2">Newton's Laws Analysis</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                    <div className="text-center">
+                      <p className="font-medium text-red-700">Organizational Inertia</p>
+                      <p className="text-lg font-bold text-red-600">{assessment.newton_analysis.inertia?.value || 0}</p>
+                      <p className="text-xs text-red-500">{assessment.newton_analysis.inertia?.interpretation || 'N/A'}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-medium text-yellow-700">Force Required</p>
+                      <p className="text-lg font-bold text-yellow-600">{assessment.newton_analysis.force?.required || 0}</p>
+                      <p className="text-xs text-yellow-500">units</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-medium text-purple-700">Expected Resistance</p>
+                      <p className="text-lg font-bold text-purple-600">{assessment.newton_analysis.reaction?.resistance || 0}</p>
+                      <p className="text-xs text-purple-500">units</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {assessment.ai_analysis && (
                 <div className="mb-4">
-                  <h4 className="font-semibold text-gray-800 mb-2">AI Analysis</h4>
-                  <p className="text-gray-700 bg-gray-50 p-3 rounded">{assessment.ai_analysis}</p>
+                  <h4 className="font-semibold text-gray-800 mb-2 flex items-center">
+                    <Zap className="h-4 w-4 mr-1" />
+                    AI Analysis
+                  </h4>
+                  <div className="text-gray-700 bg-gray-50 p-4 rounded text-sm leading-relaxed">
+                    {assessment.ai_analysis.substring(0, 300)}...
+                  </div>
                 </div>
               )}
 
               {assessment.recommendations && assessment.recommendations.length > 0 && (
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-2">Recommendations</h4>
-                  <ul className="list-disc list-inside text-gray-700 space-y-1">
-                    {assessment.recommendations.map((rec, index) => (
-                      <li key={index}>{rec}</li>
+                  <h4 className="font-semibold text-gray-800 mb-2 flex items-center">
+                    <CheckCircle className="h-4 w-4 mr-1" />
+                    AI Recommendations
+                  </h4>
+                  <ul className="space-y-2">
+                    {assessment.recommendations.slice(0, 3).map((rec, index) => (
+                      <li key={index} className="text-sm text-gray-700 flex items-start">
+                        <span className="inline-block w-5 h-5 bg-green-500 text-white rounded-full text-xs flex items-center justify-center mr-2 mt-0.5 flex-shrink-0">
+                          {index + 1}
+                        </span>
+                        {rec}
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -420,27 +730,13 @@ function App() {
   const renderMainContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return (
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
-            {renderDashboard()}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">IMPACT Methodology Overview</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                {['Identify', 'Measure', 'Plan', 'Act', 'Control', 'Transform'].map(phase => (
-                  <div key={phase} className="text-center p-4 bg-green-50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600 mb-2">{phase.charAt(0)}</div>
-                    <div className="text-sm text-gray-700">{phase}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        );
+        return renderDashboard();
       case 'assessment':
         return renderAssessmentForm();
       case 'assessments':
         return renderAssessmentsList();
+      case 'analytics':
+        return renderAdvancedAnalytics();
       default:
         return renderDashboard();
     }
@@ -462,7 +758,7 @@ function App() {
             <div className="flex space-x-4">
               <button
                 onClick={() => setActiveTab('dashboard')}
-                className={`px-4 py-2 rounded-lg font-medium ${
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   activeTab === 'dashboard' ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -470,7 +766,7 @@ function App() {
               </button>
               <button
                 onClick={() => setActiveTab('assessment')}
-                className={`px-4 py-2 rounded-lg font-medium ${
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   activeTab === 'assessment' ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -478,11 +774,19 @@ function App() {
               </button>
               <button
                 onClick={() => setActiveTab('assessments')}
-                className={`px-4 py-2 rounded-lg font-medium ${
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   activeTab === 'assessments' ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
                 Results
+              </button>
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeTab === 'analytics' ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                AI Analytics
               </button>
             </div>
 
@@ -490,7 +794,7 @@ function App() {
               <span className="text-sm text-gray-600">Welcome, {user.full_name}</span>
               <button
                 onClick={logout}
-                className="text-sm text-red-600 hover:text-red-800"
+                className="text-sm text-red-600 hover:text-red-800 transition-colors"
               >
                 Logout
               </button>
