@@ -891,6 +891,75 @@ async def get_enhanced_ai_analysis(assessment: ChangeReadinessAssessment) -> dic
             }
         }
     
+    except asyncio.TimeoutError:
+        print("AI analysis timed out, using fallback analysis")
+        # Fallback analysis with Newton's laws calculation
+        newton_data = calculate_newton_laws_analysis(assessment)
+        scores = [
+            assessment.change_management_maturity.score,
+            assessment.communication_effectiveness.score,
+            assessment.leadership_support.score,
+            assessment.workforce_adaptability.score,
+            assessment.resource_adequacy.score
+        ]
+        avg_score = sum(scores) / len(scores)
+        
+        # Simple fallback analysis
+        fallback_analysis = f"""
+        EXECUTIVE SUMMARY:
+        Your organization shows an overall readiness score of {avg_score:.1f}/5 for change initiatives.
+
+        NEWTON'S LAWS INSIGHTS:
+        - Organizational inertia is {newton_data['inertia']['interpretation'].lower()} based on current readiness
+        - Force required: {newton_data['force']['description'].lower()}
+        - Expected resistance: {newton_data['reaction']['description'].lower()}
+
+        STRATEGIC RECOMMENDATIONS:
+        1. Focus on strengthening the lowest-scoring assessment dimension
+        2. Implement gradual change approach to overcome inertia
+        3. Build strong communication channels for change management
+        4. Engage leadership early and consistently
+        5. Prepare comprehensive training and support programs
+        """
+        
+        base_probability = (avg_score / 5) * 100
+        inertia_adjustment = (100 - newton_data['inertia']['value']) * 0.2
+        success_probability = min(95, base_probability + inertia_adjustment)
+        
+        return {
+            "analysis": fallback_analysis,
+            "recommendations": [
+                "Focus on strengthening the lowest-scoring assessment dimension",
+                "Implement gradual change approach to overcome inertia",
+                "Build strong communication channels for change management",
+                "Engage leadership early and consistently",
+                "Prepare comprehensive training and support programs"
+            ],
+            "success_probability": round(success_probability, 1),
+            "newton_analysis": newton_data,
+            "risk_factors": ["AI analysis timeout - using fallback analysis"],
+            "phase_recommendations": {
+                "identify": "Focus on clear vision and stakeholder alignment",
+                "measure": "Conduct thorough readiness assessment",
+                "plan": "Develop comprehensive change strategy",
+                "act": "Execute with strong monitoring",
+                "control": "Maintain momentum and address issues",
+                "transform": "Institutionalize and celebrate success"
+            },
+            "recommended_project": {
+                "suggested_duration_weeks": max(12, int(24 - (avg_score * 2))),
+                "critical_success_factors": [
+                    "Strong leadership engagement",
+                    "Clear communication strategy",
+                    "Adequate resource allocation"
+                ],
+                "resource_priorities": [
+                    "Change management expertise",
+                    "Communication and training resources",
+                    "Stakeholder engagement systems"
+                ]
+            }
+        }
     except Exception as e:
         print(f"Enhanced AI Analysis Error: {str(e)}")
         # Fallback analysis with Newton's laws calculation
