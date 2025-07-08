@@ -636,6 +636,34 @@ class ChangeReadinessAssessment(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
+class ManufacturingAssessmentDimension(BaseModel):
+    name: str
+    score: int = Field(ge=1, le=5)
+    notes: Optional[str] = None
+    category: str = "core"  # core, specialized
+    improvement_actions: List[str] = []
+    priority: str = "medium"  # low, medium, high
+    impact_on_operations: Optional[float] = None
+    current_state_description: Optional[str] = None
+    target_state_description: Optional[str] = None
+    responsible_stakeholders: List[str] = []
+    dependencies: List[str] = []
+    implementation_complexity: str = "medium"  # low, medium, high
+    resource_requirements: Dict[str, Any] = {}
+    success_criteria: List[str] = []
+    risks: List[Dict[str, Any]] = []
+    timeline_estimate: Optional[int] = None  # in weeks
+    cost_estimate: Optional[float] = None
+    roi_estimate: Optional[float] = None
+    kpis: List[str] = []
+    assessment_date: Optional[datetime] = None
+    next_review_date: Optional[datetime] = None
+    status: str = "pending"  # pending, in_progress, completed
+    completion_percentage: float = 0.0
+    actual_impact: Optional[float] = None
+    lessons_learned: List[str] = []
+    related_dimensions: List[str] = []
+
 class Project(BaseModel):
     id: Optional[str] = None
     name: str
