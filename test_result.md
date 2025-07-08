@@ -103,77 +103,68 @@
 #====================================================================================================
 
 ## user_problem_statement: 
-Fix the critical backend issues identified by the end-to-end test (`test_03_login_user`, `test_04_get_user_dashboard`, `test_05_create_assessment` failures), and resolve the user's inability to view the application preview. The IMPACT Methodology Web Application should be fully functional with working authentication, dashboard, and assessment creation.
+Conduct thorough end-user and application testing to identify and fix multiple errors and missing functions in the enhanced IMPACT Methodology platform. The application has been significantly modified with multiple assessment types, universal IMPACT phases, project management features, and enhanced UI, but requires comprehensive testing to ensure all functionality works correctly.
 
 ## backend:
-  - task: "User Authentication (Register/Login)"
+  - task: "Multiple Assessment Types API"
     implemented: true
-    working: true
+    working: "NEEDS_TESTING"
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
-      - working: false
+      - working: "NEEDS_TESTING"
         agent: "main"
-        comment: "Previous test_03_login_user failed - needs investigation and fix"
-      - working: true
-        agent: "main"
-        comment: "FIXED: Authentication working perfectly in latest test - login, token generation, user profile all working"
+        comment: "New assessment types endpoint and logic implemented - needs comprehensive testing"
         
-  - task: "User Dashboard Metrics"
+  - task: "Enhanced Assessment Creation"
     implemented: true
-    working: true
+    working: "NEEDS_TESTING"
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
-      - working: false
+      - working: "NEEDS_TESTING"
         agent: "main"
-        comment: "Previous test_04_get_user_dashboard failed - dashboard endpoint not functioning"
-      - working: true
-        agent: "main"
-        comment: "FIXED: Dashboard metrics working perfectly - showing 4 assessments and proper analytics data"
+        comment: "New typed assessment creation with universal analysis - needs testing"
         
-  - task: "Assessment Creation"
+  - task: "Project Management API"
     implemented: true
-    working: true
+    working: "NEEDS_TESTING"
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
-      - working: false
+      - working: "NEEDS_TESTING"
         agent: "main"
-        comment: "Previous test_05_create_assessment failed - core assessment functionality broken"
-      - working: true
-        agent: "main"
-        comment: "FIXED: Assessment creation working! Added timeout handling for AI analysis, quick mode implemented for immediate response"
+        comment: "New project CRUD endpoints implemented - needs comprehensive testing"
         
-  - task: "AI Integration (Anthropic Claude)"
+  - task: "Universal IMPACT Phases"
     implemented: true
-    working: "NA"
+    working: "NEEDS_TESTING"
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
     needs_retesting: true
     status_history:
-      - working: "NA"
+      - working: "NEEDS_TESTING"
         agent: "main"
-        comment: "AI integration code present but needs testing after assessment creation is fixed"
+        comment: "Updated IMPACT phases to be universal - needs validation"
         
-  - task: "IMPACT Workflow System"
+  - task: "Type-Specific Analysis Functions"
     implemented: true
-    working: "NA"
+    working: "NEEDS_TESTING"
     file: "/app/backend/server.py"
     stuck_count: 0
-    priority: "medium"
+    priority: "high"
     needs_retesting: true
     status_history:
-      - working: "NA"
+      - working: "NEEDS_TESTING"
         agent: "main"
-        comment: "Complete 6-phase IMPACT workflow implemented but needs testing"
+        comment: "New helper functions for typed analysis - needs thorough testing"
 
 ## frontend:
   - task: "User Authentication UI"
