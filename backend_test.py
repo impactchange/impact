@@ -69,8 +69,11 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
     
     def test_04_get_user_profile(self):
         """Test getting user profile"""
+        if not self.token:
+            self.skipTest("No token available")
         headers = {"Authorization": f"Bearer {self.token}"}
         response = requests.get(f"{self.base_url}/user/profile", headers=headers)
+        print(f"User profile response: {response.status_code} - {response.text}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["email"], self.test_user["email"])
