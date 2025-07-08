@@ -1107,8 +1107,40 @@ async def create_assessment(
         assessment.created_at = now
         assessment.updated_at = now
         
-        # Get enhanced AI analysis
-        ai_result = await get_enhanced_ai_analysis(assessment)
+        # Get enhanced AI analysis with timeout handling
+        try:
+            ai_result = await asyncio.wait_for(get_enhanced_ai_analysis(assessment), timeout=20.0)
+        except asyncio.TimeoutError:
+            print("Assessment AI analysis timed out, using quick fallback")
+            # Quick fallback calculation
+            newton_data = calculate_newton_laws_analysis(assessment)
+            ai_result = {
+                "analysis": f"Quick analysis: Overall score {overall_score:.1f}/5. See recommendations for details.",
+                "recommendations": [
+                    "Focus on lowest-scoring assessment dimension",
+                    "Apply gradual change approach",
+                    "Strengthen communication channels",
+                    "Ensure leadership engagement",
+                    "Prepare adequate support systems"
+                ],
+                "success_probability": round((overall_score / 5) * 100, 1),
+                "newton_analysis": newton_data,
+                "risk_factors": ["Quick assessment - detailed analysis recommended"],
+                "phase_recommendations": {
+                    "identify": "Define clear change vision",
+                    "measure": "Establish baseline metrics", 
+                    "plan": "Develop comprehensive strategy",
+                    "act": "Execute with monitoring",
+                    "control": "Maintain momentum",
+                    "transform": "Institutionalize changes"
+                },
+                "recommended_project": {
+                    "suggested_duration_weeks": 16,
+                    "critical_success_factors": ["Leadership engagement", "Clear communication"],
+                    "resource_priorities": ["Change management support", "Training resources"]
+                }
+            }
+        
         assessment.ai_analysis = ai_result.get("analysis", "")
         assessment.recommendations = ai_result.get("recommendations", [])
         assessment.success_probability = ai_result.get("success_probability", 0.0)
