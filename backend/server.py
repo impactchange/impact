@@ -477,6 +477,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     """Get current user from JWT token"""
     try:
         token = credentials.credentials
+        print(f"Received token: {token}")
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
         user_id = payload.get("user_id")
         if not user_id:
@@ -492,6 +493,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
     except Exception as e:
+        print(f"Authentication error: {str(e)}")
         raise HTTPException(status_code=401, detail=f"Authentication error: {str(e)}")
 
 def calculate_newton_laws_analysis(assessment: ChangeReadinessAssessment) -> Dict[str, Any]:
