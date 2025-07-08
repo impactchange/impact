@@ -257,30 +257,30 @@ ASSESSMENT_TYPES = {
 IMPACT_PHASES = {
     "investigate": {
         "name": "Investigate & Assess",
-        "description": "Understanding current state and establishing implementation foundation",
+        "description": "Understanding current state and establishing transformation foundation",
         "order": 1,
-        "newton_law": "First Law - Overcoming Manufacturing Organizational Inertia",
-        "newton_insight": "Manufacturing organizations at rest tend to stay at rest. Significant force is required to overcome initial inertia and establish maintenance excellence momentum.",
+        "newton_law": "First Law - Overcoming Organizational Inertia",
+        "newton_insight": "Organizations at rest tend to stay at rest. Significant force is required to overcome initial inertia and establish change momentum.",
         "objectives": [
-            "Comprehensively evaluate current maintenance practices and operational performance",
-            "Assess organizational readiness for change across all levels",
-            "Identify stakeholders and analyze maintenance-operations relationships",
-            "Establish baseline measurements for manufacturing performance",
-            "Map cultural factors affecting maintenance excellence adoption"
+            "Comprehensively evaluate current state and organizational readiness",
+            "Assess stakeholder landscape and change capacity",
+            "Identify risks, opportunities, and critical success factors",
+            "Establish baseline measurements and performance metrics",
+            "Map cultural factors and organizational dynamics"
         ],
         "key_activities": [
-            "Conduct stakeholder analysis across maintenance and operations teams",
-            "Execute comprehensive change readiness assessment",
-            "Perform maintenance-operations alignment evaluation",
-            "Assess current state manufacturing performance metrics",
-            "Identify risks specific to manufacturing environments",
+            "Conduct comprehensive stakeholder analysis",
+            "Execute multi-dimensional change readiness assessment",
+            "Perform current state analysis and gap identification",
+            "Assess organizational culture and change history",
+            "Identify risks and develop mitigation strategies",
             "Map informal networks and influence patterns",
-            "Evaluate technical infrastructure and capabilities"
+            "Evaluate technical and operational capabilities"
         ],
         "deliverables": [
             {"name": "Stakeholder Analysis Report", "type": "analysis", "required": True},
             {"name": "Change Readiness Assessment", "type": "assessment", "required": True},
-            {"name": "Manufacturing Performance Baseline", "type": "baseline", "required": True},
+            {"name": "Current State Analysis", "type": "baseline", "required": True},
             {"name": "Risk Assessment Matrix", "type": "assessment", "required": True},
             {"name": "Cultural Assessment Report", "type": "analysis", "required": True},
             {"name": "Technical Readiness Evaluation", "type": "assessment", "required": False}
@@ -290,16 +290,16 @@ IMPACT_PHASES = {
             "Change Readiness Assessment Survey",
             "Risk Assessment Matrix",
             "Cultural Assessment Framework",
-            "Manufacturing Performance Baseline Tool"
+            "Current State Analysis Tool"
         ],
         "completion_criteria": [
-            "All stakeholders identified and analyzed across maintenance and operations",
+            "All stakeholders identified and analyzed",
             "Change readiness score of 3.5+ achieved or improvement plan established",
-            "Manufacturing performance baseline documented with maintenance connections",
+            "Current state baseline documented with improvement opportunities",
             "Critical risks identified with mitigation strategies",
             "Cultural factors mapped with engagement strategies"
         ],
-        "manufacturing_focus": "Understand how maintenance issues currently impact manufacturing performance and identify the greatest opportunities for improvement through maintenance excellence."
+        "universal_focus": "Understand the current organizational state and identify the specific factors that will impact transformation success for any type of change initiative."
     },
     "mobilize": {
         "name": "Mobilize & Prepare", 
