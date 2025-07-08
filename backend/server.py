@@ -992,6 +992,11 @@ async def get_dashboard_metrics(current_user: User = Depends(get_current_user)):
             {"organization": current_user.organization}
         ).sort("created_at", -1).limit(5).to_list(5)
         
+        # Clean up ObjectId fields
+        for assessment in recent_assessments:
+            if "_id" in assessment:
+                del assessment["_id"]
+        
         return {
             "total_assessments": total_assessments,
             "total_projects": total_projects,
