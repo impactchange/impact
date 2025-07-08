@@ -16,7 +16,7 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
             "email": "testuser@impact.com",
             "password": "password123",
             "full_name": "Test User",
-            "organization": "Test Organization",
+            "organization": "Demo Organization",
             "role": "Team Member"
         }
         self.token = None
