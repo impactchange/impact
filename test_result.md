@@ -259,10 +259,9 @@ Conduct thorough end-user and application testing to identify and fix multiple e
 
 ## test_plan:
   current_focus:
-    - "Project Management UI"
-  stuck_tasks:
-    - "Project Management UI"
-  test_all: false
+    - "Complete Platform Verification"
+  stuck_tasks: []
+  test_all: true
   test_priority: "high_first"
 
 ## agent_communication:
