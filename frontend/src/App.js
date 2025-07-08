@@ -139,12 +139,15 @@ function App() {
   const [expandedTasks, setExpandedTasks] = useState({});
 
   useEffect(() => {
+    fetchAssessmentTypes(); // Fetch assessment types on component mount
+  }, []);
+
+  useEffect(() => {
     if (token) {
       fetchUserProfile();
       fetchDashboardData();
       fetchAdvancedAnalytics();
       fetchImpactPhases();
-      fetchAssessmentTypes();
     }
   }, [token]);
 
