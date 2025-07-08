@@ -739,9 +739,9 @@ async def get_enhanced_ai_analysis(assessment: ChangeReadinessAssessment) -> dic
         # Get AI response with timeout handling
         user_message = UserMessage(text=prompt)
         
-        # Try to get AI response with a timeout
+        # Try to get AI response with a shorter timeout
         try:
-            response = await asyncio.wait_for(chat.send_message(user_message), timeout=30.0)
+            response = await asyncio.wait_for(chat.send_message(user_message), timeout=15.0)
         except asyncio.TimeoutError:
             print("AI analysis timed out, using fallback analysis")
             # Use fallback analysis if AI times out
