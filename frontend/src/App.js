@@ -150,14 +150,18 @@ function App() {
 
   const fetchAssessmentTypes = async () => {
     try {
-      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/assessment-types`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/assessment-types`);
       if (response.ok) {
         const data = await response.json();
         setAssessmentTypes(data.assessment_types);
+        // Initialize with default assessment type if none selected
+        if (!selectedAssessmentType && Object.keys(data.assessment_types).length > 0) {
+          const firstType = Object.keys(data.assessment_types)[0];
+          setSelectedAssessmentType(firstType);
+          setTimeout(() => initializeAssessmentData(firstType), 100);
+        }
+      } else {
+        console.error('Failed to fetch assessment types:', response.status, response.statusText);
       }
     } catch (err) {
       console.error('Failed to fetch assessment types:', err);
