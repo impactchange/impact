@@ -862,6 +862,11 @@ async def get_advanced_analytics(current_user: User = Depends(get_current_user))
         # Get all assessments for the organization
         assessments = await db.assessments.find({"organization": current_user.organization}).to_list(100)
         
+        # Clean up ObjectId fields
+        for assessment in assessments:
+            if "_id" in assessment:
+                del assessment["_id"]
+        
         if not assessments:
             return {
                 "trend_analysis": {"message": "No data available for trend analysis"},
