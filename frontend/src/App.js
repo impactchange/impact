@@ -92,11 +92,11 @@ function App() {
   // Assessment states
   const [assessmentData, setAssessmentData] = useState({
     project_name: '',
-    change_management_maturity: { score: 3, notes: '' },
-    communication_effectiveness: { score: 3, notes: '' },
-    leadership_support: { score: 3, notes: '' },
-    workforce_adaptability: { score: 3, notes: '' },
-    resource_adequacy: { score: 3, notes: '' }
+    change_management_maturity: { name: 'Change Management Maturity', score: 3, notes: '' },
+    communication_effectiveness: { name: 'Communication Effectiveness', score: 3, notes: '' },
+    leadership_support: { name: 'Leadership Support', score: 3, notes: '' },
+    workforce_adaptability: { name: 'Workforce Adaptability', score: 3, notes: '' },
+    resource_adequacy: { name: 'Resource Adequacy', score: 3, notes: '' }
   });
 
   // Dashboard states
