@@ -125,7 +125,36 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
         self.assertEqual(data["id"], self.assessment_id)
         print("✅ Assessment retrieval by ID successful")
     
-    def test_08_get_dashboard_metrics(self):
+    def test_08_get_impact_phases(self):
+        """Test getting IMPACT phases configuration"""
+        response = requests.get(f"{self.base_url}/impact/phases")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("identify", data)
+        self.assertIn("measure", data)
+        self.assertIn("plan", data)
+        self.assertIn("act", data)
+        self.assertIn("control", data)
+        self.assertIn("transform", data)
+        print("✅ IMPACT phases retrieval successful")
+        print(f"   - Found {len(data)} phases")
+    
+    def test_09_get_impact_phase_details(self):
+        """Test getting specific IMPACT phase details"""
+        response = requests.get(f"{self.base_url}/impact/phases/identify")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["name"], "Identify")
+        self.assertIn("description", data)
+        self.assertIn("newton_law", data)
+        self.assertIn("objectives", data)
+        self.assertIn("key_activities", data)
+        self.assertIn("deliverables", data)
+        print("✅ IMPACT phase details retrieval successful")
+        print(f"   - Phase: {data['name']}")
+        print(f"   - Newton's Law: {data['newton_law']}")
+    
+    def test_10_get_dashboard_metrics(self):
         """Test getting dashboard metrics"""
         headers = {"Authorization": f"Bearer {self.token}"}
         response = requests.get(f"{self.base_url}/dashboard/metrics", headers=headers)
@@ -140,13 +169,14 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
         print(f"   - Average Readiness Score: {data['average_readiness_score']}")
         print(f"   - Average Success Probability: {data['average_success_probability']}%")
     
-    def test_09_create_project(self):
+    def test_11_create_project(self):
         """Test creating a project"""
         headers = {"Authorization": f"Bearer {self.token}"}
         project_data = {
-            "name": "Test Project",
+            "name": "Test IMPACT Project",
             "description": "A test project for the IMPACT methodology",
-            "phase": "Identify"
+            "target_completion_date": (datetime.utcnow() + timedelta(days=90)).isoformat(),
+            "budget": 50000
         }
         
         response = requests.post(f"{self.base_url}/projects", json=project_data, headers=headers)
@@ -155,9 +185,52 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
         self.assertIn("id", data)
         self.assertEqual(data["name"], project_data["name"])
         self.assertEqual(data["description"], project_data["description"])
+        self.assertEqual(data["current_phase"], "identify")
+        self.assertIn("tasks", data)
+        self.assertIn("deliverables", data)
+        self.assertIn("milestones", data)
+        self.project_id = data["id"]
+        
+        # Save a task and deliverable ID for later tests
+        if data["tasks"] and len(data["tasks"]) > 0:
+            self.task_id = data["tasks"][0]["id"]
+        if data["deliverables"] and len(data["deliverables"]) > 0:
+            self.deliverable_id = data["deliverables"][0]["id"]
+            
         print("✅ Project creation successful")
+        print(f"   - Project ID: {self.project_id}")
+        print(f"   - Initial phase: {data['current_phase']}")
+        print(f"   - Tasks: {len(data['tasks'])}")
+        print(f"   - Deliverables: {len(data['deliverables'])}")
     
-    def test_10_get_projects(self):
+    def test_12_create_project_from_assessment(self):
+        """Test creating a project from assessment"""
+        if not self.assessment_id:
+            self.skipTest("No assessment ID available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        project_data = {
+            "assessment_id": self.assessment_id,
+            "project_name": "Project from Assessment",
+            "description": "A project created from assessment results",
+            "target_completion_date": (datetime.utcnow() + timedelta(days=120)).isoformat(),
+            "budget": 75000
+        }
+        
+        response = requests.post(f"{self.base_url}/projects/from-assessment", json=project_data, headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("id", data)
+        self.assertEqual(data["name"], project_data["project_name"])
+        self.assertEqual(data["description"], project_data["description"])
+        self.assertEqual(data["assessment_id"], self.assessment_id)
+        self.assertIn("newton_insights", data)
+        print("✅ Project creation from assessment successful")
+        print(f"   - Project ID: {data['id']}")
+        print(f"   - Tasks: {len(data['tasks'])}")
+        print(f"   - Deliverables: {len(data['deliverables'])}")
+    
+    def test_13_get_projects(self):
         """Test getting all projects"""
         headers = {"Authorization": f"Bearer {self.token}"}
         response = requests.get(f"{self.base_url}/projects", headers=headers)
@@ -166,6 +239,73 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
         self.assertIsInstance(data, list)
         self.assertGreaterEqual(len(data), 1)
         print(f"✅ Retrieved {len(data)} projects")
+    
+    def test_14_get_project_by_id(self):
+        """Test getting a specific project by ID"""
+        if not self.project_id:
+            self.skipTest("No project ID available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        response = requests.get(f"{self.base_url}/projects/{self.project_id}", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["id"], self.project_id)
+        print("✅ Project retrieval by ID successful")
+    
+    def test_15_update_task(self):
+        """Test updating a task"""
+        if not self.project_id or not self.task_id:
+            self.skipTest("No project ID or task ID available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        task_update = {
+            "status": "in_progress",
+            "notes": "Working on this task",
+            "priority": "high"
+        }
+        
+        response = requests.put(
+            f"{self.base_url}/projects/{self.project_id}/tasks/{self.task_id}", 
+            json=task_update, 
+            headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["message"], "Task updated successfully")
+        print("✅ Task update successful")
+    
+    def test_16_update_deliverable(self):
+        """Test updating a deliverable"""
+        if not self.project_id or not self.deliverable_id:
+            self.skipTest("No project ID or deliverable ID available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        deliverable_update = {
+            "status": "in_progress",
+            "content": "Initial draft of the deliverable",
+            "approval_notes": "Pending review"
+        }
+        
+        response = requests.put(
+            f"{self.base_url}/projects/{self.project_id}/deliverables/{self.deliverable_id}", 
+            json=deliverable_update, 
+            headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["message"], "Deliverable updated successfully")
+        print("✅ Deliverable update successful")
+    
+    def test_17_get_advanced_analytics(self):
+        """Test getting advanced analytics"""
+        headers = {"Authorization": f"Bearer {self.token}"}
+        response = requests.get(f"{self.base_url}/analytics/advanced", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("trend_analysis", data)
+        self.assertIn("newton_laws_data", data)
+        self.assertIn("dimension_breakdown", data)
+        print("✅ Advanced analytics retrieval successful")
 
 def run_tests():
     """Run all tests in order"""
