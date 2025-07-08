@@ -747,6 +747,280 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         print(f"Authentication error: {str(e)}")
         raise HTTPException(status_code=401, detail=f"Authentication error: {str(e)}")
 
+def calculate_universal_readiness_analysis(assessment_data: dict, assessment_type: str) -> Dict[str, Any]:
+    """Calculate universal readiness analysis for any assessment type"""
+    # Extract scores from assessment data
+    scores = []
+    dimension_scores = {}
+    
+    type_config = ASSESSMENT_TYPES.get(assessment_type, ASSESSMENT_TYPES["general_readiness"])
+    
+    for dimension in type_config["dimensions"]:
+        dim_id = dimension["id"]
+        if dim_id in assessment_data and "score" in assessment_data[dim_id]:
+            score = assessment_data[dim_id]["score"]
+            scores.append(score)
+            dimension_scores[dim_id] = score
+    
+    avg_score = sum(scores) / len(scores) if scores else 0
+    
+    # Calculate organizational inertia based on type
+    base_inertia = (5 - avg_score) * 20
+    type_multiplier = {
+        "software_implementation": 1.1,  # Slightly higher resistance to tech
+        "business_process": 1.0,  # Standard resistance
+        "manufacturing_operations": 1.2,  # Higher resistance in manufacturing
+        "general_readiness": 1.0
+    }.get(assessment_type, 1.0)
+    
+    organizational_inertia = base_inertia * type_multiplier
+    
+    # Calculate required force
+    base_force = 100 - (avg_score * 15)
+    force_required = base_force * type_multiplier
+    
+    # Calculate resistance
+    resistance_magnitude = organizational_inertia * 0.8
+    
+    return {
+        "inertia": {
+            "value": round(organizational_inertia, 1),
+            "interpretation": "Low" if organizational_inertia < 48 else "Medium" if organizational_inertia < 84 else "High",
+            "description": f"Organization shows {'low' if organizational_inertia < 48 else 'medium' if organizational_inertia < 84 else 'high'} resistance to {assessment_type.replace('_', ' ')} changes"
+        },
+        "force": {
+            "required": round(force_required, 1),
+            "type_factor": round(type_multiplier, 1),
+            "description": f"{'Low' if force_required < 60 else 'Medium' if force_required < 90 else 'High'} effort required for successful {assessment_type.replace('_', ' ')} transformation"
+        },
+        "reaction": {
+            "resistance": round(resistance_magnitude, 1),
+            "description": f"Expect {'minimal' if resistance_magnitude < 36 else 'moderate' if resistance_magnitude < 72 else 'significant'} organizational pushback"
+        }
+    }
+
+def generate_typed_ai_analysis(assessment_data: dict, assessment_type: str, overall_score: float, readiness_level: str, analysis_data: dict) -> str:
+    """Generate AI analysis based on assessment type"""
+    
+    type_names = {
+        "general_readiness": "Change Management",
+        "software_implementation": "Software Implementation", 
+        "business_process": "Business Process Improvement",
+        "manufacturing_operations": "Manufacturing Operations"
+    }
+    
+    type_name = type_names.get(assessment_type, "Change Management")
+    
+    analysis = f"""# {type_name} Readiness Analysis
+
+## Executive Summary
+Your organization shows an overall readiness score of {overall_score:.1f}/5 for {type_name.lower()} projects.
+Readiness Level: **{readiness_level}**
+
+## Newton's Laws Application
+- **Organizational Inertia**: {analysis_data['inertia']['value']} - {analysis_data['inertia']['interpretation']}
+- **Required Force**: {analysis_data['force']['required']} units
+- **Expected Resistance**: {analysis_data['reaction']['resistance']} units
+
+## IMPACT Phase Recommendations
+Based on your readiness assessment, focus areas for each phase:
+
+**Investigate & Assess**: Understand current state and stakeholder landscape
+**Mobilize & Prepare**: Build strong foundation and prepare resources
+**Pilot & Adapt**: Test approach and refine strategies
+**Activate & Deploy**: Execute with comprehensive support
+**Cement & Transfer**: Institutionalize changes and transfer ownership
+**Track & Optimize**: Monitor success and continuous improvement
+
+## Strategic Recommendations
+1. Focus on strengthening lowest-scoring dimensions
+2. Build comprehensive stakeholder engagement strategy
+3. Develop targeted training and communication programs
+4. Establish clear success metrics and monitoring systems
+5. Create change champion network for peer support
+
+This assessment provides the foundation for your DigitalThinker implementation success."""
+
+    return analysis
+
+def generate_typed_recommendations(assessment_type: str, dimension_scores: dict, overall_score: float) -> List[str]:
+    """Generate recommendations based on assessment type"""
+    
+    base_recommendations = [
+        "Focus on strengthening lowest-scoring assessment dimensions",
+        "Develop comprehensive change champion network",
+        "Create clear communication strategy for all stakeholders",
+        "Establish baseline performance metrics",
+        "Design training programs for affected teams",
+        "Build resistance management plan addressing organizational culture"
+    ]
+    
+    type_specific = {
+        "software_implementation": [
+            "Ensure technical infrastructure readiness",
+            "Plan comprehensive user training and support",
+            "Develop data migration and integration strategy",
+            "Create system performance monitoring protocols"
+        ],
+        "business_process": [
+            "Document current process workflows and dependencies",
+            "Establish process performance baselines", 
+            "Design cross-functional collaboration frameworks",
+            "Create process improvement measurement systems"
+        ],
+        "manufacturing_operations": [
+            "Address shift work coordination challenges",
+            "Leverage safety culture for change adoption",
+            "Ensure maintenance-operations alignment",
+            "Plan for operational constraint management"
+        ]
+    }
+    
+    recommendations = base_recommendations.copy()
+    if assessment_type in type_specific:
+        recommendations.extend(type_specific[assessment_type])
+    
+    return recommendations
+
+def get_type_specific_bonus(assessment_type: str, dimension_scores: dict) -> float:
+    """Calculate type-specific success probability bonus"""
+    
+    bonus = 0.0
+    
+    if assessment_type == "software_implementation":
+        if dimension_scores.get("technical_infrastructure", 3) >= 4:
+            bonus += 5
+        if dimension_scores.get("user_adoption_readiness", 3) >= 4:
+            bonus += 5
+    elif assessment_type == "business_process":
+        if dimension_scores.get("process_maturity", 3) >= 4:
+            bonus += 5
+        if dimension_scores.get("cross_functional_collaboration", 3) >= 4:
+            bonus += 5
+    elif assessment_type == "manufacturing_operations":
+        if dimension_scores.get("maintenance_operations_alignment", 3) >= 4:
+            bonus += 5
+        if dimension_scores.get("safety_compliance", 3) >= 4:
+            bonus += 5
+    
+    return bonus
+
+def get_type_specific_risks(assessment_type: str, dimension_scores: dict) -> List[str]:
+    """Get risks specific to assessment type"""
+    
+    base_risks = ["Organizational resistance to change", "Resource constraints"]
+    
+    type_risks = {
+        "software_implementation": [
+            "Technical infrastructure limitations",
+            "User adoption challenges", 
+            "Data migration complexity",
+            "System integration issues"
+        ],
+        "business_process": [
+            "Process complexity and dependencies",
+            "Cross-functional coordination challenges",
+            "Performance measurement gaps",
+            "Change fatigue from process modifications"
+        ],
+        "manufacturing_operations": [
+            "Operational constraint management",
+            "Shift work coordination challenges", 
+            "Safety and compliance requirements",
+            "Maintenance-operations alignment issues"
+        ]
+    }
+    
+    risks = base_risks.copy()
+    if assessment_type in type_risks:
+        risks.extend(type_risks[assessment_type])
+    
+    return risks
+
+def get_phase_recommendations_for_type(assessment_type: str) -> Dict[str, str]:
+    """Get IMPACT phase recommendations specific to assessment type"""
+    
+    base_recommendations = {
+        "investigate": "Comprehensive current state analysis and stakeholder mapping",
+        "mobilize": "Build strong foundation and prepare all resources",
+        "pilot": "Test approach with representative group",
+        "activate": "Execute with comprehensive support and monitoring",
+        "cement": "Institutionalize changes and transfer ownership",
+        "track": "Monitor success and drive continuous improvement"
+    }
+    
+    type_specific = {
+        "software_implementation": {
+            "investigate": "Assess technical infrastructure and user readiness",
+            "mobilize": "Prepare training programs and technical environment",
+            "pilot": "Test system functionality and user experience",
+            "activate": "Deploy with technical support and user training",
+            "cement": "Establish ongoing support and maintenance procedures",
+            "track": "Monitor system performance and user adoption"
+        },
+        "business_process": {
+            "investigate": "Map current processes and identify improvement opportunities",
+            "mobilize": "Design new processes and prepare training materials",
+            "pilot": "Test new processes with key stakeholder groups",
+            "activate": "Implement across all affected departments",
+            "cement": "Standardize processes and embed in operations",
+            "track": "Monitor process performance and continuous improvement"
+        },
+        "manufacturing_operations": {
+            "investigate": "Assess operational constraints and stakeholder alignment",
+            "mobilize": "Build cross-shift communication and training programs",
+            "pilot": "Test improvements in controlled operational environment",
+            "activate": "Implement with minimal operational disruption",
+            "cement": "Embed in operational procedures and culture",
+            "track": "Monitor operational performance improvements"
+        }
+    }
+    
+    return type_specific.get(assessment_type, base_recommendations)
+
+def generate_implementation_plan(assessment_type: str, overall_score: float) -> Dict[str, Any]:
+    """Generate implementation plan based on type and readiness"""
+    
+    # Base timeline calculation
+    base_weeks = 16
+    if overall_score < 2.5:
+        base_weeks = 24  # More time needed for low readiness
+    elif overall_score > 4.0:
+        base_weeks = 12  # Less time needed for high readiness
+    
+    type_adjustments = {
+        "software_implementation": 1.2,  # Tech projects take longer
+        "business_process": 1.0,  # Standard timeline
+        "manufacturing_operations": 1.3,  # Manufacturing takes longer
+        "general_readiness": 1.0
+    }
+    
+    adjusted_weeks = int(base_weeks * type_adjustments.get(assessment_type, 1.0))
+    
+    return {
+        "suggested_duration_weeks": adjusted_weeks,
+        "critical_success_factors": [
+            "Strong leadership engagement",
+            "Comprehensive stakeholder communication",
+            "Adequate resource allocation",
+            "Effective training and support"
+        ],
+        "resource_priorities": [
+            "Change management expertise",
+            "Training and communication resources",
+            "Technical support and infrastructure",
+            "Stakeholder engagement systems"
+        ],
+        "key_milestones": [
+            {"phase": "investigate", "milestone": "Readiness assessment complete", "week": 2},
+            {"phase": "mobilize", "milestone": "Implementation plan approved", "week": 4},
+            {"phase": "pilot", "milestone": "Pilot success validated", "week": 8},
+            {"phase": "activate", "milestone": "Full deployment complete", "week": adjusted_weeks - 4},
+            {"phase": "cement", "milestone": "Knowledge transfer complete", "week": adjusted_weeks - 2},
+            {"phase": "track", "milestone": "Success metrics achieved", "week": adjusted_weeks}
+        ]
+    }
+
 def calculate_manufacturing_readiness_analysis(assessment_data: dict) -> Dict[str, Any]:
     """Calculate manufacturing-specific readiness analysis using Newton's laws"""
     # Extract scores from assessment data
