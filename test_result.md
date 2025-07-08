@@ -184,15 +184,18 @@ Conduct thorough end-user and application testing to identify and fix multiple e
 ## frontend:
   - task: "Multi-Type Assessment UI"
     implemented: true
-    working: "NEEDS_TESTING"
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NEEDS_TESTING"
         agent: "main"
         comment: "New assessment type selection and dynamic forms - needs end-user testing"
+      - working: false
+        agent: "testing"
+        comment: "Backend API returns correct assessment types data, but frontend has issues displaying them. Login functionality appears to be broken, preventing access to the assessment UI."
         
   - task: "Assessment Type Data Loading"
     implemented: true
