@@ -1663,6 +1663,213 @@ async def get_user_profile(current_user: User = Depends(get_current_user)):
     return current_user
 
 # Assessment routes
+# Assessment Types endpoint
+@app.get("/api/assessment-types")
+async def get_assessment_types():
+    """Get all available assessment types"""
+    return {"assessment_types": ASSESSMENT_TYPES}
+
+@app.get("/api/assessment-types/{assessment_type}")
+async def get_assessment_type(assessment_type: str):
+    """Get specific assessment type configuration"""
+    if assessment_type not in ASSESSMENT_TYPES:
+        raise HTTPException(status_code=404, detail="Assessment type not found")
+    return ASSESSMENT_TYPES[assessment_type]
+
+# Enhanced assessment creation with type support
+@app.post("/api/assessments/create")
+async def create_typed_assessment(
+    assessment_data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        assessment_type = assessment_data.get("assessment_type", "general_readiness")
+        
+        if assessment_type not in ASSESSMENT_TYPES:
+            raise HTTPException(status_code=400, detail="Invalid assessment type")
+        
+        # Generate ID and timestamps
+        assessment_id = str(uuid.uuid4())
+        now = datetime.utcnow()
+        
+        # Get assessment type configuration
+        type_config = ASSESSMENT_TYPES[assessment_type]
+        
+        # Calculate overall score from submitted dimensions
+        all_scores = []
+        dimension_scores = {}
+        
+        for dimension in type_config["dimensions"]:
+            dim_id = dimension["id"]
+            if dim_id in assessment_data and "score" in assessment_data[dim_id]:
+                score = assessment_data[dim_id]["score"]
+                all_scores.append(score)
+                dimension_scores[dim_id] = score
+        
+        overall_score = sum(all_scores) / len(all_scores) if all_scores else 0
+        
+        # Determine readiness level
+        if overall_score >= 4.5:
+            readiness_level = "Excellent"
+        elif overall_score >= 3.5:
+            readiness_level = "Good"
+        elif overall_score >= 2.5:
+            readiness_level = "Fair"
+        elif overall_score >= 1.5:
+            readiness_level = "Poor"
+        else:
+            readiness_level = "Critical"
+        
+        # Calculate analysis based on assessment type
+        analysis_data = calculate_universal_readiness_analysis(assessment_data, assessment_type)
+        
+        # Generate AI analysis based on type
+        ai_analysis = generate_typed_ai_analysis(assessment_data, assessment_type, overall_score, readiness_level, analysis_data)
+        
+        # Generate recommendations based on type
+        recommendations = generate_typed_recommendations(assessment_type, dimension_scores, overall_score)
+        
+        # Calculate success probability
+        base_probability = (overall_score / 5) * 100
+        type_bonus = get_type_specific_bonus(assessment_type, dimension_scores)
+        success_probability = min(95, base_probability + type_bonus)
+        
+        # Create assessment document
+        assessment_doc = {
+            "id": assessment_id,
+            "user_id": current_user.id,
+            "organization": current_user.organization,
+            "assessment_type": assessment_type,
+            "project_name": assessment_data.get("project_name", ""),
+            "project_type": type_config["name"],
+            "assessment_version": "3.0",
+            **assessment_data,  # Include all dimension data
+            "overall_score": round(overall_score, 2),
+            "readiness_level": readiness_level,
+            "ai_analysis": ai_analysis,
+            "recommendations": recommendations,
+            "success_probability": round(success_probability, 1),
+            "newton_analysis": analysis_data,
+            "risk_factors": get_type_specific_risks(assessment_type, dimension_scores),
+            "phase_recommendations": get_phase_recommendations_for_type(assessment_type),
+            "implementation_plan": generate_implementation_plan(assessment_type, overall_score),
+            "guarantee_eligibility": overall_score >= 3.0,
+            "created_at": now,
+            "updated_at": now
+        }
+        
+        # Save to database
+        result = await db.assessments.insert_one(assessment_doc)
+        assessment_doc["_id"] = str(result.inserted_id)
+        
+        return assessment_doc
+        
+    except Exception as e:
+        print(f"Assessment Creation Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create assessment: {str(e)}")
+
+# Projects endpoints
+@app.post("/api/projects")
+async def create_project(
+    project_data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        project_id = str(uuid.uuid4())
+        now = datetime.utcnow()
+        
+        project_doc = {
+            "id": project_id,
+            "user_id": current_user.id,
+            "client_organization": project_data.get("client_organization", current_user.organization),
+            "project_name": project_data.get("project_name", ""),
+            "project_type": project_data.get("project_type", "general_readiness"),
+            "assessment_id": project_data.get("assessment_id"),
+            "description": project_data.get("description", ""),
+            "objectives": project_data.get("objectives", []),
+            "scope": project_data.get("scope", ""),
+            "start_date": now,
+            "estimated_end_date": project_data.get("estimated_end_date"),
+            "total_budget": project_data.get("total_budget", 0.0),
+            "spent_budget": 0.0,
+            "budget_alerts_enabled": True,
+            "current_phase": "investigate",
+            "overall_progress": 0.0,
+            "status": "active",
+            "health_status": "green",
+            "phase_progress": {phase: 0.0 for phase in IMPACT_PHASES.keys()},
+            "phase_start_dates": {},
+            "phase_end_dates": {},
+            "deliverables": [],
+            "milestones": [],
+            "project_team": project_data.get("project_team", []),
+            "stakeholders": project_data.get("stakeholders", []),
+            "risks": [],
+            "issues": [],
+            "last_update": now,
+            "next_milestone": None,
+            "created_at": now,
+            "updated_at": now
+        }
+        
+        result = await db.projects.insert_one(project_doc)
+        project_doc["_id"] = str(result.inserted_id)
+        
+        return project_doc
+        
+    except Exception as e:
+        print(f"Project Creation Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create project: {str(e)}")
+
+@app.get("/api/projects")
+async def get_user_projects(current_user: User = Depends(get_current_user)):
+    try:
+        projects = []
+        async for project in db.projects.find({"user_id": current_user.id}):
+            project["_id"] = str(project["_id"])
+            projects.append(project)
+        return {"projects": projects}
+    except Exception as e:
+        print(f"Get Projects Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve projects")
+
+@app.get("/api/projects/{project_id}")
+async def get_project(project_id: str, current_user: User = Depends(get_current_user)):
+    try:
+        project = await db.projects.find_one({"id": project_id, "user_id": current_user.id})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        project["_id"] = str(project["_id"])
+        return project
+    except Exception as e:
+        print(f"Get Project Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve project")
+
+@app.put("/api/projects/{project_id}")
+async def update_project(
+    project_id: str,
+    update_data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        update_data["updated_at"] = datetime.utcnow()
+        
+        result = await db.projects.update_one(
+            {"id": project_id, "user_id": current_user.id},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        updated_project = await db.projects.find_one({"id": project_id, "user_id": current_user.id})
+        updated_project["_id"] = str(updated_project["_id"])
+        return updated_project
+        
+    except Exception as e:
+        print(f"Update Project Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update project")
+
 # Assessment routes - Enhanced for Manufacturing EAM
 @app.post("/api/assessments")
 async def create_enhanced_assessment(
