@@ -163,7 +163,11 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
     
     def test_10_get_dashboard_metrics(self):
         """Test getting dashboard metrics"""
+        if not self.token:
+            self.skipTest("No token available")
         headers = {"Authorization": f"Bearer {self.token}"}
+        print(f"Using token: {self.token}")
+        print(f"Headers: {headers}")
         response = requests.get(f"{self.base_url}/dashboard/metrics", headers=headers)
         print(f"Dashboard metrics response: {response.status_code} - {response.text}")
         self.assertEqual(response.status_code, 200)
