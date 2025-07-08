@@ -1224,92 +1224,166 @@ function App() {
   };
 
   const renderAssessmentForm = () => (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Change Readiness Assessment</h2>
-      <p className="text-gray-600 mb-6">
-        Evaluate your organization's readiness for change using our scientifically-backed assessment framework based on Newton's laws of motion.
-      </p>
-
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleAssessmentSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
-          <input
-            type="text"
-            value={assessmentData.project_name}
-            onChange={(e) => setAssessmentData({...assessmentData, project_name: e.target.value})}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            required
-          />
+    <div className="max-w-4xl mx-auto">
+      <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Manufacturing EAM Implementation Readiness Assessment</h2>
+          <p className="text-lg text-gray-600 mb-4">
+            <strong>Core Principle:</strong> You can't have manufacturing excellence without maintenance excellence.
+          </p>
+          <p className="text-gray-600">
+            This comprehensive assessment evaluates your organization's readiness for Manufacturing EAM implementation 
+            across both traditional change dimensions and manufacturing-specific factors.
+          </p>
         </div>
 
-        {Object.keys(assessmentData).filter(key => key !== 'project_name').map(dimension => (
-          <div key={dimension} className="space-y-3 p-4 bg-gray-50 rounded-lg">
-            <h3 className="text-lg font-semibold text-gray-800 capitalize">
-              {dimension.replace(/_/g, ' ')}
-            </h3>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Score (1 = Poor, 5 = Excellent)
-              </label>
-              <div className="flex space-x-2">
-                {[1, 2, 3, 4, 5].map(score => (
-                  <button
-                    key={score}
-                    type="button"
-                    onClick={() => setAssessmentData({
-                      ...assessmentData,
-                      [dimension]: {...assessmentData[dimension], score}
-                    })}
-                    className={`w-12 h-12 rounded-full font-semibold transition-all ${
-                      assessmentData[dimension].score === score
-                        ? 'bg-green-600 text-white scale-110'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300 hover:scale-105'
-                    }`}
-                  >
-                    {score}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
-              <textarea
-                value={assessmentData[dimension].notes}
-                onChange={(e) => setAssessmentData({
-                  ...assessmentData,
-                  [dimension]: {...assessmentData[dimension], notes: e.target.value}
-                })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                rows="2"
-                placeholder="Additional context or observations..."
-              />
-            </div>
+        <form onSubmit={handleAssessmentSubmit} className="space-y-8">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Project Name
+            </label>
+            <input
+              type="text"
+              value={assessmentData.project_name}
+              onChange={(e) => setAssessmentData({...assessmentData, project_name: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Enter your EAM implementation project name"
+              required
+            />
           </div>
-        ))}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 px-6 rounded-lg hover:from-green-700 hover:to-green-800 disabled:opacity-50 font-semibold flex items-center justify-center"
-        >
-          {loading ? (
-            <>
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-              Analyzing with AI...
-            </>
-          ) : (
-            'Submit Assessment'
-          )}
-        </button>
-      </form>
+          {/* Core Assessment Dimensions */}
+          <div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-6 border-b border-gray-200 pb-2">
+              Core Readiness Dimensions
+            </h3>
+            {Object.entries(assessmentData).filter(([key]) => 
+              ['leadership_commitment', 'organizational_culture', 'resource_availability', 'stakeholder_engagement', 'training_capability'].includes(key)
+            ).map(([key, dimension]) => (
+              <div key={key} className="mb-8 p-6 bg-gray-50 rounded-lg">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h4 className="text-lg font-medium text-gray-900">{dimension.name}</h4>
+                    <p className="text-sm text-gray-600 mt-1">{dimension.description}</p>
+                  </div>
+                </div>
+                
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Score (1=Poor, 5=Excellent)
+                  </label>
+                  <div className="flex space-x-4">
+                    {[1, 2, 3, 4, 5].map((score) => (
+                      <label key={score} className="flex items-center">
+                        <input
+                          type="radio"
+                          name={`${key}_score`}
+                          value={score}
+                          checked={dimension.score === score}
+                          onChange={(e) => setAssessmentData({
+                            ...assessmentData,
+                            [key]: { ...dimension, score: parseInt(e.target.value) }
+                          })}
+                          className="mr-2 text-green-600"
+                        />
+                        <span className="text-sm">{score}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Notes (Optional)
+                  </label>
+                  <textarea
+                    value={dimension.notes}
+                    onChange={(e) => setAssessmentData({
+                      ...assessmentData,
+                      [key]: { ...dimension, notes: e.target.value }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    rows="2"
+                    placeholder="Add any specific notes or context..."
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Manufacturing-Specific Dimensions */}
+          <div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-6 border-b border-gray-200 pb-2">
+              Manufacturing-Specific Factors
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              These dimensions assess manufacturing environment-specific considerations that impact EAM implementation success.
+            </p>
+            
+            {Object.entries(assessmentData).filter(([key]) => 
+              ['manufacturing_constraints', 'maintenance_operations_alignment', 'shift_work_considerations', 'technical_readiness', 'safety_compliance'].includes(key)
+            ).map(([key, dimension]) => (
+              <div key={key} className="mb-8 p-6 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h4 className="text-lg font-medium text-gray-900">{dimension.name}</h4>
+                    <p className="text-sm text-gray-600 mt-1">{dimension.description}</p>
+                  </div>
+                </div>
+                
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Score (1=Poor, 5=Excellent)
+                  </label>
+                  <div className="flex space-x-4">
+                    {[1, 2, 3, 4, 5].map((score) => (
+                      <label key={score} className="flex items-center">
+                        <input
+                          type="radio"
+                          name={`${key}_score`}
+                          value={score}
+                          checked={dimension.score === score}
+                          onChange={(e) => setAssessmentData({
+                            ...assessmentData,
+                            [key]: { ...dimension, score: parseInt(e.target.value) }
+                          })}
+                          className="mr-2 text-blue-600"
+                        />
+                        <span className="text-sm">{score}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Notes (Optional)
+                  </label>
+                  <textarea
+                    value={dimension.notes}
+                    onChange={(e) => setAssessmentData({
+                      ...assessmentData,
+                      [key]: { ...dimension, notes: e.target.value }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows="2"
+                    placeholder="Add manufacturing-specific context or constraints..."
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-center">
+            <button
+              type="submit"
+              className="bg-green-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors"
+            >
+              Complete Manufacturing EAM Assessment
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 
