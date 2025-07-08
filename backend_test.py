@@ -160,6 +160,7 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
         """Test getting dashboard metrics"""
         headers = {"Authorization": f"Bearer {self.token}"}
         response = requests.get(f"{self.base_url}/dashboard/metrics", headers=headers)
+        print(f"Dashboard metrics response: {response.status_code} - {response.text}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("total_assessments", data)
