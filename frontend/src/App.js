@@ -285,14 +285,72 @@ function App() {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      alert('Assessment completed successfully! AI analysis has been generated.');
+      alert('Manufacturing EAM Assessment completed successfully! AI analysis has been generated.');
       setAssessmentData({
         project_name: '',
-        change_management_maturity: { name: 'Change Management Maturity', score: 3, notes: '' },
-        communication_effectiveness: { name: 'Communication Effectiveness', score: 3, notes: '' },
-        leadership_support: { name: 'Leadership Support', score: 3, notes: '' },
-        workforce_adaptability: { name: 'Workforce Adaptability', score: 3, notes: '' },
-        resource_adequacy: { name: 'Resource Adequacy', score: 3, notes: '' }
+        project_type: 'Manufacturing EAM Implementation',
+        // Core Assessment Dimensions
+        leadership_commitment: { 
+          name: 'Leadership Commitment & Sponsorship', 
+          score: 3, 
+          notes: '',
+          description: 'How committed is senior leadership to this manufacturing EAM implementation?'
+        },
+        organizational_culture: { 
+          name: 'Organizational Culture & Change History', 
+          score: 3, 
+          notes: '',
+          description: 'How well does the organization typically adapt to change in manufacturing environments?'
+        },
+        resource_availability: { 
+          name: 'Resource Availability & Capability', 
+          score: 3, 
+          notes: '',
+          description: 'Are adequate financial, human, and technical resources available for implementation?'
+        },
+        stakeholder_engagement: { 
+          name: 'Stakeholder Engagement & Communication', 
+          score: 3, 
+          notes: '',
+          description: 'How effective are existing stakeholder engagement and communication capabilities?'
+        },
+        training_capability: { 
+          name: 'Training & Development Capability', 
+          score: 3, 
+          notes: '',
+          description: 'What training capabilities and infrastructure exist for manufacturing teams?'
+        },
+        // Manufacturing-Specific Dimensions
+        manufacturing_constraints: { 
+          name: 'Manufacturing Constraints Management', 
+          score: 3, 
+          notes: '',
+          description: 'How manageable are operational constraints during EAM implementation?'
+        },
+        maintenance_operations_alignment: { 
+          name: 'Maintenance-Operations Alignment', 
+          score: 3, 
+          notes: '',
+          description: 'How well aligned are maintenance and operations teams currently?'
+        },
+        shift_work_considerations: { 
+          name: 'Shift Work & Coordination', 
+          score: 3, 
+          notes: '',
+          description: 'How well can shift work patterns accommodate change activities?'
+        },
+        technical_readiness: { 
+          name: 'Technical Infrastructure Readiness', 
+          score: 3, 
+          notes: '',
+          description: 'How ready are employees and systems for EAM technology adoption?'
+        },
+        safety_compliance: { 
+          name: 'Safety & Compliance Integration', 
+          score: 3, 
+          notes: '',
+          description: 'How well can safety and regulatory requirements be integrated with changes?'
+        }
       });
       
       fetchDashboardData();
