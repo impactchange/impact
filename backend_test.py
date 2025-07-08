@@ -29,6 +29,7 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
     def test_01_health_check(self):
         """Test the health check endpoint"""
         response = requests.get(f"{self.base_url}/health")
+        print(f"Health check response: {response.status_code} - {response.text}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["status"], "healthy")
