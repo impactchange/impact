@@ -832,6 +832,17 @@ function App() {
     }
   };
 
+  const fetchProjects = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/projects`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setProjects(response.data.projects || []);
+    } catch (err) {
+      console.error('Failed to fetch projects:', err);
+    }
+  };
+
   const renderProjectWorkflow = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
