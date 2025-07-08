@@ -149,7 +149,6 @@ function App() {
       fetchAdvancedAnalytics();
       fetchImpactPhases();
       fetchProjects();
-      fetchProjects();
     }
   }, [token]);
 
