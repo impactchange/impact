@@ -68,8 +68,8 @@ class AssessmentDimension(BaseModel):
 
 class ChangeReadinessAssessment(BaseModel):
     id: Optional[str] = None
-    user_id: str
-    organization: str
+    user_id: Optional[str] = None
+    organization: Optional[str] = None
     project_name: str
     change_management_maturity: AssessmentDimension
     communication_effectiveness: AssessmentDimension
