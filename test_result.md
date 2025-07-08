@@ -256,16 +256,11 @@ Conduct thorough end-user and application testing to identify and fix multiple e
 
 ## test_plan:
   current_focus:
-    - "Multi-Type Assessment UI"
-    - "Assessment Type Data Loading"
-    - "Enhanced Navigation and UX"
+    - "Project Management UI"
   stuck_tasks:
     - "Project Management UI"
-    - "Multi-Type Assessment UI"
-    - "Assessment Type Data Loading"
-    - "Enhanced Navigation and UX"
-  test_all: true
-  test_priority: "comprehensive_testing"
+  test_all: false
+  test_priority: "high_first"
 
 ## agent_communication:
   - agent: "main"
