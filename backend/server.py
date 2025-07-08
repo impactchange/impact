@@ -741,6 +741,10 @@ async def create_project(project: Project, current_user: User = Depends(get_curr
 async def get_projects(current_user: User = Depends(get_current_user)):
     try:
         projects = await db.projects.find({"organization": current_user.organization}).to_list(100)
+        # Convert ObjectId to string and remove _id field
+        for project in projects:
+            if "_id" in project:
+                del project["_id"]
         return projects
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to retrieve projects: {str(e)}")
