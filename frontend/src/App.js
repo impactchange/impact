@@ -147,6 +147,45 @@ function App() {
     }
   }, [token]);
 
+  const fetchAssessmentTypes = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/assessment-types`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setAssessmentTypes(data.assessment_types);
+      }
+    } catch (err) {
+      console.error('Failed to fetch assessment types:', err);
+    }
+  };
+
+  const initializeAssessmentData = (assessmentType) => {
+    if (!assessmentTypes[assessmentType]) return;
+    
+    const typeConfig = assessmentTypes[assessmentType];
+    const newData = {
+      project_name: '',
+      assessment_type: assessmentType
+    };
+    
+    // Initialize all dimensions for this type
+    typeConfig.dimensions.forEach(dimension => {
+      newData[dimension.id] = {
+        name: dimension.name,
+        score: 3,
+        notes: '',
+        description: dimension.description,
+        category: dimension.category
+      };
+    });
+    
+    setAssessmentData(newData);
+  };
+
   const fetchUserProfile = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/user/profile`, {
