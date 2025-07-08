@@ -199,15 +199,18 @@ Conduct thorough end-user and application testing to identify and fix multiple e
         
   - task: "Assessment Type Data Loading"
     implemented: true
-    working: "NEEDS_TESTING"
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NEEDS_TESTING"
         agent: "main"
         comment: "Frontend fetching assessment types from backend - needs validation"
+      - working: false
+        agent: "testing"
+        comment: "Backend API correctly returns assessment type data, but frontend has issues with authentication, preventing proper loading and display of assessment types."
         
   - task: "Project Management UI"
     implemented: false
