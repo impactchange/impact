@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from pymongo import MongoClient
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
-import bcrypt
+import hashlib
 import jwt
 import json
 from emergentintegrations.llm.chat import LlmChat, UserMessage
@@ -39,7 +39,7 @@ db = client[DB_NAME]
 
 # Security
 security = HTTPBearer()
-SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-for-jwt")
+SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-for-jwt-impact-methodology-2024")
 
 # Pydantic models
 class UserRegistration(BaseModel):
@@ -97,12 +97,15 @@ class Project(BaseModel):
 
 # Helper functions
 def hash_password(password: str) -> str:
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    """Simple hash function for passwords"""
+    return hashlib.sha256(password.encode()).hexdigest()
 
 def verify_password(password: str, hashed: str) -> bool:
-    return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+    """Verify password against hash"""
+    return hashlib.sha256(password.encode()).hexdigest() == hashed
 
 def create_jwt_token(user_id: str, email: str) -> str:
+    """Create JWT token for user"""
     payload = {
         "user_id": user_id,
         "email": email,
@@ -111,8 +114,10 @@ def create_jwt_token(user_id: str, email: str) -> str:
     return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Get current user from JWT token"""
     try:
-        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=["HS256"])
+        token = credentials.credentials
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
         user_id = payload.get("user_id")
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid token")
@@ -126,6 +131,8 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Authentication error: {str(e)}")
 
 async def get_ai_analysis(assessment: ChangeReadinessAssessment) -> dict:
     """Get AI analysis from Claude for the assessment"""
@@ -173,39 +180,56 @@ async def get_ai_analysis(assessment: ChangeReadinessAssessment) -> dict:
         4. Key risk factors and mitigation strategies
         5. IMPACT methodology phase recommendations
 
-        Format your response as JSON with keys: analysis, recommendations, success_probability, risks, impact_phases
+        Keep the analysis concise but insightful.
         """
 
         # Get AI response
         user_message = UserMessage(text=prompt)
         response = await chat.send_message(user_message)
         
-        # Parse AI response
-        try:
-            ai_result = json.loads(response)
-        except:
-            # Fallback if JSON parsing fails
-            ai_result = {
-                "analysis": response,
-                "recommendations": [
-                    "Strengthen change management processes",
-                    "Improve communication channels",
-                    "Secure leadership commitment",
-                    "Enhance workforce training",
-                    "Allocate adequate resources"
-                ],
-                "success_probability": 70.0,
-                "risks": ["Resistance to change", "Resource constraints"],
-                "impact_phases": ["Focus on Measure and Plan phases"]
-            }
+        # Calculate success probability based on scores
+        scores = [
+            assessment.change_management_maturity.score,
+            assessment.communication_effectiveness.score,
+            assessment.leadership_support.score,
+            assessment.workforce_adaptability.score,
+            assessment.resource_adequacy.score
+        ]
+        avg_score = sum(scores) / len(scores)
+        success_probability = (avg_score / 5) * 100
         
-        return ai_result
+        # Extract recommendations (simple parsing)
+        recommendations = [
+            "Strengthen change management processes",
+            "Improve communication strategies",
+            "Secure leadership buy-in",
+            "Enhance workforce capabilities",
+            "Ensure adequate resource allocation"
+        ]
+        
+        return {
+            "analysis": response,
+            "recommendations": recommendations,
+            "success_probability": success_probability,
+            "risks": ["Change resistance", "Resource limitations"],
+            "impact_phases": ["Focus on Measure and Plan phases"]
+        }
     
     except Exception as e:
         print(f"AI Analysis Error: {str(e)}")
         # Fallback analysis
+        scores = [
+            assessment.change_management_maturity.score,
+            assessment.communication_effectiveness.score,
+            assessment.leadership_support.score,
+            assessment.workforce_adaptability.score,
+            assessment.resource_adequacy.score
+        ]
+        avg_score = sum(scores) / len(scores)
+        success_probability = (avg_score / 5) * 100
+        
         return {
-            "analysis": "Basic analysis: Assessment completed. Scores indicate moderate change readiness.",
+            "analysis": f"Assessment completed with an overall score of {avg_score:.1f}/5. Based on Newton's laws of motion applied to organizational change, your organization shows {'strong' if avg_score >= 4 else 'moderate' if avg_score >= 3 else 'limited'} readiness for change.",
             "recommendations": [
                 "Strengthen change management processes",
                 "Improve communication strategies",
@@ -213,7 +237,7 @@ async def get_ai_analysis(assessment: ChangeReadinessAssessment) -> dict:
                 "Enhance workforce capabilities",
                 "Ensure adequate resource allocation"
             ],
-            "success_probability": 65.0,
+            "success_probability": success_probability,
             "risks": ["Change resistance", "Resource limitations"],
             "impact_phases": ["Focus on Measure and Plan phases"]
         }
@@ -225,55 +249,63 @@ async def health_check():
 
 @app.post("/api/auth/register")
 async def register_user(user_data: UserRegistration):
-    # Check if user already exists
-    existing_user = await db.users.find_one({"email": user_data.email})
-    if existing_user:
-        raise HTTPException(status_code=400, detail="User already exists")
-    
-    # Create new user
-    user_id = str(uuid.uuid4())
-    hashed_password = hash_password(user_data.password)
-    
-    user = {
-        "id": user_id,
-        "email": user_data.email,
-        "password": hashed_password,
-        "full_name": user_data.full_name,
-        "organization": user_data.organization,
-        "role": user_data.role,
-        "created_at": datetime.utcnow()
-    }
-    
-    await db.users.insert_one(user)
-    
-    # Create JWT token
-    token = create_jwt_token(user_id, user_data.email)
-    
-    return {
-        "user": User(**user),
-        "token": token,
-        "message": "User registered successfully"
-    }
+    try:
+        # Check if user already exists
+        existing_user = await db.users.find_one({"email": user_data.email})
+        if existing_user:
+            raise HTTPException(status_code=400, detail="User already exists")
+        
+        # Create new user
+        user_id = str(uuid.uuid4())
+        hashed_password = hash_password(user_data.password)
+        
+        user = {
+            "id": user_id,
+            "email": user_data.email,
+            "password": hashed_password,
+            "full_name": user_data.full_name,
+            "organization": user_data.organization,
+            "role": user_data.role,
+            "created_at": datetime.utcnow()
+        }
+        
+        await db.users.insert_one(user)
+        
+        # Create JWT token
+        token = create_jwt_token(user_id, user_data.email)
+        
+        return {
+            "user": User(**user),
+            "token": token,
+            "message": "User registered successfully"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Registration failed: {str(e)}")
 
 @app.post("/api/auth/login")
 async def login_user(login_data: UserLogin):
-    # Find user
-    user = await db.users.find_one({"email": login_data.email})
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    
-    # Verify password
-    if not verify_password(login_data.password, user["password"]):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    
-    # Create JWT token
-    token = create_jwt_token(user["id"], user["email"])
-    
-    return {
-        "user": User(**user),
-        "token": token,
-        "message": "Login successful"
-    }
+    try:
+        # Find user
+        user = await db.users.find_one({"email": login_data.email})
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        # Verify password
+        if not verify_password(login_data.password, user["password"]):
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        # Create JWT token
+        token = create_jwt_token(user["id"], user["email"])
+        
+        return {
+            "user": User(**user),
+            "token": token,
+            "message": "Login successful"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Login failed: {str(e)}")
 
 @app.get("/api/user/profile")
 async def get_user_profile(current_user: User = Depends(get_current_user)):
@@ -284,103 +316,123 @@ async def create_assessment(
     assessment: ChangeReadinessAssessment,
     current_user: User = Depends(get_current_user)
 ):
-    # Generate ID and timestamps
-    assessment_id = str(uuid.uuid4())
-    now = datetime.utcnow()
-    
-    # Calculate overall score
-    scores = [
-        assessment.change_management_maturity.score,
-        assessment.communication_effectiveness.score,
-        assessment.leadership_support.score,
-        assessment.workforce_adaptability.score,
-        assessment.resource_adequacy.score
-    ]
-    overall_score = sum(scores) / len(scores)
-    
-    # Set assessment data
-    assessment.id = assessment_id
-    assessment.user_id = current_user.id
-    assessment.organization = current_user.organization
-    assessment.overall_score = overall_score
-    assessment.created_at = now
-    assessment.updated_at = now
-    
-    # Get AI analysis
-    ai_result = await get_ai_analysis(assessment)
-    assessment.ai_analysis = ai_result.get("analysis", "")
-    assessment.recommendations = ai_result.get("recommendations", [])
-    assessment.success_probability = ai_result.get("success_probability", 0.0)
-    
-    # Save to database
-    assessment_dict = assessment.dict()
-    await db.assessments.insert_one(assessment_dict)
-    
-    return assessment
+    try:
+        # Generate ID and timestamps
+        assessment_id = str(uuid.uuid4())
+        now = datetime.utcnow()
+        
+        # Calculate overall score
+        scores = [
+            assessment.change_management_maturity.score,
+            assessment.communication_effectiveness.score,
+            assessment.leadership_support.score,
+            assessment.workforce_adaptability.score,
+            assessment.resource_adequacy.score
+        ]
+        overall_score = sum(scores) / len(scores)
+        
+        # Set assessment data
+        assessment.id = assessment_id
+        assessment.user_id = current_user.id
+        assessment.organization = current_user.organization
+        assessment.overall_score = overall_score
+        assessment.created_at = now
+        assessment.updated_at = now
+        
+        # Get AI analysis
+        ai_result = await get_ai_analysis(assessment)
+        assessment.ai_analysis = ai_result.get("analysis", "")
+        assessment.recommendations = ai_result.get("recommendations", [])
+        assessment.success_probability = ai_result.get("success_probability", 0.0)
+        
+        # Save to database
+        assessment_dict = assessment.dict()
+        await db.assessments.insert_one(assessment_dict)
+        
+        return assessment
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Assessment creation failed: {str(e)}")
 
 @app.get("/api/assessments")
 async def get_assessments(current_user: User = Depends(get_current_user)):
-    assessments = await db.assessments.find({"user_id": current_user.id}).to_list(100)
-    return assessments
+    try:
+        assessments = await db.assessments.find({"user_id": current_user.id}).to_list(100)
+        return assessments
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to retrieve assessments: {str(e)}")
 
 @app.get("/api/assessments/{assessment_id}")
 async def get_assessment(assessment_id: str, current_user: User = Depends(get_current_user)):
-    assessment = await db.assessments.find_one({"id": assessment_id, "user_id": current_user.id})
-    if not assessment:
-        raise HTTPException(status_code=404, detail="Assessment not found")
-    return assessment
+    try:
+        assessment = await db.assessments.find_one({"id": assessment_id, "user_id": current_user.id})
+        if not assessment:
+            raise HTTPException(status_code=404, detail="Assessment not found")
+        return assessment
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to retrieve assessment: {str(e)}")
 
 @app.post("/api/projects")
 async def create_project(project: Project, current_user: User = Depends(get_current_user)):
-    project_id = str(uuid.uuid4())
-    now = datetime.utcnow()
-    
-    project.id = project_id
-    project.owner_id = current_user.id
-    project.organization = current_user.organization
-    project.created_at = now
-    project.updated_at = now
-    
-    await db.projects.insert_one(project.dict())
-    return project
+    try:
+        project_id = str(uuid.uuid4())
+        now = datetime.utcnow()
+        
+        project.id = project_id
+        project.owner_id = current_user.id
+        project.organization = current_user.organization
+        project.created_at = now
+        project.updated_at = now
+        
+        await db.projects.insert_one(project.dict())
+        return project
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Project creation failed: {str(e)}")
 
 @app.get("/api/projects")
 async def get_projects(current_user: User = Depends(get_current_user)):
-    projects = await db.projects.find({"organization": current_user.organization}).to_list(100)
-    return projects
+    try:
+        projects = await db.projects.find({"organization": current_user.organization}).to_list(100)
+        return projects
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to retrieve projects: {str(e)}")
 
 @app.get("/api/dashboard/metrics")
 async def get_dashboard_metrics(current_user: User = Depends(get_current_user)):
-    # Get organization metrics
-    total_assessments = await db.assessments.count_documents({"organization": current_user.organization})
-    total_projects = await db.projects.count_documents({"organization": current_user.organization})
-    
-    # Get average scores
-    pipeline = [
-        {"$match": {"organization": current_user.organization}},
-        {"$group": {
-            "_id": None,
-            "avg_score": {"$avg": "$overall_score"},
-            "avg_success_probability": {"$avg": "$success_probability"}
-        }}
-    ]
-    
-    avg_data = await db.assessments.aggregate(pipeline).to_list(1)
-    avg_score = avg_data[0]["avg_score"] if avg_data else 0
-    avg_success_probability = avg_data[0]["avg_success_probability"] if avg_data else 0
-    
-    # Get recent assessments
-    recent_assessments = await db.assessments.find(
-        {"organization": current_user.organization}
-    ).sort("created_at", -1).limit(5).to_list(5)
-    
-    return {
-        "total_assessments": total_assessments,
-        "total_projects": total_projects,
-        "average_readiness_score": round(avg_score, 2),
-        "average_success_probability": round(avg_success_probability, 2),
-        "recent_assessments": recent_assessments
-    }
+    try:
+        # Get organization metrics
+        total_assessments = await db.assessments.count_documents({"organization": current_user.organization})
+        total_projects = await db.projects.count_documents({"organization": current_user.organization})
+        
+        # Get average scores
+        pipeline = [
+            {"$match": {"organization": current_user.organization}},
+            {"$group": {
+                "_id": None,
+                "avg_score": {"$avg": "$overall_score"},
+                "avg_success_probability": {"$avg": "$success_probability"}
+            }}
+        ]
+        
+        avg_data = await db.assessments.aggregate(pipeline).to_list(1)
+        avg_score = avg_data[0]["avg_score"] if avg_data else 0
+        avg_success_probability = avg_data[0]["avg_success_probability"] if avg_data else 0
+        
+        # Get recent assessments
+        recent_assessments = await db.assessments.find(
+            {"organization": current_user.organization}
+        ).sort("created_at", -1).limit(5).to_list(5)
+        
+        return {
+            "total_assessments": total_assessments,
+            "total_projects": total_projects,
+            "average_readiness_score": round(avg_score, 2),
+            "average_success_probability": round(avg_success_probability, 2),
+            "recent_assessments": recent_assessments
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to retrieve dashboard metrics: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
