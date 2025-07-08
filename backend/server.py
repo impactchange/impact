@@ -1107,47 +1107,35 @@ async def create_assessment(
         assessment.created_at = now
         assessment.updated_at = now
         
-        # Get enhanced AI analysis with timeout handling
-        try:
-            ai_result = await asyncio.wait_for(get_enhanced_ai_analysis(assessment), timeout=20.0)
-        except asyncio.TimeoutError:
-            print("Assessment AI analysis timed out, using quick fallback")
-            # Quick fallback calculation
-            newton_data = calculate_newton_laws_analysis(assessment)
-            ai_result = {
-                "analysis": f"Quick analysis: Overall score {overall_score:.1f}/5. See recommendations for details.",
-                "recommendations": [
-                    "Focus on lowest-scoring assessment dimension",
-                    "Apply gradual change approach",
-                    "Strengthen communication channels",
-                    "Ensure leadership engagement",
-                    "Prepare adequate support systems"
-                ],
-                "success_probability": round((overall_score / 5) * 100, 1),
-                "newton_analysis": newton_data,
-                "risk_factors": ["Quick assessment - detailed analysis recommended"],
-                "phase_recommendations": {
-                    "identify": "Define clear change vision",
-                    "measure": "Establish baseline metrics", 
-                    "plan": "Develop comprehensive strategy",
-                    "act": "Execute with monitoring",
-                    "control": "Maintain momentum",
-                    "transform": "Institutionalize changes"
-                },
-                "recommended_project": {
-                    "suggested_duration_weeks": 16,
-                    "critical_success_factors": ["Leadership engagement", "Clear communication"],
-                    "resource_priorities": ["Change management support", "Training resources"]
-                }
-            }
+        # Quick assessment creation without AI for immediate response
+        # Calculate basic Newton's laws analysis
+        newton_data = calculate_newton_laws_analysis(assessment)
         
-        assessment.ai_analysis = ai_result.get("analysis", "")
-        assessment.recommendations = ai_result.get("recommendations", [])
-        assessment.success_probability = ai_result.get("success_probability", 0.0)
-        assessment.newton_analysis = ai_result.get("newton_analysis", {})
-        assessment.risk_factors = ai_result.get("risk_factors", [])
-        assessment.phase_recommendations = ai_result.get("phase_recommendations", {})
-        assessment.recommended_project = ai_result.get("recommended_project", {})
+        # Set basic analysis
+        assessment.ai_analysis = f"Quick analysis completed: Overall score {overall_score:.1f}/5. Detailed AI analysis can be generated separately."
+        assessment.recommendations = [
+            "Focus on lowest-scoring assessment dimension",
+            "Apply gradual change approach based on Newton's laws",
+            "Strengthen communication channels",
+            "Ensure leadership engagement",
+            "Prepare adequate support systems"
+        ]
+        assessment.success_probability = round((overall_score / 5) * 100, 1)
+        assessment.newton_analysis = newton_data
+        assessment.risk_factors = ["Quick assessment mode - detailed analysis available on request"]
+        assessment.phase_recommendations = {
+            "identify": "Define clear change vision and objectives",
+            "measure": "Establish comprehensive baseline metrics",
+            "plan": "Develop detailed change strategy",
+            "act": "Execute with strong monitoring",
+            "control": "Maintain momentum and course-correct",
+            "transform": "Institutionalize and celebrate success"
+        }
+        assessment.recommended_project = {
+            "suggested_duration_weeks": max(12, int(24 - (overall_score * 2))),
+            "critical_success_factors": ["Leadership engagement", "Clear communication", "Adequate resources"],
+            "resource_priorities": ["Change management support", "Training resources", "Communication systems"]
+        }
         
         # Save to database
         assessment_dict = assessment.dict()
