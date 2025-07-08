@@ -10,7 +10,7 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
     
     def setUp(self):
         """Set up test environment before each test"""
-        self.base_url = "https://03ac140e-d2b8-4af7-a063-3734bf6aca8e.preview.emergentagent.com/api"
+        self.base_url = "https://16f31f7a-9a22-44c2-8d41-3e2a1b72fd7c.preview.emergentagent.com/api"
         # Use a fixed test user for consistent testing
         self.test_user = {
             "email": "testuser@impact.com",
