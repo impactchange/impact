@@ -65,6 +65,7 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
         self.assertIn("user", data)
         self.assertEqual(data["user"]["email"], self.test_user["email"])
         self.token = data["token"]
+        print(f"Token: {self.token}")
         print("✅ User login successful")
     
     def test_04_get_user_profile(self):
