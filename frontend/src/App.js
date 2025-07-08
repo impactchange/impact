@@ -20,55 +20,67 @@ const NEWTON_COLORS = {
   reaction: '#8b5cf6'
 };
 
-// IMPACT Phases configuration
+// IMPACT Phases configuration - Manufacturing EAM Implementation
 const IMPACT_PHASES = [
   {
-    id: 'identify',
-    name: 'Identify',
+    id: 'investigate',
+    name: 'Investigate & Assess',
     color: '#ef4444',
-    description: 'Define the change initiative and its scope',
+    description: 'Understanding current state and establishing implementation foundation',
     icon: Target,
-    shortDesc: 'Scope & Vision'
+    shortDesc: 'Current State Analysis',
+    newtonLaw: 'Overcoming Manufacturing Organizational Inertia',
+    focus: 'Maintenance-Operations gap analysis and manufacturing performance baseline'
   },
   {
-    id: 'measure',
-    name: 'Measure', 
+    id: 'mobilize',
+    name: 'Mobilize & Prepare',
     color: '#f59e0b',
-    description: 'Assess organizational readiness and establish baselines',
-    icon: BarChart3,
-    shortDesc: 'Assess & Baseline'
+    description: 'Building infrastructure and preparing for implementation success',
+    icon: Users,
+    shortDesc: 'Infrastructure Building',
+    newtonLaw: 'Measuring Forces and Preparing for Acceleration',
+    focus: 'Cross-shift champion network and maintenance excellence communication'
   },
   {
-    id: 'plan',
-    name: 'Plan',
+    id: 'pilot',
+    name: 'Pilot & Adapt',
     color: '#8b5cf6',
-    description: 'Develop comprehensive change management strategy',
-    icon: FileText,
-    shortDesc: 'Strategy & Plans'
+    description: 'Testing approach with limited group and refining strategies',
+    icon: TrendingUp,
+    shortDesc: 'Controlled Testing',
+    newtonLaw: 'Testing Action-Reaction in Controlled Environment',
+    focus: 'Proving maintenance excellence drives manufacturing performance'
   },
   {
-    id: 'act',
-    name: 'Act',
-    color: '#3b82f6',
-    description: 'Execute the change management plan',
-    icon: PlayCircle,
-    shortDesc: 'Execute & Implement'
-  },
-  {
-    id: 'control',
-    name: 'Control',
-    color: '#06b6d4',
-    description: 'Monitor progress and maintain momentum',
-    icon: Settings,
-    shortDesc: 'Monitor & Adjust'
-  },
-  {
-    id: 'transform',
-    name: 'Transform',
+    id: 'activate',
+    name: 'Activate & Deploy',
     color: '#10b981',
-    description: 'Institutionalize change and capture benefits',
+    description: 'Full-scale implementation with comprehensive support',
     icon: CheckCircle,
-    shortDesc: 'Sustain & Embed'
+    shortDesc: 'Full Deployment',
+    newtonLaw: 'Applied Force - Implementation in Motion',
+    focus: 'Embedding maintenance excellence across manufacturing organization'
+  },
+  {
+    id: 'cement',
+    name: 'Cement & Transfer',
+    color: '#3b82f6',
+    description: 'Institutionalizing change and transferring ownership',
+    icon: Award,
+    shortDesc: 'Institutionalization',
+    newtonLaw: 'Continuous Force Application for Sustainable Motion',
+    focus: 'Making maintenance excellence part of organizational culture'
+  },
+  {
+    id: 'track',
+    name: 'Track & Optimize',
+    color: '#6366f1',
+    description: 'Long-term monitoring and continuous improvement',
+    icon: BarChart3,
+    shortDesc: 'Continuous Improvement',
+    newtonLaw: 'New Equilibrium State with Continuous Optimization',
+    focus: 'Demonstrating sustained manufacturing performance gains'
   }
 ];
 
