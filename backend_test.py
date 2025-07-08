@@ -2,7 +2,8 @@ import requests
 import unittest
 import uuid
 import time
-from datetime import datetime
+import json
+from datetime import datetime, timedelta
 
 class IMPACTMethodologyAPITest(unittest.TestCase):
     """Test suite for the IMPACT Methodology API"""
@@ -10,9 +11,10 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
     def setUp(self):
         """Set up test environment before each test"""
         self.base_url = "https://03ac140e-d2b8-4af7-a063-3734bf6aca8e.preview.emergentagent.com/api"
+        # Use a fixed test user for consistent testing
         self.test_user = {
-            "email": f"test_{uuid.uuid4()}@example.com",
-            "password": "Test@123456",
+            "email": "testuser@impact.com",
+            "password": "password123",
             "full_name": "Test User",
             "organization": "Test Organization",
             "role": "Team Member"
@@ -20,6 +22,9 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
         self.token = None
         self.user_id = None
         self.assessment_id = None
+        self.project_id = None
+        self.task_id = None
+        self.deliverable_id = None
     
     def test_01_health_check(self):
         """Test the health check endpoint"""
