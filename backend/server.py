@@ -678,6 +678,10 @@ async def create_assessment(
 async def get_assessments(current_user: User = Depends(get_current_user)):
     try:
         assessments = await db.assessments.find({"user_id": current_user.id}).to_list(100)
+        # Convert ObjectId to string and remove _id field
+        for assessment in assessments:
+            if "_id" in assessment:
+                del assessment["_id"]
         return assessments
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to retrieve assessments: {str(e)}")
