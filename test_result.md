@@ -247,13 +247,14 @@ Conduct thorough end-user and application testing to identify and fix multiple e
 
 ## test_plan:
   current_focus:
-    - "Multiple Assessment Types API"
-    - "Enhanced Assessment Creation"
-    - "Project Management API"
-    - "Universal IMPACT Phases"
-    - "Type-Specific Analysis Functions"
+    - "Multi-Type Assessment UI"
+    - "Assessment Type Data Loading"
+    - "Enhanced Navigation and UX"
   stuck_tasks:
     - "Project Management UI"
+    - "Multi-Type Assessment UI"
+    - "Assessment Type Data Loading"
+    - "Enhanced Navigation and UX"
   test_all: true
   test_priority: "comprehensive_testing"
 
