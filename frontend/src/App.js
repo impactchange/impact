@@ -1385,73 +1385,76 @@ function App() {
             </div>
 
             {/* Specialized Dimensions */}
-            {assessmentTypes[selectedAssessmentType].dimensions.some(dim => dim.category === 'specialized') && (
+            {assessmentTypes[selectedAssessmentType]?.dimensions?.some(dim => dim.category === 'specialized') && (
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-6 border-b border-gray-200 pb-2">
                   Specialized Assessment Factors
                 </h3>
                 <p className="text-sm text-gray-600 mb-6">
-                  These dimensions assess specialized considerations specific to {assessmentTypes[selectedAssessmentType].name.toLowerCase()}.
+                  These dimensions assess specialized considerations specific to {assessmentTypes[selectedAssessmentType]?.name?.toLowerCase()}.
                 </p>
                 
-                {assessmentTypes[selectedAssessmentType].dimensions
-                  .filter(dim => dim.category === 'specialized')
-                  .map((dimension) => (
-                    <div key={dimension.id} className="mb-8 p-6 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <h4 className="text-lg font-medium text-gray-900">{dimension.name}</h4>
-                          <p className="text-sm text-gray-600 mt-1">{dimension.description}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Score (1=Poor, 5=Excellent)
-                        </label>
-                        <div className="flex space-x-4">
-                          {[1, 2, 3, 4, 5].map((score) => (
-                            <label key={score} className="flex items-center">
-                              <input
-                                type="radio"
-                                name={`${dimension.id}_score`}
-                                value={score}
-                                checked={assessmentData[dimension.id]?.score === score}
-                                onChange={(e) => setAssessmentData({
-                                  ...assessmentData,
-                                  [dimension.id]: { 
-                                    ...assessmentData[dimension.id], 
-                                    score: parseInt(e.target.value) 
-                                  }
-                                })}
-                                className="mr-2 text-blue-600"
-                              />
-                              <span className="text-sm">{score}</span>
+                {assessmentTypes[selectedAssessmentType]?.dimensions
+                  ?.filter(dim => dim.category === 'specialized')
+                  ?.map((dimension) => {
+                      const dimensionData = assessmentData[dimension.id] || { score: 3, notes: '' };
+                      return (
+                        <div key={dimension.id} className="mb-8 p-6 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                          <div className="flex items-start justify-between mb-4">
+                            <div>
+                              <h4 className="text-lg font-medium text-gray-900">{dimension.name}</h4>
+                              <p className="text-sm text-gray-600 mt-1">{dimension.description}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Score (1=Poor, 5=Excellent)
                             </label>
-                          ))}
-                        </div>
-                      </div>
+                            <div className="flex space-x-4">
+                              {[1, 2, 3, 4, 5].map((score) => (
+                                <label key={score} className="flex items-center">
+                                  <input
+                                    type="radio"
+                                    name={`${dimension.id}_score`}
+                                    value={score}
+                                    checked={dimensionData.score === score}
+                                    onChange={(e) => setAssessmentData({
+                                      ...assessmentData,
+                                      [dimension.id]: { 
+                                        ...dimensionData, 
+                                        score: parseInt(e.target.value) 
+                                      }
+                                    })}
+                                    className="mr-2 text-blue-600"
+                                  />
+                                  <span className="text-sm">{score}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Notes (Optional)
-                        </label>
-                        <textarea
-                          value={assessmentData[dimension.id]?.notes || ''}
-                          onChange={(e) => setAssessmentData({
-                            ...assessmentData,
-                            [dimension.id]: { 
-                              ...assessmentData[dimension.id], 
-                              notes: e.target.value 
-                            }
-                          })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          rows="2"
-                          placeholder="Add specialized context or considerations..."
-                        />
-                      </div>
-                    </div>
-                  ))}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Notes (Optional)
+                            </label>
+                            <textarea
+                              value={dimensionData.notes || ''}
+                              onChange={(e) => setAssessmentData({
+                                ...assessmentData,
+                                [dimension.id]: { 
+                                  ...dimensionData, 
+                                  notes: e.target.value 
+                                }
+                              })}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              rows="2"
+                              placeholder="Add specialized context or considerations..."
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
               </div>
             )}
 
