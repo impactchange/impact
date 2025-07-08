@@ -274,6 +274,41 @@ function App() {
     }
   };
 
+  const handleTypedAssessmentSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/assessments/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(assessmentData)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert(`${assessmentTypes[selectedAssessmentType]?.name || 'Assessment'} completed successfully! AI analysis has been generated.`);
+        
+        // Reset form
+        initializeAssessmentData(selectedAssessmentType);
+        
+        // Refresh data
+        fetchDashboardData();
+        setActiveTab('results');
+      } else {
+        throw new Error('Failed to create assessment');
+      }
+    } catch (err) {
+      console.error('Assessment submission error:', err);
+      setError('Failed to submit assessment. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAssessmentSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
