@@ -109,7 +109,6 @@ function App() {
     assessment_type: 'general_readiness'
   });
   const [availableProjects, setAvailableProjects] = useState([]);
-  const [selectedProject, setSelectedProject] = useState(null);
   const [showNewProjectForm, setShowNewProjectForm] = useState(false);
   const [newProjectData, setNewProjectData] = useState({
     project_name: '',
