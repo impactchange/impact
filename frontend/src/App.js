@@ -403,39 +403,6 @@ function App() {
     }
   };
 
-  const handleCreateProject = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const projectPayload = {
-        ...newProjectData,
-        target_completion_date: newProjectData.target_completion_date ? new Date(newProjectData.target_completion_date).toISOString() : null,
-        budget: newProjectData.budget ? parseFloat(newProjectData.budget) : null
-      };
-
-      const response = await axios.post(`${API_BASE_URL}/api/projects`, projectPayload, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      alert('Project created successfully with complete IMPACT workflow!');
-      setNewProjectData({
-        name: '',
-        description: '',
-        target_completion_date: '',
-        budget: ''
-      });
-      setShowNewProjectForm(false);
-      fetchDashboardData();
-      setActiveTab('projects');
-    } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to create project');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleCreateProjectFromAssessment = async (e) => {
     e.preventDefault();
     setLoading(true);
