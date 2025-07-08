@@ -672,7 +672,7 @@ def calculate_phase_progress(project_data: Dict, phase: str) -> float:
 async def get_enhanced_ai_analysis(assessment: ChangeReadinessAssessment) -> dict:
     """Get enhanced AI analysis from Claude with structured insights"""
     try:
-        # Create AI chat instance
+        # Create AI chat instance with timeout handling
         chat = LlmChat(
             api_key=ANTHROPIC_API_KEY,
             session_id=f"enhanced_assessment_{assessment.id}",
