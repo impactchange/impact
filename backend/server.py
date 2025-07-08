@@ -736,9 +736,36 @@ async def get_enhanced_ai_analysis(assessment: ChangeReadinessAssessment) -> dic
         Keep responses practical, science-based, and immediately actionable.
         """
 
-        # Get AI response
+        # Get AI response with timeout handling
         user_message = UserMessage(text=prompt)
-        response = await chat.send_message(user_message)
+        
+        # Try to get AI response with a timeout
+        try:
+            response = await asyncio.wait_for(chat.send_message(user_message), timeout=30.0)
+        except asyncio.TimeoutError:
+            print("AI analysis timed out, using fallback analysis")
+            # Use fallback analysis if AI times out
+            response = f"""
+            EXECUTIVE SUMMARY:
+            Your organization shows an overall readiness score of {sum([assessment.change_management_maturity.score, assessment.communication_effectiveness.score, assessment.leadership_support.score, assessment.workforce_adaptability.score, assessment.resource_adequacy.score])/5:.1f}/5 for change initiatives.
+
+            NEWTON'S LAWS INSIGHTS:
+            - Organizational inertia is {newton_data['inertia']['interpretation'].lower()} based on current readiness
+            - Force required: {newton_data['force']['description'].lower()}
+            - Expected resistance: {newton_data['reaction']['description'].lower()}
+
+            STRATEGIC RECOMMENDATIONS:
+            1. Focus on strengthening the lowest-scoring assessment dimension
+            2. Implement gradual change approach to overcome inertia
+            3. Build strong communication channels for change management
+            4. Engage leadership early and consistently
+            5. Prepare comprehensive training and support programs
+
+            RISK ANALYSIS:
+            - Monitor resistance patterns closely
+            - Ensure adequate resources throughout the process
+            - Maintain momentum through regular wins and celebrations
+            """
         
         # Calculate success probability based on scores and Newton's analysis
         scores = [
