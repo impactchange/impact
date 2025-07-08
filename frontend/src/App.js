@@ -784,6 +784,54 @@ function App() {
     </div>
   );
 
+  const fetchProjects = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/projects`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setProjects(response.data.projects || []);
+    } catch (err) {
+      console.error('Failed to fetch projects:', err);
+    }
+  };
+
+  const handleCreateProject = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/projects`, newProjectData, {
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        }
+      });
+
+      if (response.status === 200) {
+        alert('Project created successfully!');
+        setNewProjectData({
+          name: '',
+          description: '',
+          target_completion_date: '',
+          budget: '',
+          project_name: '',
+          client_organization: '',
+          objectives: [''],
+          scope: '',
+          total_budget: '',
+          estimated_end_date: ''
+        });
+        setShowNewProjectForm(false);
+        fetchProjects();
+        fetchDashboardData();
+      }
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to create project');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const renderProjectWorkflow = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
