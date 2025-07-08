@@ -283,17 +283,15 @@ function App() {
     setLoading(true);
     
     try {
-      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/assessments/create`, {
-        method: 'POST',
-        headers: {
+      const response = await axios.post(`${API_BASE_URL}/api/assessments/create`, assessmentData, {
+        headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(assessmentData)
+          'Authorization': `Bearer ${token}` 
+        }
       });
 
-      if (response.ok) {
-        const result = await response.json();
+      if (response.status === 200) {
+        const result = response.data;
         alert(`${assessmentTypes[selectedAssessmentType]?.name || 'Assessment'} completed successfully! AI analysis has been generated.`);
         
         // Reset form
@@ -307,7 +305,7 @@ function App() {
       }
     } catch (err) {
       console.error('Assessment submission error:', err);
-      setError('Failed to submit assessment. Please try again.');
+      setError(err.response?.data?.detail || 'Failed to submit assessment. Please try again.');
     } finally {
       setLoading(false);
     }
