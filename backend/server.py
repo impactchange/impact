@@ -1149,9 +1149,10 @@ async def get_user_profile(current_user: User = Depends(get_current_user)):
     return current_user
 
 # Assessment routes
+# Assessment routes - Enhanced for Manufacturing EAM
 @app.post("/api/assessments")
-async def create_assessment(
-    assessment: ChangeReadinessAssessment,
+async def create_enhanced_assessment(
+    assessment_data: dict,
     current_user: User = Depends(get_current_user)
 ):
     try:
@@ -1159,59 +1160,148 @@ async def create_assessment(
         assessment_id = str(uuid.uuid4())
         now = datetime.utcnow()
         
-        # Calculate overall score
-        scores = [
-            assessment.change_management_maturity.score,
-            assessment.communication_effectiveness.score,
-            assessment.leadership_support.score,
-            assessment.workforce_adaptability.score,
-            assessment.resource_adequacy.score
+        # Calculate overall score from all dimensions
+        all_scores = []
+        dimension_scores = {}
+        
+        # Core dimensions
+        core_dimensions = [
+            'leadership_commitment', 'organizational_culture', 'resource_availability',
+            'stakeholder_engagement', 'training_capability'
         ]
-        overall_score = sum(scores) / len(scores)
         
-        # Set assessment data
-        assessment.id = assessment_id
-        assessment.user_id = current_user.id
-        assessment.organization = current_user.organization
-        assessment.overall_score = overall_score
-        assessment.created_at = now
-        assessment.updated_at = now
-        
-        # Quick assessment creation without AI for immediate response
-        # Calculate basic Newton's laws analysis
-        newton_data = calculate_newton_laws_analysis(assessment)
-        
-        # Set basic analysis
-        assessment.ai_analysis = f"Quick analysis completed: Overall score {overall_score:.1f}/5. Detailed AI analysis can be generated separately."
-        assessment.recommendations = [
-            "Focus on lowest-scoring assessment dimension",
-            "Apply gradual change approach based on Newton's laws",
-            "Strengthen communication channels",
-            "Ensure leadership engagement",
-            "Prepare adequate support systems"
+        # Manufacturing-specific dimensions  
+        manufacturing_dimensions = [
+            'manufacturing_constraints', 'maintenance_operations_alignment', 
+            'shift_work_considerations', 'technical_readiness', 'safety_compliance'
         ]
-        assessment.success_probability = round((overall_score / 5) * 100, 1)
-        assessment.newton_analysis = newton_data
-        assessment.risk_factors = ["Quick assessment mode - detailed analysis available on request"]
-        assessment.phase_recommendations = {
-            "identify": "Define clear change vision and objectives",
-            "measure": "Establish comprehensive baseline metrics",
-            "plan": "Develop detailed change strategy",
-            "act": "Execute with strong monitoring",
-            "control": "Maintain momentum and course-correct",
-            "transform": "Institutionalize and celebrate success"
-        }
-        assessment.recommended_project = {
-            "suggested_duration_weeks": max(12, int(24 - (overall_score * 2))),
-            "critical_success_factors": ["Leadership engagement", "Clear communication", "Adequate resources"],
-            "resource_priorities": ["Change management support", "Training resources", "Communication systems"]
+        
+        all_dimensions = core_dimensions + manufacturing_dimensions
+        
+        for dim in all_dimensions:
+            if dim in assessment_data and 'score' in assessment_data[dim]:
+                score = assessment_data[dim]['score']
+                all_scores.append(score)
+                dimension_scores[dim] = score
+        
+        overall_score = sum(all_scores) / len(all_scores) if all_scores else 0
+        
+        # Determine readiness level
+        if overall_score >= 4.5:
+            readiness_level = "Excellent"
+        elif overall_score >= 3.5:
+            readiness_level = "Good"
+        elif overall_score >= 2.5:
+            readiness_level = "Fair"
+        elif overall_score >= 1.5:
+            readiness_level = "Poor"
+        else:
+            readiness_level = "Critical"
+        
+        # Calculate manufacturing readiness analysis
+        manufacturing_analysis = calculate_manufacturing_readiness_analysis(assessment_data)
+        
+        # Quick manufacturing-focused AI analysis
+        ai_analysis = f"""# Manufacturing EAM Implementation Readiness Analysis
+
+## Executive Summary
+Your organization shows an overall readiness score of {overall_score:.1f}/5 for Manufacturing EAM implementation. 
+Readiness Level: **{readiness_level}**
+
+**Key Principle**: You can't have manufacturing excellence without maintenance excellence.
+
+## Manufacturing Excellence Assessment
+- **Maintenance-Operations Alignment**: {dimension_scores.get('maintenance_operations_alignment', 'N/A')}/5
+- **Manufacturing Constraints Management**: {dimension_scores.get('manufacturing_constraints', 'N/A')}/5
+- **Technical Infrastructure Readiness**: {dimension_scores.get('technical_readiness', 'N/A')}/5
+- **Safety Compliance Integration**: {dimension_scores.get('safety_compliance', 'N/A')}/5
+
+## Newton's Laws Application to Manufacturing
+- **Organizational Inertia**: {manufacturing_analysis.get('inertia', {}).get('value', 0)} - {manufacturing_analysis.get('inertia', {}).get('interpretation', 'Unknown')}
+- **Required Implementation Force**: {manufacturing_analysis.get('force', {}).get('required', 0)} units
+- **Expected Resistance**: {manufacturing_analysis.get('reaction', {}).get('resistance', 0)} units
+
+## IMPACT Phase Recommendations
+Based on your readiness assessment, focus areas for each phase:
+
+**Investigate & Assess**: Deepen understanding of maintenance-operations disconnects
+**Mobilize & Prepare**: Build strong champion network across all shifts  
+**Pilot & Adapt**: Select pilot area that demonstrates maintenance excellence impact
+**Activate & Deploy**: Emphasize maintenance-manufacturing performance connection
+**Cement & Transfer**: Embed maintenance excellence in organizational culture
+**Track & Optimize**: Continuously demonstrate manufacturing performance gains
+
+## Manufacturing-Specific Recommendations
+1. Strengthen maintenance-operations collaboration through cross-functional teams
+2. Address shift work coordination challenges with dedicated communication strategies
+3. Leverage existing safety culture to drive maintenance excellence adoption
+4. Ensure technical readiness through comprehensive training programs
+5. Demonstrate clear connection between maintenance improvements and manufacturing KPIs
+
+## Implementation Guarantee Eligibility
+Based on current readiness: {'Eligible' if overall_score >= 3.0 else 'Requires Improvement'}
+
+This assessment provides the foundation for your DigitalThinker Manufacturing EAM implementation success."""
+
+        # Generate recommendations
+        recommendations = [
+            "Focus on strengthening maintenance-operations alignment as top priority",
+            "Develop comprehensive change champion network covering all shifts",
+            "Create clear communication strategy for manufacturing environment",
+            "Establish baseline manufacturing performance metrics",
+            "Design training programs specific to manufacturing constraints",
+            "Build resistance management plan addressing manufacturing culture",
+            "Demonstrate maintenance excellence impact on manufacturing KPIs"
+        ]
+        
+        # Calculate success probability
+        base_probability = (overall_score / 5) * 100
+        manufacturing_bonus = dimension_scores.get('maintenance_operations_alignment', 3) * 5
+        success_probability = min(95, base_probability + manufacturing_bonus)
+        
+        # Create assessment document
+        assessment_doc = {
+            "id": assessment_id,
+            "user_id": current_user.id,
+            "organization": current_user.organization,
+            "project_name": assessment_data.get("project_name", ""),
+            "project_type": "Manufacturing EAM Implementation",
+            "assessment_version": "2.0",
+            **assessment_data,  # Include all dimension data
+            "overall_score": round(overall_score, 2),
+            "readiness_level": readiness_level,
+            "ai_analysis": ai_analysis,
+            "recommendations": recommendations,
+            "success_probability": round(success_probability, 1),
+            "newton_analysis": manufacturing_analysis,
+            "risk_factors": ["Manufacturing environment complexity", "Shift work coordination challenges"],
+            "phase_recommendations": {
+                "investigate": "Focus on maintenance-operations gap analysis",
+                "mobilize": "Build cross-shift champion network",
+                "pilot": "Select high-impact maintenance area for pilot",
+                "activate": "Emphasize manufacturing performance connection", 
+                "cement": "Embed maintenance excellence culture",
+                "track": "Monitor manufacturing performance improvements"
+            },
+            "manufacturing_excellence_plan": {
+                "focus_areas": ["Maintenance-Operations Integration", "Manufacturing Performance Metrics"],
+                "key_strategies": ["Cross-functional collaboration", "Performance-based metrics"],
+                "success_factors": ["Leadership commitment", "Cultural alignment"]
+            },
+            "guarantee_eligibility": overall_score >= 3.0,
+            "created_at": now,
+            "updated_at": now
         }
         
         # Save to database
-        assessment_dict = assessment.dict()
-        await db.assessments.insert_one(assessment_dict)
+        result = await db.assessments.insert_one(assessment_doc)
+        assessment_doc["_id"] = str(result.inserted_id)
         
-        return assessment
+        return assessment_doc
+        
+    except Exception as e:
+        print(f"Enhanced Assessment Creation Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create assessment: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Assessment creation failed: {str(e)}")
 
