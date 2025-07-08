@@ -41,6 +41,136 @@ db = client[DB_NAME]
 security = HTTPBearer()
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-for-jwt-impact-methodology-2024")
 
+# IMPACT Phases Configuration
+IMPACT_PHASES = {
+    "identify": {
+        "name": "Identify",
+        "description": "Define the change initiative and its scope",
+        "order": 1,
+        "newton_law": "First Law - Overcoming Organizational Inertia",
+        "key_activities": [
+            "Define change vision and objectives",
+            "Identify stakeholders and their interests",
+            "Assess current state and desired future state",
+            "Evaluate change drivers and constraints",
+            "Establish project governance structure"
+        ],
+        "deliverables": [
+            "Change Charter",
+            "Stakeholder Map",
+            "Current State Analysis",
+            "Business Case",
+            "Project Scope Statement"
+        ],
+        "newton_insight": "Organizations at rest tend to stay at rest. Significant force is required to overcome initial inertia."
+    },
+    "measure": {
+        "name": "Measure",
+        "description": "Assess organizational readiness and establish baselines",
+        "order": 2,
+        "newton_law": "Second Law - Measuring Forces and Acceleration",
+        "key_activities": [
+            "Conduct change readiness assessments",
+            "Establish baseline metrics and KPIs",
+            "Analyze organizational capability gaps",
+            "Identify resistance patterns and sources",
+            "Measure communication effectiveness"
+        ],
+        "deliverables": [
+            "Readiness Assessment Report",
+            "Baseline Metrics Dashboard",
+            "Gap Analysis",
+            "Risk Register",
+            "Communication Audit"
+        ],
+        "newton_insight": "Acceleration = Force applied / Organizational mass. Measure resistance to calculate required force."
+    },
+    "plan": {
+        "name": "Plan", 
+        "description": "Develop comprehensive change management strategy",
+        "order": 3,
+        "newton_law": "Third Law - Planning for Reactions",
+        "key_activities": [
+            "Develop change management strategy",
+            "Create detailed implementation plan",
+            "Design communication and training programs",
+            "Plan resistance management approaches",
+            "Allocate resources and assign responsibilities"
+        ],
+        "deliverables": [
+            "Change Management Strategy",
+            "Implementation Roadmap",
+            "Communication Plan",
+            "Training Plan",
+            "Resistance Management Plan"
+        ],
+        "newton_insight": "For every action, there is an equal and opposite reaction. Plan for predictable resistance."
+    },
+    "act": {
+        "name": "Act",
+        "description": "Execute the change management plan",
+        "order": 4,
+        "newton_law": "Applied Force - Implementation Phase",
+        "key_activities": [
+            "Execute communication campaigns",
+            "Deliver training and skill development",
+            "Implement new processes and systems",
+            "Manage stakeholder engagement",
+            "Address resistance and barriers"
+        ],
+        "deliverables": [
+            "Communication Materials",
+            "Training Records",
+            "Implementation Reports",
+            "Stakeholder Feedback",
+            "Issue Resolution Log"
+        ],
+        "newton_insight": "Apply consistent force to maintain momentum and overcome organizational inertia."
+    },
+    "control": {
+        "name": "Control",
+        "description": "Monitor progress and maintain momentum",
+        "order": 5,
+        "newton_law": "Continuous Force Application",
+        "key_activities": [
+            "Monitor implementation progress",
+            "Track adoption and compliance metrics",
+            "Manage issues and course corrections",
+            "Maintain stakeholder engagement",
+            "Adjust plans based on feedback"
+        ],
+        "deliverables": [
+            "Progress Reports",
+            "Metrics Dashboard",
+            "Course Correction Plans",
+            "Stakeholder Updates",
+            "Lessons Learned Log"
+        ],
+        "newton_insight": "Continuous force application prevents the organization from returning to its original state."
+    },
+    "transform": {
+        "name": "Transform",
+        "description": "Institutionalize change and capture benefits",
+        "order": 6,
+        "newton_law": "New Equilibrium State",
+        "key_activities": [
+            "Measure and validate benefits realization",
+            "Institutionalize new ways of working",
+            "Capture and share lessons learned",
+            "Celebrate successes and recognize contributors",
+            "Transition to business-as-usual operations"
+        ],
+        "deliverables": [
+            "Benefits Realization Report",
+            "Standard Operating Procedures",
+            "Knowledge Transfer Documentation",
+            "Success Stories",
+            "Project Closure Report"
+        ],
+        "newton_insight": "The organization has reached a new equilibrium state with the change fully integrated."
+    }
+}
+
 # Pydantic models
 class UserRegistration(BaseModel):
     email: str
@@ -60,6 +190,29 @@ class User(BaseModel):
     organization: str
     role: str
     created_at: datetime
+
+class Task(BaseModel):
+    id: Optional[str] = None
+    title: str
+    description: str
+    phase: str
+    category: str  # key_activity, deliverable, milestone
+    status: str = "pending"  # pending, in_progress, completed, blocked
+    assigned_to: Optional[str] = None
+    due_date: Optional[datetime] = None
+    completed_date: Optional[datetime] = None
+    priority: str = "medium"  # low, medium, high, critical
+    notes: Optional[str] = None
+
+class Milestone(BaseModel):
+    id: Optional[str] = None
+    title: str
+    description: str
+    phase: str
+    target_date: datetime
+    completion_date: Optional[datetime] = None
+    status: str = "pending"  # pending, in_progress, completed, overdue
+    success_criteria: List[str] = []
 
 class AssessmentDimension(BaseModel):
     name: str
@@ -91,11 +244,28 @@ class Project(BaseModel):
     description: str
     organization: str
     owner_id: str
-    phase: str = "Identify"  # IMPACT phases: Identify, Measure, Plan, Act, Control, Transform
-    status: str = "Active"
+    current_phase: str = "identify"
+    status: str = "active"  # active, on_hold, completed, cancelled
     team_members: List[str] = []
+    start_date: Optional[datetime] = None
+    target_completion_date: Optional[datetime] = None
+    actual_completion_date: Optional[datetime] = None
+    budget: Optional[float] = None
+    progress_percentage: float = 0.0
+    phase_progress: Dict[str, float] = {}
+    tasks: List[Task] = []
+    milestones: List[Milestone] = []
+    newton_insights: Dict[str, Any] = {}
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+
+class PhaseTransition(BaseModel):
+    project_id: str
+    from_phase: str
+    to_phase: str
+    transition_date: datetime
+    completion_notes: str
+    lessons_learned: Optional[str] = None
 
 class AdvancedAnalytics(BaseModel):
     trend_analysis: Dict[str, Any]
@@ -180,6 +350,54 @@ def calculate_newton_laws_analysis(assessment: ChangeReadinessAssessment) -> Dic
             "description": f"Expect {'minimal' if resistance_magnitude < 30 else 'moderate' if resistance_magnitude < 60 else 'significant'} organizational pushback"
         }
     }
+
+def generate_default_tasks_for_phase(phase: str, project_id: str) -> List[Dict]:
+    """Generate default tasks and milestones for a phase"""
+    phase_config = IMPACT_PHASES.get(phase, {})
+    tasks = []
+    
+    # Create tasks for key activities
+    for i, activity in enumerate(phase_config.get("key_activities", [])):
+        task = {
+            "id": str(uuid.uuid4()),
+            "title": activity,
+            "description": f"Complete {activity.lower()} for the {phase} phase",
+            "phase": phase,
+            "category": "key_activity",
+            "status": "pending",
+            "priority": "medium",
+            "created_at": datetime.utcnow()
+        }
+        tasks.append(task)
+    
+    # Create tasks for deliverables
+    for i, deliverable in enumerate(phase_config.get("deliverables", [])):
+        task = {
+            "id": str(uuid.uuid4()),
+            "title": f"Create {deliverable}",
+            "description": f"Develop and finalize {deliverable.lower()}",
+            "phase": phase,
+            "category": "deliverable",
+            "status": "pending",
+            "priority": "high",
+            "created_at": datetime.utcnow()
+        }
+        tasks.append(task)
+    
+    return tasks
+
+def calculate_project_progress(project_data: Dict) -> float:
+    """Calculate overall project progress based on completed tasks and phases"""
+    if not project_data.get("tasks"):
+        return 0.0
+    
+    total_tasks = len(project_data["tasks"])
+    completed_tasks = len([task for task in project_data["tasks"] if task.get("status") == "completed"])
+    
+    if total_tasks == 0:
+        return 0.0
+    
+    return (completed_tasks / total_tasks) * 100
 
 async def get_enhanced_ai_analysis(assessment: ChangeReadinessAssessment) -> dict:
     """Get enhanced AI analysis from Claude with structured insights"""
@@ -346,6 +564,7 @@ async def get_enhanced_ai_analysis(assessment: ChangeReadinessAssessment) -> dic
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.utcnow()}
 
+# Authentication routes
 @app.post("/api/auth/register")
 async def register_user(user_data: UserRegistration):
     try:
@@ -410,6 +629,7 @@ async def login_user(login_data: UserLogin):
 async def get_user_profile(current_user: User = Depends(get_current_user)):
     return current_user
 
+# Assessment routes
 @app.post("/api/assessments")
 async def create_assessment(
     assessment: ChangeReadinessAssessment,
@@ -473,6 +693,160 @@ async def get_assessment(assessment_id: str, current_user: User = Depends(get_cu
         raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to retrieve assessment: {str(e)}")
+
+# Project and IMPACT Workflow routes
+@app.get("/api/impact/phases")
+async def get_impact_phases():
+    """Get IMPACT methodology phases configuration"""
+    return IMPACT_PHASES
+
+@app.post("/api/projects")
+async def create_project(project: Project, current_user: User = Depends(get_current_user)):
+    try:
+        project_id = str(uuid.uuid4())
+        now = datetime.utcnow()
+        
+        # Set project metadata
+        project.id = project_id
+        project.owner_id = current_user.id
+        project.organization = current_user.organization
+        project.current_phase = "identify"
+        project.start_date = now
+        project.created_at = now
+        project.updated_at = now
+        
+        # Initialize phase progress
+        project.phase_progress = {phase: 0.0 for phase in IMPACT_PHASES.keys()}
+        
+        # Generate default tasks for the initial phase
+        default_tasks = generate_default_tasks_for_phase("identify", project_id)
+        project.tasks = [Task(**task) for task in default_tasks]
+        
+        # Calculate initial progress
+        project.progress_percentage = calculate_project_progress(project.dict())
+        
+        # Save to database
+        project_dict = project.dict()
+        await db.projects.insert_one(project_dict)
+        
+        return project
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Project creation failed: {str(e)}")
+
+@app.get("/api/projects")
+async def get_projects(current_user: User = Depends(get_current_user)):
+    try:
+        projects = await db.projects.find({"organization": current_user.organization}).to_list(100)
+        return projects
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to retrieve projects: {str(e)}")
+
+@app.get("/api/projects/{project_id}")
+async def get_project(project_id: str, current_user: User = Depends(get_current_user)):
+    try:
+        project = await db.projects.find_one({"id": project_id, "organization": current_user.organization})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        return project
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to retrieve project: {str(e)}")
+
+@app.put("/api/projects/{project_id}/phase")
+async def transition_project_phase(
+    project_id: str, 
+    transition: PhaseTransition,
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        # Get project
+        project = await db.projects.find_one({"id": project_id, "organization": current_user.organization})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Validate phase transition
+        current_phase_order = IMPACT_PHASES.get(transition.from_phase, {}).get("order", 0)
+        next_phase_order = IMPACT_PHASES.get(transition.to_phase, {}).get("order", 0)
+        
+        if next_phase_order != current_phase_order + 1:
+            raise HTTPException(status_code=400, detail="Invalid phase transition")
+        
+        # Update project phase
+        await db.projects.update_one(
+            {"id": project_id},
+            {
+                "$set": {
+                    "current_phase": transition.to_phase,
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        # Generate tasks for new phase
+        new_tasks = generate_default_tasks_for_phase(transition.to_phase, project_id)
+        await db.projects.update_one(
+            {"id": project_id},
+            {
+                "$push": {
+                    "tasks": {"$each": [Task(**task).dict() for task in new_tasks]}
+                }
+            }
+        )
+        
+        # Log phase transition
+        transition_log = {
+            "id": str(uuid.uuid4()),
+            "project_id": project_id,
+            "from_phase": transition.from_phase,
+            "to_phase": transition.to_phase,
+            "transition_date": transition.transition_date,
+            "completion_notes": transition.completion_notes,
+            "lessons_learned": transition.lessons_learned,
+            "user_id": current_user.id
+        }
+        await db.phase_transitions.insert_one(transition_log)
+        
+        return {"message": f"Project transitioned from {transition.from_phase} to {transition.to_phase} phase"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Phase transition failed: {str(e)}")
+
+@app.put("/api/projects/{project_id}/tasks/{task_id}")
+async def update_task(
+    project_id: str,
+    task_id: str,
+    task_update: Dict[str, Any],
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        # Update task in project
+        await db.projects.update_one(
+            {"id": project_id, "tasks.id": task_id, "organization": current_user.organization},
+            {
+                "$set": {
+                    "tasks.$.status": task_update.get("status"),
+                    "tasks.$.assigned_to": task_update.get("assigned_to"),
+                    "tasks.$.notes": task_update.get("notes"),
+                    "tasks.$.completed_date": datetime.utcnow() if task_update.get("status") == "completed" else None,
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        # Recalculate project progress
+        project = await db.projects.find_one({"id": project_id})
+        if project:
+            new_progress = calculate_project_progress(project)
+            await db.projects.update_one(
+                {"id": project_id},
+                {"$set": {"progress_percentage": new_progress}}
+            )
+        
+        return {"message": "Task updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Task update failed: {str(e)}")
 
 @app.get("/api/analytics/advanced")
 async def get_advanced_analytics(current_user: User = Depends(get_current_user)):
@@ -583,31 +957,6 @@ async def get_advanced_analytics(current_user: User = Depends(get_current_user))
         
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to retrieve advanced analytics: {str(e)}")
-
-@app.post("/api/projects")
-async def create_project(project: Project, current_user: User = Depends(get_current_user)):
-    try:
-        project_id = str(uuid.uuid4())
-        now = datetime.utcnow()
-        
-        project.id = project_id
-        project.owner_id = current_user.id
-        project.organization = current_user.organization
-        project.created_at = now
-        project.updated_at = now
-        
-        await db.projects.insert_one(project.dict())
-        return project
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Project creation failed: {str(e)}")
-
-@app.get("/api/projects")
-async def get_projects(current_user: User = Depends(get_current_user)):
-    try:
-        projects = await db.projects.find({"organization": current_user.organization}).to_list(100)
-        return projects
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to retrieve projects: {str(e)}")
 
 @app.get("/api/dashboard/metrics")
 async def get_dashboard_metrics(current_user: User = Depends(get_current_user)):

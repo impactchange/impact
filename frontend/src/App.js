@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, Activity, Target, Users, Zap, Shield, AlertTriangle, CheckCircle } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, BarChart, Bar, PieChart, Pie, Cell, ProgressBar } from 'recharts';
+import { 
+  TrendingUp, Activity, Target, Users, Zap, Shield, AlertTriangle, CheckCircle, 
+  Calendar, Clock, PlayCircle, PauseCircle, CheckSquare, Flag, ArrowRight,
+  FileText, User, Settings, BarChart3, Plus, Filter, Search
+} from 'lucide-react';
 import './App.css';
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
@@ -13,6 +17,52 @@ const NEWTON_COLORS = {
   force: '#f59e0b', 
   reaction: '#8b5cf6'
 };
+
+// IMPACT Phases configuration
+const IMPACT_PHASES = [
+  {
+    id: 'identify',
+    name: 'Identify',
+    color: '#ef4444',
+    description: 'Define the change initiative and its scope',
+    icon: Target
+  },
+  {
+    id: 'measure',
+    name: 'Measure', 
+    color: '#f59e0b',
+    description: 'Assess organizational readiness and establish baselines',
+    icon: BarChart3
+  },
+  {
+    id: 'plan',
+    name: 'Plan',
+    color: '#8b5cf6',
+    description: 'Develop comprehensive change management strategy',
+    icon: FileText
+  },
+  {
+    id: 'act',
+    name: 'Act',
+    color: '#3b82f6',
+    description: 'Execute the change management plan',
+    icon: PlayCircle
+  },
+  {
+    id: 'control',
+    name: 'Control',
+    color: '#06b6d4',
+    description: 'Monitor progress and maintain momentum',
+    icon: Settings
+  },
+  {
+    id: 'transform',
+    name: 'Transform',
+    color: '#10b981',
+    description: 'Institutionalize change and capture benefits',
+    icon: CheckCircle
+  }
+];
 
 function App() {
   const [user, setUser] = useState(null);
@@ -46,12 +96,24 @@ function App() {
   const [assessments, setAssessments] = useState([]);
   const [projects, setProjects] = useState([]);
   const [advancedAnalytics, setAdvancedAnalytics] = useState(null);
+  const [impactPhases, setImpactPhases] = useState({});
+
+  // Project workflow states
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [newProjectData, setNewProjectData] = useState({
+    name: '',
+    description: '',
+    target_completion_date: '',
+    budget: ''
+  });
+  const [showNewProjectForm, setShowNewProjectForm] = useState(false);
 
   useEffect(() => {
     if (token) {
       fetchUserProfile();
       fetchDashboardData();
       fetchAdvancedAnalytics();
+      fetchImpactPhases();
     }
   }, [token]);
 
@@ -97,6 +159,15 @@ function App() {
       setAdvancedAnalytics(response.data);
     } catch (err) {
       console.error('Failed to fetch advanced analytics:', err);
+    }
+  };
+
+  const fetchImpactPhases = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/impact/phases`);
+      setImpactPhases(response.data);
+    } catch (err) {
+      console.error('Failed to fetch IMPACT phases:', err);
     }
   };
 
@@ -163,10 +234,67 @@ function App() {
     }
   };
 
+  const handleCreateProject = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const projectPayload = {
+        ...newProjectData,
+        target_completion_date: newProjectData.target_completion_date ? new Date(newProjectData.target_completion_date).toISOString() : null,
+        budget: newProjectData.budget ? parseFloat(newProjectData.budget) : null
+      };
+
+      const response = await axios.post(`${API_BASE_URL}/api/projects`, projectPayload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      alert('Project created successfully!');
+      setNewProjectData({
+        name: '',
+        description: '',
+        target_completion_date: '',
+        budget: ''
+      });
+      setShowNewProjectForm(false);
+      fetchDashboardData();
+      setActiveTab('projects');
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to create project');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTaskUpdate = async (projectId, taskId, updates) => {
+    try {
+      await axios.put(`${API_BASE_URL}/api/projects/${projectId}/tasks/${taskId}`, updates, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchDashboardData();
+    } catch (err) {
+      console.error('Failed to update task:', err);
+    }
+  };
+
   const logout = () => {
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
+  };
+
+  const getPhaseColor = (phase) => {
+    const phaseConfig = IMPACT_PHASES.find(p => p.id === phase);
+    return phaseConfig ? phaseConfig.color : '#6b7280';
+  };
+
+  const getPhaseProgress = (project, phase) => {
+    if (!project.tasks) return 0;
+    const phaseTasks = project.tasks.filter(task => task.phase === phase);
+    if (phaseTasks.length === 0) return 0;
+    const completedTasks = phaseTasks.filter(task => task.status === 'completed');
+    return (completedTasks.length / phaseTasks.length) * 100;
   };
 
   const renderAuthForm = () => (
@@ -328,15 +456,334 @@ function App() {
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">IMPACT Methodology Framework</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {['Identify', 'Measure', 'Plan', 'Act', 'Control', 'Transform'].map((phase, index) => (
-            <div key={phase} className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg hover:shadow-md transition-shadow">
-              <div className="text-2xl font-bold text-green-600 mb-2">{phase.charAt(0)}</div>
-              <div className="text-sm text-gray-700 font-medium">{phase}</div>
+          {IMPACT_PHASES.map((phase, index) => (
+            <div key={phase.id} className="text-center p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg hover:shadow-md transition-shadow">
+              <div className="text-2xl font-bold mb-2" style={{color: phase.color}}>{phase.name.charAt(0)}</div>
+              <div className="text-sm text-gray-700 font-medium">{phase.name}</div>
               <div className="text-xs text-gray-500 mt-1">Phase {index + 1}</div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Recent Projects */}
+      {projects.length > 0 && (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Projects</h2>
+          <div className="space-y-3">
+            {projects.slice(0, 3).map(project => (
+              <div key={project.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div>
+                  <h3 className="font-medium text-gray-800">{project.name}</h3>
+                  <p className="text-sm text-gray-600">Current Phase: {project.current_phase}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-700">{project.progress_percentage?.toFixed(1) || 0}% Complete</p>
+                  <div className="w-24 h-2 bg-gray-200 rounded-full mt-1">
+                    <div 
+                      className="h-2 bg-green-500 rounded-full" 
+                      style={{width: `${project.progress_percentage || 0}%`}}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderProjectWorkflow = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-gray-900">IMPACT Project Workflow</h1>
+        <button
+          onClick={() => setShowNewProjectForm(true)}
+          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          New Project
+        </button>
+      </div>
+
+      {/* New Project Form Modal */}
+      {showNewProjectForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Create New Project</h2>
+            <form onSubmit={handleCreateProject} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
+                <input
+                  type="text"
+                  value={newProjectData.name}
+                  onChange={(e) => setNewProjectData({...newProjectData, name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea
+                  value={newProjectData.description}
+                  onChange={(e) => setNewProjectData({...newProjectData, description: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  rows="3"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Target Completion Date</label>
+                <input
+                  type="date"
+                  value={newProjectData.target_completion_date}
+                  onChange={(e) => setNewProjectData({...newProjectData, target_completion_date: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Budget</label>
+                <input
+                  type="number"
+                  value={newProjectData.budget}
+                  onChange={(e) => setNewProjectData({...newProjectData, budget: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="flex space-x-3">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 disabled:opacity-50"
+                >
+                  {loading ? 'Creating...' : 'Create Project'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowNewProjectForm(false)}
+                  className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {projects.length === 0 ? (
+        <div className="text-center py-12">
+          <Target className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-600 mb-2">No Projects Yet</h2>
+          <p className="text-gray-500 mb-4">Start your first IMPACT methodology project</p>
+          <button
+            onClick={() => setShowNewProjectForm(true)}
+            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700"
+          >
+            Create Your First Project
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {projects.map(project => (
+            <div key={project.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800">{project.name}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{project.description}</p>
+                  </div>
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${{
+                    'active': 'bg-green-100 text-green-800',
+                    'on_hold': 'bg-yellow-100 text-yellow-800',
+                    'completed': 'bg-blue-100 text-blue-800',
+                    'cancelled': 'bg-red-100 text-red-800'
+                  }[project.status] || 'bg-gray-100 text-gray-800'}`}>
+                    {project.status?.replace('_', ' ').toUpperCase()}
+                  </span>
+                </div>
+
+                {/* Current Phase */}
+                <div className="mb-4">
+                  <div className="flex items-center mb-2">
+                    <span className="text-sm font-medium text-gray-700">Current Phase:</span>
+                    <span 
+                      className="ml-2 px-2 py-1 text-xs font-medium rounded-full text-white"
+                      style={{backgroundColor: getPhaseColor(project.current_phase)}}
+                    >
+                      {project.current_phase?.toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-green-500 h-2 rounded-full transition-all"
+                      style={{width: `${project.progress_percentage || 0}%`}}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">{project.progress_percentage?.toFixed(1) || 0}% Complete</p>
+                </div>
+
+                {/* IMPACT Phase Progress */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-gray-700">IMPACT Progress</h4>
+                  <div className="grid grid-cols-6 gap-1">
+                    {IMPACT_PHASES.map(phase => {
+                      const progress = getPhaseProgress(project, phase.id);
+                      const isCurrent = project.current_phase === phase.id;
+                      return (
+                        <div key={phase.id} className="text-center">
+                          <div 
+                            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white mb-1 ${
+                              isCurrent ? 'ring-2 ring-offset-1 ring-blue-500' : ''
+                            }`}
+                            style={{backgroundColor: phase.color, opacity: progress > 0 ? 1 : 0.3}}
+                          >
+                            {phase.name.charAt(0)}
+                          </div>
+                          <div className="text-xs text-gray-500">{progress.toFixed(0)}%</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Project Tasks Summary */}
+                {project.tasks && project.tasks.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Tasks: {project.tasks.filter(t => t.status === 'completed').length}/{project.tasks.length}</span>
+                      <span className="text-gray-600">
+                        {project.target_completion_date && 
+                          `Due: ${new Date(project.target_completion_date).toLocaleDateString()}`
+                        }
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-4 flex space-x-2">
+                  <button
+                    onClick={() => setSelectedProject(project)}
+                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 text-sm"
+                  >
+                    View Details
+                  </button>
+                  <button className="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 text-sm">
+                    Edit
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Project Detail Modal */}
+      {selectedProject && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">{selectedProject.name}</h2>
+                  <p className="text-gray-600 mt-1">{selectedProject.description}</p>
+                </div>
+                <button
+                  onClick={() => setSelectedProject(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Project Phase Timeline */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-3">IMPACT Phase Timeline</h3>
+                <div className="flex items-center space-x-4 overflow-x-auto pb-2">
+                  {IMPACT_PHASES.map((phase, index) => {
+                    const isCurrent = selectedProject.current_phase === phase.id;
+                    const isCompleted = IMPACT_PHASES.findIndex(p => p.id === selectedProject.current_phase) > index;
+                    const Icon = phase.icon;
+                    
+                    return (
+                      <div key={phase.id} className="flex items-center flex-shrink-0">
+                        <div className={`flex flex-col items-center ${isCompleted ? 'text-green-600' : isCurrent ? 'text-blue-600' : 'text-gray-400'}`}>
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                            isCompleted ? 'bg-green-100' : isCurrent ? 'bg-blue-100' : 'bg-gray-100'
+                          }`}>
+                            <Icon className="h-6 w-6" />
+                          </div>
+                          <span className="text-xs font-medium mt-1">{phase.name}</span>
+                          {impactPhases[phase.id] && (
+                            <span className="text-xs text-gray-500 text-center max-w-20">
+                              {impactPhases[phase.id].newton_law?.split(' - ')[0]}
+                            </span>
+                          )}
+                        </div>
+                        {index < IMPACT_PHASES.length - 1 && (
+                          <ArrowRight className={`h-4 w-4 mx-2 ${isCompleted ? 'text-green-600' : 'text-gray-300'}`} />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Current Phase Details */}
+              {impactPhases[selectedProject.current_phase] && (
+                <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+                  <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                    Current Phase: {impactPhases[selectedProject.current_phase].name}
+                  </h3>
+                  <p className="text-blue-800 mb-3">{impactPhases[selectedProject.current_phase].description}</p>
+                  <div className="text-sm text-blue-700">
+                    <strong>Newton's Law Application:</strong> {impactPhases[selectedProject.current_phase].newton_insight}
+                  </div>
+                </div>
+              )}
+
+              {/* Tasks for Current Phase */}
+              {selectedProject.tasks && selectedProject.tasks.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-3">Current Phase Tasks</h3>
+                  <div className="space-y-2">
+                    {selectedProject.tasks
+                      .filter(task => task.phase === selectedProject.current_phase)
+                      .map(task => (
+                        <div key={task.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={task.status === 'completed'}
+                              onChange={(e) => handleTaskUpdate(selectedProject.id, task.id, {
+                                status: e.target.checked ? 'completed' : 'pending'
+                              })}
+                              className="mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                            />
+                            <div>
+                              <h4 className="font-medium text-gray-800">{task.title}</h4>
+                              <p className="text-sm text-gray-600">{task.description}</p>
+                            </div>
+                          </div>
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            task.status === 'completed' ? 'bg-green-100 text-green-800' :
+                            task.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {task.status?.replace('_', ' ')}
+                          </span>
+                        </div>
+                      ))
+                    }
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -737,6 +1184,8 @@ function App() {
         return renderAssessmentsList();
       case 'analytics':
         return renderAdvancedAnalytics();
+      case 'projects':
+        return renderProjectWorkflow();
       default:
         return renderDashboard();
     }
@@ -763,6 +1212,14 @@ function App() {
                 }`}
               >
                 Dashboard
+              </button>
+              <button
+                onClick={() => setActiveTab('projects')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeTab === 'projects' ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Projects
               </button>
               <button
                 onClick={() => setActiveTab('assessment')}
