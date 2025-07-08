@@ -303,24 +303,24 @@ IMPACT_PHASES = {
     },
     "mobilize": {
         "name": "Mobilize & Prepare", 
-        "description": "Building infrastructure and preparing for implementation success",
+        "description": "Building infrastructure and preparing for transformation success",
         "order": 2,
         "newton_law": "Second Law - Measuring Forces and Preparing for Acceleration",
         "newton_insight": "Acceleration equals force applied divided by organizational mass. Prepare the right resources and remove resistance to calculate required force accurately.",
         "objectives": [
             "Develop comprehensive change management strategy",
-            "Establish governance structures spanning maintenance and operations",
-            "Create communication plans that connect maintenance to manufacturing excellence",
-            "Design role-based training programs for manufacturing environments",
-            "Build change champion networks across all shifts and departments"
+            "Establish governance structures and communication frameworks",
+            "Create training and development programs for all stakeholders",
+            "Build change champion networks across the organization",
+            "Prepare measurement systems and success criteria"
         ],
         "key_activities": [
-            "Develop detailed change management plan emphasizing maintenance-operations integration",
-            "Create manufacturing-specific communication strategy",
-            "Design training programs for shift work and manufacturing constraints",
-            "Establish change champion network covering all areas and shifts",
-            "Develop success metrics linking maintenance improvements to manufacturing performance",
-            "Create resource allocation plans and timeline",
+            "Develop detailed change management plan and strategy",
+            "Create multi-channel communication strategy and materials",
+            "Design role-based training programs for diverse audiences",
+            "Establish change champion network covering all areas",
+            "Develop success metrics and measurement frameworks",
+            "Create resource allocation plans and timelines",
             "Establish issue escalation and support procedures"
         ],
         "deliverables": [
@@ -336,16 +336,16 @@ IMPACT_PHASES = {
             "Communication Plan Template", 
             "Training Strategy Framework",
             "Champion Network Development Guide",
-            "Manufacturing Success Metrics Template"
+            "Success Metrics Template"
         ],
         "completion_criteria": [
-            "Comprehensive change plan approved by leadership spanning maintenance and operations",
-            "Champion network established covering all shifts and key areas",
-            "Communication strategy tested and validated with target audiences",
-            "Training materials developed and tested for manufacturing environment",
-            "Success metrics defined linking maintenance to manufacturing performance"
+            "Comprehensive change plan approved by leadership",
+            "Champion network established covering all key areas",
+            "Communication strategy tested and validated with audiences",
+            "Training materials developed and tested for effectiveness",
+            "Success metrics defined and measurement systems prepared"
         ],
-        "manufacturing_focus": "Ensure all stakeholders understand the connection between maintenance excellence and manufacturing performance, and are prepared to support the transformation."
+        "universal_focus": "Ensure all stakeholders understand the transformation objectives and benefits, and are prepared to support the change initiative with appropriate resources and capabilities."
     },
     "pilot": {
         "name": "Pilot & Adapt",
