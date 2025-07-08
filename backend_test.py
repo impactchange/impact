@@ -325,9 +325,26 @@ def run_tests():
     test_suite.addTest(IMPACTMethodologyAPITest('test_01_health_check'))
     test_suite.addTest(IMPACTMethodologyAPITest('test_02_user_registration'))
     test_suite.addTest(IMPACTMethodologyAPITest('test_03_user_login'))
-    test_suite.addTest(IMPACTMethodologyAPITest('test_04_get_user_profile'))
-    test_suite.addTest(IMPACTMethodologyAPITest('test_10_get_dashboard_metrics'))
-    test_suite.addTest(IMPACTMethodologyAPITest('test_05_create_assessment'))
+    
+    # Create a test instance to share the token
+    test_instance = IMPACTMethodologyAPITest('test_04_get_user_profile')
+    test_instance.setUp()
+    test_instance.test_03_user_login()
+    
+    # Add the remaining tests using the same instance
+    test_suite.addTest(test_instance)
+    
+    # Create a new test for dashboard metrics
+    dashboard_test = IMPACTMethodologyAPITest('test_10_get_dashboard_metrics')
+    dashboard_test.setUp()
+    dashboard_test.token = test_instance.token
+    test_suite.addTest(dashboard_test)
+    
+    # Create a new test for assessment creation
+    assessment_test = IMPACTMethodologyAPITest('test_05_create_assessment')
+    assessment_test.setUp()
+    assessment_test.token = test_instance.token
+    test_suite.addTest(assessment_test)
     
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(test_suite)
