@@ -752,17 +752,6 @@ function App() {
     </div>
   );
 
-  const fetchProjects = async () => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/api/projects`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      setProjects(response.data.projects || []);
-    } catch (err) {
-      console.error('Failed to fetch projects:', err);
-    }
-  };
-
   const handleCreateProject = async (e) => {
     e.preventDefault();
     setLoading(true);
