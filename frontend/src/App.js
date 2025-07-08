@@ -148,6 +148,7 @@ function App() {
       fetchDashboardData();
       fetchAdvancedAnalytics();
       fetchImpactPhases();
+      fetchProjects();
     }
   }, [token]);
 
