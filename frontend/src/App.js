@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, BarChart, Bar, PieChart, Pie, Cell, ProgressBar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { 
   TrendingUp, Activity, Target, Users, Zap, Shield, AlertTriangle, CheckCircle, 
   Calendar, Clock, PlayCircle, PauseCircle, CheckSquare, Flag, ArrowRight,
-  FileText, User, Settings, BarChart3, Plus, Filter, Search
+  FileText, User, Settings, BarChart3, Plus, Filter, Search, Edit, Eye,
+  Lightbulb, Award, Bookmark, MessageSquare, Upload, Download, Star,
+  ChevronDown, ChevronRight, List, Grid, MapPin, Layers
 } from 'lucide-react';
 import './App.css';
 
@@ -25,42 +27,48 @@ const IMPACT_PHASES = [
     name: 'Identify',
     color: '#ef4444',
     description: 'Define the change initiative and its scope',
-    icon: Target
+    icon: Target,
+    shortDesc: 'Scope & Vision'
   },
   {
     id: 'measure',
     name: 'Measure', 
     color: '#f59e0b',
     description: 'Assess organizational readiness and establish baselines',
-    icon: BarChart3
+    icon: BarChart3,
+    shortDesc: 'Assess & Baseline'
   },
   {
     id: 'plan',
     name: 'Plan',
     color: '#8b5cf6',
     description: 'Develop comprehensive change management strategy',
-    icon: FileText
+    icon: FileText,
+    shortDesc: 'Strategy & Plans'
   },
   {
     id: 'act',
     name: 'Act',
     color: '#3b82f6',
     description: 'Execute the change management plan',
-    icon: PlayCircle
+    icon: PlayCircle,
+    shortDesc: 'Execute & Implement'
   },
   {
     id: 'control',
     name: 'Control',
     color: '#06b6d4',
     description: 'Monitor progress and maintain momentum',
-    icon: Settings
+    icon: Settings,
+    shortDesc: 'Monitor & Adjust'
   },
   {
     id: 'transform',
     name: 'Transform',
     color: '#10b981',
     description: 'Institutionalize change and capture benefits',
-    icon: CheckCircle
+    icon: CheckCircle,
+    shortDesc: 'Sustain & Embed'
   }
 ];
 
@@ -100,6 +108,7 @@ function App() {
 
   // Project workflow states
   const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedPhase, setSelectedPhase] = useState(null);
   const [newProjectData, setNewProjectData] = useState({
     name: '',
     description: '',
@@ -107,6 +116,10 @@ function App() {
     budget: ''
   });
   const [showNewProjectForm, setShowNewProjectForm] = useState(false);
+  const [showAssessmentToProject, setShowAssessmentToProject] = useState(false);
+  const [selectedAssessmentForProject, setSelectedAssessmentForProject] = useState(null);
+  const [projectView, setProjectView] = useState('grid'); // grid or timeline
+  const [expandedTasks, setExpandedTasks] = useState({});
 
   useEffect(() => {
     if (token) {
@@ -226,7 +239,7 @@ function App() {
       
       fetchDashboardData();
       fetchAdvancedAnalytics();
-      setActiveTab('analytics');
+      setActiveTab('assessments');
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to submit assessment');
     } finally {
@@ -250,7 +263,7 @@ function App() {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      alert('Project created successfully!');
+      alert('Project created successfully with complete IMPACT workflow!');
       setNewProjectData({
         name: '',
         description: '',
@@ -267,14 +280,75 @@ function App() {
     }
   };
 
+  const handleCreateProjectFromAssessment = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const projectPayload = {
+        assessment_id: selectedAssessmentForProject.id,
+        project_name: newProjectData.name,
+        description: newProjectData.description,
+        target_completion_date: newProjectData.target_completion_date ? new Date(newProjectData.target_completion_date).toISOString() : null,
+        budget: newProjectData.budget ? parseFloat(newProjectData.budget) : null
+      };
+
+      const response = await axios.post(`${API_BASE_URL}/api/projects/from-assessment`, projectPayload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      alert('Project created successfully from assessment with AI-optimized workflow!');
+      setNewProjectData({
+        name: '',
+        description: '',
+        target_completion_date: '',
+        budget: ''
+      });
+      setShowAssessmentToProject(false);
+      setSelectedAssessmentForProject(null);
+      fetchDashboardData();
+      setActiveTab('projects');
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to create project from assessment');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleTaskUpdate = async (projectId, taskId, updates) => {
     try {
       await axios.put(`${API_BASE_URL}/api/projects/${projectId}/tasks/${taskId}`, updates, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchDashboardData();
+      // Update selected project if it's open
+      if (selectedProject && selectedProject.id === projectId) {
+        const updatedProject = await axios.get(`${API_BASE_URL}/api/projects/${projectId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setSelectedProject(updatedProject.data);
+      }
     } catch (err) {
       console.error('Failed to update task:', err);
+    }
+  };
+
+  const handleDeliverableUpdate = async (projectId, deliverableId, updates) => {
+    try {
+      await axios.put(`${API_BASE_URL}/api/projects/${projectId}/deliverables/${deliverableId}`, updates, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchDashboardData();
+      // Update selected project if it's open
+      if (selectedProject && selectedProject.id === projectId) {
+        const updatedProject = await axios.get(`${API_BASE_URL}/api/projects/${projectId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setSelectedProject(updatedProject.data);
+      }
+    } catch (err) {
+      console.error('Failed to update deliverable:', err);
     }
   };
 
@@ -290,11 +364,14 @@ function App() {
   };
 
   const getPhaseProgress = (project, phase) => {
-    if (!project.tasks) return 0;
-    const phaseTasks = project.tasks.filter(task => task.phase === phase);
-    if (phaseTasks.length === 0) return 0;
-    const completedTasks = phaseTasks.filter(task => task.status === 'completed');
-    return (completedTasks.length / phaseTasks.length) * 100;
+    return project.phase_progress?.[phase] || 0;
+  };
+
+  const toggleTaskExpansion = (taskId) => {
+    setExpandedTasks(prev => ({
+      ...prev,
+      [taskId]: !prev[taskId]
+    }));
   };
 
   const renderAuthForm = () => (
@@ -460,7 +537,8 @@ function App() {
             <div key={phase.id} className="text-center p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg hover:shadow-md transition-shadow">
               <div className="text-2xl font-bold mb-2" style={{color: phase.color}}>{phase.name.charAt(0)}</div>
               <div className="text-sm text-gray-700 font-medium">{phase.name}</div>
-              <div className="text-xs text-gray-500 mt-1">Phase {index + 1}</div>
+              <div className="text-xs text-gray-500 mt-1">{phase.shortDesc}</div>
+              <div className="text-xs text-gray-400 mt-1">Phase {index + 1}</div>
             </div>
           ))}
         </div>
@@ -469,19 +547,39 @@ function App() {
       {/* Recent Projects */}
       {projects.length > 0 && (
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Projects</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-800">Recent Projects</h2>
+            <button
+              onClick={() => setActiveTab('projects')}
+              className="text-green-600 hover:text-green-700 font-medium"
+            >
+              View All
+            </button>
+          </div>
           <div className="space-y-3">
             {projects.slice(0, 3).map(project => (
-              <div key={project.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div>
+              <div key={project.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div className="flex-1">
                   <h3 className="font-medium text-gray-800">{project.name}</h3>
-                  <p className="text-sm text-gray-600">Current Phase: {project.current_phase}</p>
+                  <div className="flex items-center space-x-4 mt-1">
+                    <p className="text-sm text-gray-600">
+                      Current Phase: <span 
+                        className="font-medium" 
+                        style={{color: getPhaseColor(project.current_phase)}}
+                      >
+                        {project.current_phase?.charAt(0).toUpperCase() + project.current_phase?.slice(1)}
+                      </span>
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {project.tasks?.filter(t => t.status === 'completed').length || 0} / {project.tasks?.length || 0} tasks
+                    </p>
+                  </div>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-gray-700">{project.progress_percentage?.toFixed(1) || 0}% Complete</p>
                   <div className="w-24 h-2 bg-gray-200 rounded-full mt-1">
                     <div 
-                      className="h-2 bg-green-500 rounded-full" 
+                      className="h-2 bg-green-500 rounded-full transition-all duration-300" 
                       style={{width: `${project.progress_percentage || 0}%`}}
                     ></div>
                   </div>
@@ -491,6 +589,43 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Quick Actions */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button
+            onClick={() => setActiveTab('assessment')}
+            className="flex items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+          >
+            <BarChart3 className="h-8 w-8 text-blue-600 mr-3" />
+            <div className="text-left">
+              <h3 className="font-medium text-blue-900">New Assessment</h3>
+              <p className="text-sm text-blue-700">Evaluate change readiness</p>
+            </div>
+          </button>
+          <button
+            onClick={() => setShowNewProjectForm(true)}
+            className="flex items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+          >
+            <Plus className="h-8 w-8 text-green-600 mr-3" />
+            <div className="text-left">
+              <h3 className="font-medium text-green-900">New Project</h3>
+              <p className="text-sm text-green-700">Start IMPACT workflow</p>
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className="flex items-center p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors"
+          >
+            <Zap className="h-8 w-8 text-purple-600 mr-3" />
+            <div className="text-left">
+              <h3 className="font-medium text-purple-900">View Analytics</h3>
+              <p className="text-sm text-purple-700">AI-powered insights</p>
+            </div>
+          </button>
+        </div>
+      </div>
     </div>
   );
 
