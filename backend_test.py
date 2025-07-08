@@ -90,6 +90,7 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
         }
         
         response = requests.post(f"{self.base_url}/assessments", json=assessment_data, headers=headers)
+        print(f"Create assessment response: {response.status_code} - {response.text}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("id", data)
