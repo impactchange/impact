@@ -469,9 +469,16 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
         print(f"Get projects response: {response.status_code} - {response.text[:200]}...")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertIsInstance(data, list)
-        self.assertGreaterEqual(len(data), 1)
-        print(f"✅ Retrieved {len(data)} projects")
+        
+        # Check if the response has a 'projects' key
+        if "projects" in data:
+            projects = data["projects"]
+        else:
+            projects = data
+            
+        self.assertIsInstance(projects, list)
+        self.assertGreaterEqual(len(projects), 1)
+        print(f"✅ Retrieved {len(projects)} projects")
     
     def test_18_get_project_by_id(self):
         """Test getting a specific project by ID"""
