@@ -109,16 +109,6 @@ function App() {
     assessment_type: 'general_readiness'
   });
   const [availableProjects, setAvailableProjects] = useState([]);
-  const [showNewProjectForm, setShowNewProjectForm] = useState(false);
-  const [newProjectData, setNewProjectData] = useState({
-    project_name: '',
-    client_organization: '',
-    description: '',
-    objectives: [''],
-    scope: '',
-    total_budget: '',
-    estimated_end_date: ''
-  });
 
   // Dashboard states
   const [dashboardMetrics, setDashboardMetrics] = useState({});
@@ -134,7 +124,13 @@ function App() {
     name: '',
     description: '',
     target_completion_date: '',
-    budget: ''
+    budget: '',
+    project_name: '',
+    client_organization: '',
+    objectives: [''],
+    scope: '',
+    total_budget: '',
+    estimated_end_date: ''
   });
   const [showNewProjectForm, setShowNewProjectForm] = useState(false);
   const [showAssessmentToProject, setShowAssessmentToProject] = useState(false);
