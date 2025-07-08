@@ -507,6 +507,65 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         print(f"Authentication error: {str(e)}")
         raise HTTPException(status_code=401, detail=f"Authentication error: {str(e)}")
 
+def calculate_manufacturing_readiness_analysis(assessment_data: dict) -> Dict[str, Any]:
+    """Calculate manufacturing-specific readiness analysis using Newton's laws"""
+    # Extract scores from assessment data
+    scores = []
+    dimension_scores = {}
+    
+    # Core dimensions
+    core_dimensions = [
+        'leadership_commitment', 'organizational_culture', 'resource_availability',
+        'stakeholder_engagement', 'training_capability'
+    ]
+    
+    # Manufacturing-specific dimensions
+    manufacturing_dimensions = [
+        'manufacturing_constraints', 'maintenance_operations_alignment',
+        'shift_work_considerations', 'technical_readiness', 'safety_compliance'
+    ]
+    
+    all_dimensions = core_dimensions + manufacturing_dimensions
+    
+    for dim in all_dimensions:
+        if dim in assessment_data and 'score' in assessment_data[dim]:
+            score = assessment_data[dim]['score']
+            scores.append(score)
+            dimension_scores[dim] = score
+    
+    avg_score = sum(scores) / len(scores) if scores else 0
+    
+    # Calculate manufacturing-specific inertia
+    manufacturing_weight = 1.2  # Higher weight for manufacturing environment
+    organizational_inertia = (5 - avg_score) * 20 * manufacturing_weight
+    
+    # Calculate required force considering manufacturing constraints
+    base_force = 100 - (avg_score * 15)
+    maintenance_alignment_score = dimension_scores.get('maintenance_operations_alignment', 3)
+    force_required = base_force * (1 + (5 - maintenance_alignment_score) * 0.2)
+    
+    # Calculate resistance considering shift work
+    shift_work_score = dimension_scores.get('shift_work_considerations', 3)
+    resistance_magnitude = organizational_inertia * (1 + (5 - shift_work_score) * 0.15)
+    
+    return {
+        "inertia": {
+            "value": round(organizational_inertia, 1),
+            "interpretation": "Low" if organizational_inertia < 48 else "Medium" if organizational_inertia < 84 else "High",
+            "description": f"Manufacturing organization shows {'low' if organizational_inertia < 48 else 'medium' if organizational_inertia < 84 else 'high'} resistance to change"
+        },
+        "force": {
+            "required": round(force_required, 1),
+            "maintenance_factor": round(maintenance_alignment_score, 1),
+            "description": f"{'Low' if force_required < 60 else 'Medium' if force_required < 90 else 'High'} effort required for successful manufacturing change"
+        },
+        "reaction": {
+            "resistance": round(resistance_magnitude, 1),
+            "shift_impact": round(shift_work_score, 1),
+            "description": f"Expect {'minimal' if resistance_magnitude < 36 else 'moderate' if resistance_magnitude < 72 else 'significant'} organizational pushback"
+        }
+    }
+
 def calculate_newton_laws_analysis(assessment: ChangeReadinessAssessment) -> Dict[str, Any]:
     """Calculate Newton's laws analysis for organizational change"""
     scores = [
