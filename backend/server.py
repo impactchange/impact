@@ -41,7 +41,219 @@ db = client[DB_NAME]
 security = HTTPBearer()
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-for-jwt-impact-methodology-2024")
 
-# Enhanced IMPACT Phases Configuration for Manufacturing EAM Implementations
+# Assessment Types Configuration - Multiple Assessment Support
+ASSESSMENT_TYPES = {
+    "general_readiness": {
+        "name": "General Change Readiness Assessment",
+        "description": "Comprehensive organizational change readiness evaluation for any type of transformation project",
+        "icon": "📋",
+        "dimensions": [
+            {
+                "id": "leadership_commitment",
+                "name": "Leadership Commitment & Sponsorship",
+                "description": "How committed is senior leadership to this change initiative?",
+                "category": "core"
+            },
+            {
+                "id": "organizational_culture",
+                "name": "Organizational Culture & Change History", 
+                "description": "How well does the organization typically adapt to change?",
+                "category": "core"
+            },
+            {
+                "id": "resource_availability",
+                "name": "Resource Availability & Capability",
+                "description": "Are adequate financial, human, and technical resources available?",
+                "category": "core"
+            },
+            {
+                "id": "stakeholder_engagement",
+                "name": "Stakeholder Engagement & Communication",
+                "description": "How effective are existing stakeholder engagement capabilities?",
+                "category": "core"
+            },
+            {
+                "id": "training_capability",
+                "name": "Training & Development Capability",
+                "description": "What training capabilities and infrastructure exist?",
+                "category": "core"
+            }
+        ]
+    },
+    "software_implementation": {
+        "name": "Software Implementation Readiness Assessment",
+        "description": "Specialized assessment for software implementation projects and technology adoption",
+        "icon": "💻",
+        "dimensions": [
+            {
+                "id": "leadership_commitment",
+                "name": "Leadership Commitment & Sponsorship",
+                "description": "How committed is senior leadership to this software implementation?",
+                "category": "core"
+            },
+            {
+                "id": "organizational_culture",
+                "name": "Organizational Culture & Change History",
+                "description": "How well does the organization adapt to new technology?",
+                "category": "core"
+            },
+            {
+                "id": "resource_availability", 
+                "name": "Resource Availability & Capability",
+                "description": "Are adequate resources available for software implementation?",
+                "category": "core"
+            },
+            {
+                "id": "stakeholder_engagement",
+                "name": "Stakeholder Engagement & Communication",
+                "description": "How effective are communication channels for technology changes?",
+                "category": "core"
+            },
+            {
+                "id": "training_capability",
+                "name": "Training & Development Capability", 
+                "description": "What technical training capabilities exist?",
+                "category": "core"
+            },
+            {
+                "id": "technical_infrastructure",
+                "name": "Technical Infrastructure Readiness",
+                "description": "How ready is the technical infrastructure for new software?",
+                "category": "specialized"
+            },
+            {
+                "id": "user_adoption_readiness",
+                "name": "User Adoption Readiness",
+                "description": "How ready are end users to adopt new software systems?",
+                "category": "specialized"
+            },
+            {
+                "id": "data_migration_readiness",
+                "name": "Data Migration & Integration Readiness",
+                "description": "How prepared is the organization for data migration and system integration?",
+                "category": "specialized"
+            }
+        ]
+    },
+    "business_process": {
+        "name": "Business Process Evaluation Assessment",
+        "description": "Assessment for business process improvement and operational transformation projects",
+        "icon": "⚙️",
+        "dimensions": [
+            {
+                "id": "leadership_commitment",
+                "name": "Leadership Commitment & Sponsorship",
+                "description": "How committed is leadership to business process improvement?",
+                "category": "core"
+            },
+            {
+                "id": "organizational_culture",
+                "name": "Organizational Culture & Change History",
+                "description": "How well does the organization adapt to process changes?",
+                "category": "core"
+            },
+            {
+                "id": "resource_availability",
+                "name": "Resource Availability & Capability", 
+                "description": "Are adequate resources available for process transformation?",
+                "category": "core"
+            },
+            {
+                "id": "stakeholder_engagement",
+                "name": "Stakeholder Engagement & Communication",
+                "description": "How effective are stakeholder engagement strategies?",
+                "category": "core"
+            },
+            {
+                "id": "training_capability",
+                "name": "Training & Development Capability",
+                "description": "What process training capabilities exist?",
+                "category": "core"
+            },
+            {
+                "id": "process_maturity",
+                "name": "Current Process Maturity",
+                "description": "How mature and documented are current business processes?",
+                "category": "specialized"
+            },
+            {
+                "id": "cross_functional_collaboration",
+                "name": "Cross-Functional Collaboration",
+                "description": "How effectively do departments collaborate on process improvements?",
+                "category": "specialized"
+            },
+            {
+                "id": "performance_measurement",
+                "name": "Performance Measurement Capability",
+                "description": "How well can the organization measure and track process performance?",
+                "category": "specialized"
+            }
+        ]
+    },
+    "manufacturing_operations": {
+        "name": "Manufacturing Operations Assessment",
+        "description": "Assessment for manufacturing line evaluations and operational improvements",
+        "icon": "🏭",
+        "dimensions": [
+            {
+                "id": "leadership_commitment",
+                "name": "Leadership Commitment & Sponsorship", 
+                "description": "How committed is leadership to operational improvements?",
+                "category": "core"
+            },
+            {
+                "id": "organizational_culture",
+                "name": "Organizational Culture & Change History",
+                "description": "How well does the organization adapt to operational changes?",
+                "category": "core"
+            },
+            {
+                "id": "resource_availability",
+                "name": "Resource Availability & Capability",
+                "description": "Are adequate resources available for operational transformation?",
+                "category": "core"
+            },
+            {
+                "id": "stakeholder_engagement",
+                "name": "Stakeholder Engagement & Communication",
+                "description": "How effective are communication channels in the manufacturing environment?",
+                "category": "core"
+            },
+            {
+                "id": "training_capability",
+                "name": "Training & Development Capability",
+                "description": "What operational training capabilities exist?",
+                "category": "core"
+            },
+            {
+                "id": "operational_constraints",
+                "name": "Operational Constraints Management",
+                "description": "How manageable are operational constraints during improvements?",
+                "category": "specialized"
+            },
+            {
+                "id": "maintenance_operations_alignment",
+                "name": "Maintenance-Operations Alignment",
+                "description": "How well aligned are maintenance and operations teams?",
+                "category": "specialized"
+            },
+            {
+                "id": "shift_coordination",
+                "name": "Shift Work & Coordination",
+                "description": "How well can shift patterns accommodate improvement activities?",
+                "category": "specialized"
+            },
+            {
+                "id": "safety_compliance",
+                "name": "Safety & Compliance Integration",
+                "description": "How well can safety and regulatory requirements be integrated?",
+                "category": "specialized"
+            }
+        ]
+    }
+}
+
+# Enhanced IMPACT Phases Configuration - Universal Change Management
 IMPACT_PHASES = {
     "investigate": {
         "name": "Investigate & Assess",
