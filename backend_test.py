@@ -1019,9 +1019,9 @@ class ProductionReadinessTest(IMPACTMethodologyAPITest):
         # Make multiple requests that require database access
         num_requests = 5
         endpoints = [
-            "/api/assessments",
-            "/api/projects",
-            "/api/dashboard/metrics"
+            "/assessments",
+            "/projects",
+            "/dashboard/metrics"
         ]
         
         all_successful = True
