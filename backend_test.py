@@ -788,7 +788,7 @@ class ProductionReadinessTest(IMPACTMethodologyAPITest):
     
     def test_02_concurrent_requests(self):
         """Test API performance with concurrent requests"""
-        endpoint = "/api/health"
+        endpoint = "/health"
         num_requests = 10
         
         def make_request():
