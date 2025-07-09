@@ -1233,9 +1233,9 @@ class ProductionReadinessTest(IMPACTMethodologyAPITest):
         """Test API response structure consistency"""
         # Test public endpoints
         public_endpoints = [
-            "/api/health",
-            "/api/assessment-types",
-            "/api/impact/phases"
+            "/health",
+            "/assessment-types",
+            "/impact/phases"
         ]
         
         for endpoint in public_endpoints:
@@ -1252,10 +1252,10 @@ class ProductionReadinessTest(IMPACTMethodologyAPITest):
         # Test authenticated endpoints if token is available
         if self.token:
             authenticated_endpoints = [
-                "/api/user/profile",
-                "/api/assessments",
-                "/api/projects",
-                "/api/dashboard/metrics"
+                "/user/profile",
+                "/assessments",
+                "/projects",
+                "/dashboard/metrics"
             ]
             
             headers = {"Authorization": f"Bearer {self.token}"}
