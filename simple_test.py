@@ -2,7 +2,7 @@ import requests
 import json
 
 # Base URL
-base_url = "https://16f31f7a-9a22-44c2-8d41-3e2a1b72fd7c.preview.emergentagent.com/api"
+base_url = "https://5d518271-577f-499a-b42d-258b110b5820.preview.emergentagent.com/api"
 
 # Test user
 test_user = {
