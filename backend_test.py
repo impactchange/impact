@@ -762,9 +762,9 @@ class ProductionReadinessTest(IMPACTMethodologyAPITest):
     def test_01_api_performance(self):
         """Test API performance under load"""
         endpoints = [
-            "/api/health",
-            "/api/assessment-types",
-            "/api/impact/phases"
+            "/health",
+            "/assessment-types",
+            "/impact/phases"
         ]
         
         results = {}
