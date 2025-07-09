@@ -103,7 +103,7 @@
 #====================================================================================================
 
 ## user_problem_statement: 
-Conduct thorough end-user and application testing to identify and fix multiple errors and missing functions in the enhanced IMPACT Methodology platform. The application has been significantly modified with multiple assessment types, universal IMPACT phases, project management features, and enhanced UI, but requires comprehensive testing to ensure all functionality works correctly.
+Conduct final comprehensive testing and debugging to prepare the IMPACT Methodology platform for AWS deployment. Ensure the highest quality code with no bugs, optimized performance, proper error handling, security measures, and production-ready configuration. The platform must be thoroughly tested and debugged before code export and AWS server deployment.
 
 ## backend:
   - task: "Multiple Assessment Types API"
