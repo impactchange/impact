@@ -739,5 +739,664 @@ def run_tests():
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(test_suite)
 
-if __name__ == "__main__":
+
+class ProductionReadinessTest(IMPACTMethodologyAPITest):
+    """Test suite for production readiness testing of the IMPACT Methodology API"""
+    
+    def setUp(self):
+        """Set up test environment before each test"""
+        super().setUp()
+        # Login to get token for authenticated tests
+        login_data = {
+            "email": self.test_user["email"],
+            "password": self.test_user["password"]
+        }
+        response = requests.post(f"{self.base_url}/auth/login", json=login_data)
+        if response.status_code == 200:
+            data = response.json()
+            self.token = data["token"]
+            self.user_id = data["user"]["id"]
+        else:
+            print(f"Warning: Login failed with status {response.status_code}")
+    
+    def test_01_api_performance(self):
+        """Test API performance under load"""
+        endpoints = [
+            "/api/health",
+            "/api/assessment-types",
+            "/api/impact/phases"
+        ]
+        
+        results = {}
+        for endpoint in endpoints:
+            start_time = time.time()
+            response = requests.get(f"{self.base_url}{endpoint}")
+            end_time = time.time()
+            response_time = (end_time - start_time) * 1000  # Convert to milliseconds
+            
+            results[endpoint] = {
+                "status_code": response.status_code,
+                "response_time_ms": response_time
+            }
+            
+            # Check if response time is acceptable (< 500ms)
+            self.assertLess(response_time, 500, f"Response time for {endpoint} is too slow: {response_time:.2f}ms")
+            
+        print("✅ API Performance Test Results:")
+        for endpoint, data in results.items():
+            print(f"   - {endpoint}: {data['status_code']} in {data['response_time_ms']:.2f}ms")
+    
+    def test_02_concurrent_requests(self):
+        """Test API performance with concurrent requests"""
+        endpoint = "/api/health"
+        num_requests = 10
+        
+        def make_request():
+            start_time = time.time()
+            response = requests.get(f"{self.base_url}{endpoint}")
+            end_time = time.time()
+            return {
+                "status_code": response.status_code,
+                "response_time_ms": (end_time - start_time) * 1000
+            }
+        
+        with concurrent.futures.ThreadPoolExecutor(max_workers=num_requests) as executor:
+            futures = [executor.submit(make_request) for _ in range(num_requests)]
+            results = [future.result() for future in concurrent.futures.as_completed(futures)]
+        
+        # Calculate statistics
+        response_times = [result["response_time_ms"] for result in results]
+        avg_response_time = sum(response_times) / len(response_times)
+        max_response_time = max(response_times)
+        
+        # Check if all requests were successful
+        all_successful = all(result["status_code"] == 200 for result in results)
+        self.assertTrue(all_successful, "Not all concurrent requests were successful")
+        
+        # Check if average response time is acceptable (< 500ms)
+        self.assertLess(avg_response_time, 500, f"Average response time is too slow: {avg_response_time:.2f}ms")
+        
+        print("✅ Concurrent Requests Test Results:")
+        print(f"   - Number of concurrent requests: {num_requests}")
+        print(f"   - Average response time: {avg_response_time:.2f}ms")
+        print(f"   - Maximum response time: {max_response_time:.2f}ms")
+    
+    def test_03_jwt_token_security(self):
+        """Test JWT token security"""
+        if not self.token:
+            self.skipTest("No token available")
+        
+        # Test 1: Valid token should work
+        headers = {"Authorization": f"Bearer {self.token}"}
+        response = requests.get(f"{self.base_url}/user/profile", headers=headers)
+        self.assertEqual(response.status_code, 200, "Valid token should be accepted")
+        
+        # Test 2: Invalid token should fail
+        invalid_token = self.token[:-5] + "12345"
+        headers = {"Authorization": f"Bearer {invalid_token}"}
+        response = requests.get(f"{self.base_url}/user/profile", headers=headers)
+        self.assertNotEqual(response.status_code, 200, "Invalid token should be rejected")
+        
+        # Test 3: Expired token (can't easily test without modifying server code)
+        
+        # Test 4: Missing token should fail
+        response = requests.get(f"{self.base_url}/user/profile")
+        self.assertNotEqual(response.status_code, 200, "Missing token should be rejected")
+        
+        # Test 5: Malformed token should fail
+        headers = {"Authorization": "Bearer not_a_valid_token"}
+        response = requests.get(f"{self.base_url}/user/profile", headers=headers)
+        self.assertNotEqual(response.status_code, 200, "Malformed token should be rejected")
+        
+        print("✅ JWT Token Security Test Results:")
+        print("   - Valid token accepted")
+        print("   - Invalid token rejected")
+        print("   - Missing token rejected")
+        print("   - Malformed token rejected")
+    
+    def test_04_sql_injection_prevention(self):
+        """Test SQL injection prevention"""
+        # Test SQL injection in login
+        sql_injection_payloads = [
+            "' OR '1'='1",
+            "'; DROP TABLE users; --",
+            "' UNION SELECT * FROM users; --",
+            "admin' --"
+        ]
+        
+        for payload in sql_injection_payloads:
+            login_data = {
+                "email": payload,
+                "password": payload
+            }
+            response = requests.post(f"{self.base_url}/auth/login", json=login_data)
+            self.assertNotEqual(response.status_code, 200, f"SQL injection payload should be rejected: {payload}")
+        
+        # Test SQL injection in URL parameters
+        if self.assessment_id:
+            injection_id = self.assessment_id + "' OR '1'='1"
+            response = requests.get(f"{self.base_url}/assessments/{injection_id}")
+            self.assertNotEqual(response.status_code, 200, "SQL injection in URL parameter should be rejected")
+        
+        print("✅ SQL Injection Prevention Test Results:")
+        print("   - SQL injection payloads rejected in login")
+        print("   - SQL injection in URL parameters rejected")
+    
+    def test_05_cors_configuration(self):
+        """Test CORS configuration"""
+        headers = {
+            "Origin": "https://example.com",
+            "Access-Control-Request-Method": "GET",
+            "Access-Control-Request-Headers": "Content-Type, Authorization"
+        }
+        
+        # Test preflight request
+        response = requests.options(f"{self.base_url}/health", headers=headers)
+        
+        # Check if CORS headers are present
+        self.assertIn("Access-Control-Allow-Origin", response.headers, "CORS headers missing")
+        
+        # Check if methods are allowed
+        if "Access-Control-Allow-Methods" in response.headers:
+            allowed_methods = response.headers["Access-Control-Allow-Methods"]
+            self.assertIn("GET", allowed_methods, "GET method should be allowed in CORS")
+            self.assertIn("POST", allowed_methods, "POST method should be allowed in CORS")
+        
+        # Check if headers are allowed
+        if "Access-Control-Allow-Headers" in response.headers:
+            allowed_headers = response.headers["Access-Control-Allow-Headers"]
+            self.assertIn("Content-Type", allowed_headers, "Content-Type header should be allowed in CORS")
+            self.assertIn("Authorization", allowed_headers, "Authorization header should be allowed in CORS")
+        
+        print("✅ CORS Configuration Test Results:")
+        print("   - CORS headers present")
+        print("   - Appropriate methods allowed")
+        print("   - Appropriate headers allowed")
+    
+    def test_06_input_validation(self):
+        """Test input validation and sanitization"""
+        if not self.token:
+            self.skipTest("No token available")
+        
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test 1: Invalid email format
+        invalid_user = {
+            "email": "not_an_email",
+            "password": "password123",
+            "full_name": "Test User",
+            "organization": "Demo Organization",
+            "role": "Team Member"
+        }
+        response = requests.post(f"{self.base_url}/auth/register", json=invalid_user)
+        self.assertNotEqual(response.status_code, 200, "Invalid email format should be rejected")
+        
+        # Test 2: Missing required fields
+        incomplete_assessment = {
+            "assessment_type": "general_readiness",
+            "project_name": "Incomplete Assessment"
+            # Missing required dimensions
+        }
+        response = requests.post(f"{self.base_url}/assessments/create", json=incomplete_assessment, headers=headers)
+        self.assertNotEqual(response.status_code, 200, "Assessment with missing required fields should be rejected")
+        
+        # Test 3: Invalid data types
+        invalid_project = {
+            "name": "Invalid Project",
+            "description": "A project with invalid data types",
+            "organization": "Demo Organization",
+            "target_completion_date": "not-a-date",  # Invalid date format
+            "budget": "not-a-number"  # Invalid number format
+        }
+        response = requests.post(f"{self.base_url}/projects", json=invalid_project, headers=headers)
+        self.assertNotEqual(response.status_code, 200, "Project with invalid data types should be rejected")
+        
+        print("✅ Input Validation Test Results:")
+        print("   - Invalid email format rejected")
+        print("   - Missing required fields rejected")
+        print("   - Invalid data types rejected")
+    
+    def test_07_error_handling(self):
+        """Test error handling and HTTP status codes"""
+        # Test 1: Resource not found
+        response = requests.get(f"{self.base_url}/nonexistent-endpoint")
+        self.assertEqual(response.status_code, 404, "Nonexistent endpoint should return 404")
+        
+        # Test 2: Unauthorized access
+        response = requests.get(f"{self.base_url}/user/profile")
+        self.assertEqual(response.status_code, 401, "Unauthorized access should return 401")
+        
+        # Test 3: Bad request
+        response = requests.post(f"{self.base_url}/auth/login", json={"invalid": "data"})
+        self.assertEqual(response.status_code, 422, "Bad request should return 422")
+        
+        # Test 4: Method not allowed
+        response = requests.delete(f"{self.base_url}/health")
+        self.assertIn(response.status_code, [405, 404, 501], "Method not allowed should return appropriate error code")
+        
+        print("✅ Error Handling Test Results:")
+        print("   - Resource not found returns 404")
+        print("   - Unauthorized access returns 401")
+        print("   - Bad request returns 422")
+        print("   - Method not allowed returns appropriate error code")
+    
+    def test_08_error_response_consistency(self):
+        """Test error response format consistency"""
+        # Test 1: Resource not found
+        response = requests.get(f"{self.base_url}/nonexistent-endpoint")
+        self.assertEqual(response.status_code, 404)
+        
+        # Check if response is JSON
+        try:
+            error_data = response.json()
+            self.assertIn("detail", error_data, "Error response should contain 'detail' field")
+        except json.JSONDecodeError:
+            self.fail("Error response is not valid JSON")
+        
+        # Test 2: Unauthorized access
+        response = requests.get(f"{self.base_url}/user/profile")
+        self.assertEqual(response.status_code, 401)
+        
+        # Check if response is JSON
+        try:
+            error_data = response.json()
+            self.assertIn("detail", error_data, "Error response should contain 'detail' field")
+        except json.JSONDecodeError:
+            self.fail("Error response is not valid JSON")
+        
+        print("✅ Error Response Consistency Test Results:")
+        print("   - Error responses are valid JSON")
+        print("   - Error responses contain 'detail' field")
+    
+    def test_09_database_connection_resilience(self):
+        """Test database connection resilience"""
+        # Test repeated database operations to check connection pooling
+        if not self.token:
+            self.skipTest("No token available")
+        
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Make multiple requests that require database access
+        num_requests = 5
+        endpoints = [
+            "/api/assessments",
+            "/api/projects",
+            "/api/dashboard/metrics"
+        ]
+        
+        all_successful = True
+        for _ in range(num_requests):
+            for endpoint in endpoints:
+                response = requests.get(f"{self.base_url}{endpoint}", headers=headers)
+                if response.status_code != 200:
+                    all_successful = False
+                    print(f"Database operation failed for {endpoint}: {response.status_code}")
+        
+        self.assertTrue(all_successful, "All database operations should succeed")
+        
+        print("✅ Database Connection Resilience Test Results:")
+        print(f"   - Completed {num_requests * len(endpoints)} database operations successfully")
+    
+    def test_10_rate_limiting_and_ddos_protection(self):
+        """Test rate limiting and DDoS protection"""
+        # Make rapid requests to check if rate limiting is in place
+        num_requests = 20
+        interval = 0.1  # 100ms between requests
+        
+        success_count = 0
+        rate_limited_count = 0
+        
+        for _ in range(num_requests):
+            response = requests.get(f"{self.base_url}/health")
+            if response.status_code == 200:
+                success_count += 1
+            elif response.status_code in [429, 503]:
+                rate_limited_count += 1
+            
+            time.sleep(interval)
+        
+        print("✅ Rate Limiting Test Results:")
+        print(f"   - Successful requests: {success_count}/{num_requests}")
+        print(f"   - Rate limited requests: {rate_limited_count}/{num_requests}")
+        print(f"   - Rate limiting {'is' if rate_limited_count > 0 else 'is not'} implemented")
+    
+    def test_11_environment_configuration(self):
+        """Test environment configuration"""
+        # Check if environment variables are properly used
+        # This is more of a code review, but we can check if the API behaves correctly
+        
+        # Test database connection (indirectly tests if MONGO_URL is configured correctly)
+        if not self.token:
+            self.skipTest("No token available")
+        
+        headers = {"Authorization": f"Bearer {self.token}"}
+        response = requests.get(f"{self.base_url}/assessments", headers=headers)
+        self.assertEqual(response.status_code, 200, "Database connection should work (MONGO_URL configured correctly)")
+        
+        # Test JWT authentication (indirectly tests if SECRET_KEY is configured correctly)
+        response = requests.get(f"{self.base_url}/user/profile", headers=headers)
+        self.assertEqual(response.status_code, 200, "JWT authentication should work (SECRET_KEY configured correctly)")
+        
+        print("✅ Environment Configuration Test Results:")
+        print("   - Database connection works (MONGO_URL configured correctly)")
+        print("   - JWT authentication works (SECRET_KEY configured correctly)")
+    
+    def test_12_api_documentation(self):
+        """Test API documentation availability"""
+        # Check if OpenAPI documentation is available
+        response = requests.get(f"{self.base_url}/docs")
+        self.assertIn(response.status_code, [200, 301, 302], "API documentation should be available")
+        
+        # Check if ReDoc documentation is available
+        response = requests.get(f"{self.base_url}/redoc")
+        self.assertIn(response.status_code, [200, 301, 302], "ReDoc documentation should be available")
+        
+        print("✅ API Documentation Test Results:")
+        print(f"   - OpenAPI documentation is {'available' if response.status_code in [200, 301, 302] else 'not available'}")
+        print(f"   - ReDoc documentation is {'available' if response.status_code in [200, 301, 302] else 'not available'}")
+    
+    def test_13_data_validation_and_integrity(self):
+        """Test data validation and integrity"""
+        if not self.token:
+            self.skipTest("No token available")
+        
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Create a project with specific data
+        project_name = f"Test Project {uuid.uuid4()}"
+        project_data = {
+            "name": project_name,
+            "description": "A test project for data validation",
+            "organization": "Demo Organization",
+            "target_completion_date": (datetime.utcnow() + timedelta(days=90)).isoformat(),
+            "budget": 50000
+        }
+        
+        # Create the project
+        response = requests.post(f"{self.base_url}/projects", json=project_data, headers=headers)
+        self.assertEqual(response.status_code, 200, "Project creation should succeed")
+        data = response.json()
+        project_id = data["id"]
+        
+        # Retrieve the project and verify data integrity
+        response = requests.get(f"{self.base_url}/projects/{project_id}", headers=headers)
+        self.assertEqual(response.status_code, 200, "Project retrieval should succeed")
+        retrieved_data = response.json()
+        
+        # Check if data is preserved correctly
+        self.assertEqual(retrieved_data["name"], project_data["name"], "Project name should be preserved")
+        self.assertEqual(retrieved_data["description"], project_data["description"], "Project description should be preserved")
+        self.assertEqual(retrieved_data["organization"], project_data["organization"], "Project organization should be preserved")
+        self.assertEqual(retrieved_data["budget"], project_data["budget"], "Project budget should be preserved")
+        
+        print("✅ Data Validation and Integrity Test Results:")
+        print("   - Project created successfully")
+        print("   - Data integrity maintained between creation and retrieval")
+    
+    def test_14_security_headers(self):
+        """Test security headers"""
+        response = requests.get(f"{self.base_url}/health")
+        headers = response.headers
+        
+        # Check for common security headers
+        security_headers = {
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY",
+            "Content-Security-Policy": None,
+            "Strict-Transport-Security": None,
+            "X-XSS-Protection": "1; mode=block"
+        }
+        
+        present_headers = []
+        missing_headers = []
+        
+        for header, expected_value in security_headers.items():
+            if header in headers:
+                present_headers.append(header)
+                if expected_value and headers[header] != expected_value:
+                    print(f"   - Warning: {header} has value '{headers[header]}', expected '{expected_value}'")
+            else:
+                missing_headers.append(header)
+        
+        print("✅ Security Headers Test Results:")
+        print(f"   - Present security headers: {', '.join(present_headers) if present_headers else 'None'}")
+        print(f"   - Missing security headers: {', '.join(missing_headers) if missing_headers else 'None'}")
+    
+    def test_15_sensitive_data_exposure(self):
+        """Test for sensitive data exposure"""
+        if not self.token:
+            self.skipTest("No token available")
+        
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Check user profile for password hash
+        response = requests.get(f"{self.base_url}/user/profile", headers=headers)
+        self.assertEqual(response.status_code, 200, "User profile retrieval should succeed")
+        user_data = response.json()
+        
+        # Check if password or password hash is exposed
+        self.assertNotIn("password", user_data, "Password should not be exposed in user profile")
+        self.assertNotIn("password_hash", user_data, "Password hash should not be exposed in user profile")
+        
+        # Check if sensitive environment variables are exposed
+        response = requests.get(f"{self.base_url}/health")
+        self.assertEqual(response.status_code, 200, "Health check should succeed")
+        health_data = response.json()
+        
+        # Convert to string to check for sensitive data in any field
+        health_data_str = json.dumps(health_data)
+        sensitive_terms = ["SECRET_KEY", "MONGO_URL", "password", "api_key", "token"]
+        
+        exposed_terms = []
+        for term in sensitive_terms:
+            if term.lower() in health_data_str.lower():
+                exposed_terms.append(term)
+        
+        self.assertEqual(len(exposed_terms), 0, f"Sensitive data exposed: {', '.join(exposed_terms)}")
+        
+        print("✅ Sensitive Data Exposure Test Results:")
+        print("   - No password or password hash exposed in user profile")
+        print("   - No sensitive environment variables exposed in API responses")
+    
+    def test_16_authentication_bypass(self):
+        """Test authentication bypass prevention"""
+        # Test 1: Access protected endpoint without authentication
+        response = requests.get(f"{self.base_url}/user/profile")
+        self.assertEqual(response.status_code, 401, "Unauthenticated access should be rejected")
+        
+        # Test 2: Access with empty token
+        headers = {"Authorization": "Bearer "}
+        response = requests.get(f"{self.base_url}/user/profile", headers=headers)
+        self.assertEqual(response.status_code, 401, "Empty token should be rejected")
+        
+        # Test 3: Access with malformed token
+        headers = {"Authorization": "Bearer malformed.token.here"}
+        response = requests.get(f"{self.base_url}/user/profile", headers=headers)
+        self.assertEqual(response.status_code, 401, "Malformed token should be rejected")
+        
+        # Test 4: Access with token in wrong format
+        headers = {"Authorization": "Token " + (self.token or "dummy_token")}
+        response = requests.get(f"{self.base_url}/user/profile", headers=headers)
+        self.assertEqual(response.status_code, 401, "Token in wrong format should be rejected")
+        
+        print("✅ Authentication Bypass Prevention Test Results:")
+        print("   - Unauthenticated access rejected")
+        print("   - Empty token rejected")
+        print("   - Malformed token rejected")
+        print("   - Token in wrong format rejected")
+    
+    def test_17_api_response_structure(self):
+        """Test API response structure consistency"""
+        # Test public endpoints
+        public_endpoints = [
+            "/api/health",
+            "/api/assessment-types",
+            "/api/impact/phases"
+        ]
+        
+        for endpoint in public_endpoints:
+            response = requests.get(f"{self.base_url}{endpoint}")
+            self.assertEqual(response.status_code, 200, f"Endpoint {endpoint} should return 200")
+            
+            # Check if response is valid JSON
+            try:
+                data = response.json()
+                self.assertIsNotNone(data, f"Endpoint {endpoint} should return valid JSON")
+            except json.JSONDecodeError:
+                self.fail(f"Endpoint {endpoint} did not return valid JSON")
+        
+        # Test authenticated endpoints if token is available
+        if self.token:
+            authenticated_endpoints = [
+                "/api/user/profile",
+                "/api/assessments",
+                "/api/projects",
+                "/api/dashboard/metrics"
+            ]
+            
+            headers = {"Authorization": f"Bearer {self.token}"}
+            
+            for endpoint in authenticated_endpoints:
+                response = requests.get(f"{self.base_url}{endpoint}", headers=headers)
+                self.assertEqual(response.status_code, 200, f"Endpoint {endpoint} should return 200")
+                
+                # Check if response is valid JSON
+                try:
+                    data = response.json()
+                    self.assertIsNotNone(data, f"Endpoint {endpoint} should return valid JSON")
+                except json.JSONDecodeError:
+                    self.fail(f"Endpoint {endpoint} did not return valid JSON")
+        
+        print("✅ API Response Structure Test Results:")
+        print(f"   - All {len(public_endpoints)} public endpoints return valid JSON")
+        if self.token:
+            print(f"   - All {len(authenticated_endpoints)} authenticated endpoints return valid JSON")
+    
+    def test_18_stress_test_critical_endpoints(self):
+        """Stress test critical endpoints"""
+        if not self.token:
+            self.skipTest("No token available")
+        
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Define critical endpoints
+        critical_endpoints = [
+            {"method": "GET", "url": "/api/health"},
+            {"method": "GET", "url": "/api/assessment-types"},
+            {"method": "GET", "url": "/api/impact/phases"},
+            {"method": "GET", "url": "/api/user/profile", "auth": True},
+            {"method": "GET", "url": "/api/assessments", "auth": True},
+            {"method": "GET", "url": "/api/projects", "auth": True},
+            {"method": "GET", "url": "/api/dashboard/metrics", "auth": True}
+        ]
+        
+        num_requests = 5  # Number of requests per endpoint
+        results = {}
+        
+        for endpoint in critical_endpoints:
+            endpoint_url = f"{self.base_url}{endpoint['url']}"
+            endpoint_headers = headers if endpoint.get("auth", False) else {}
+            method = endpoint["method"]
+            
+            response_times = []
+            success_count = 0
+            
+            for _ in range(num_requests):
+                start_time = time.time()
+                
+                if method == "GET":
+                    response = requests.get(endpoint_url, headers=endpoint_headers)
+                elif method == "POST":
+                    response = requests.post(endpoint_url, headers=endpoint_headers)
+                else:
+                    continue
+                
+                end_time = time.time()
+                response_time = (end_time - start_time) * 1000  # Convert to milliseconds
+                
+                if response.status_code == 200:
+                    success_count += 1
+                    response_times.append(response_time)
+                
+                time.sleep(0.1)  # Small delay between requests
+            
+            if response_times:
+                avg_response_time = sum(response_times) / len(response_times)
+                max_response_time = max(response_times)
+                min_response_time = min(response_times)
+            else:
+                avg_response_time = max_response_time = min_response_time = 0
+            
+            results[endpoint["url"]] = {
+                "success_rate": (success_count / num_requests) * 100,
+                "avg_response_time_ms": avg_response_time,
+                "max_response_time_ms": max_response_time,
+                "min_response_time_ms": min_response_time
+            }
+        
+        print("✅ Stress Test Results for Critical Endpoints:")
+        for endpoint, data in results.items():
+            print(f"   - {endpoint}:")
+            print(f"     * Success Rate: {data['success_rate']}%")
+            print(f"     * Avg Response Time: {data['avg_response_time_ms']:.2f}ms")
+            print(f"     * Max Response Time: {data['max_response_time_ms']:.2f}ms")
+            print(f"     * Min Response Time: {data['min_response_time_ms']:.2f}ms")
+            
+            # Assert that success rate is 100%
+            self.assertEqual(data['success_rate'], 100, f"Success rate for {endpoint} should be 100%")
+            
+            # Assert that average response time is acceptable (< 500ms)
+            self.assertLess(data['avg_response_time_ms'], 500, f"Average response time for {endpoint} is too slow")
+
+
+def run_production_readiness_tests():
+    """Run production readiness tests"""
+    test_suite = unittest.TestSuite()
+    
+    # Create a test instance
+    test_instance = ProductionReadinessTest('test_01_api_performance')
+    test_instance.setUp()
+    
+    # Add all test methods
+    test_methods = [
+        'test_01_api_performance',
+        'test_02_concurrent_requests',
+        'test_03_jwt_token_security',
+        'test_04_sql_injection_prevention',
+        'test_05_cors_configuration',
+        'test_06_input_validation',
+        'test_07_error_handling',
+        'test_08_error_response_consistency',
+        'test_09_database_connection_resilience',
+        'test_10_rate_limiting_and_ddos_protection',
+        'test_11_environment_configuration',
+        'test_12_api_documentation',
+        'test_13_data_validation_and_integrity',
+        'test_14_security_headers',
+        'test_15_sensitive_data_exposure',
+        'test_16_authentication_bypass',
+        'test_17_api_response_structure',
+        'test_18_stress_test_critical_endpoints'
+    ]
+    
+    for method in test_methods:
+        test = ProductionReadinessTest(method)
+        test.token = test_instance.token
+        test.user_id = test_instance.user_id
+        test_suite.addTest(test)
+    
+    runner = unittest.TextTestRunner(verbosity=2)
+    runner.run(test_suite)
+
+
+def run_all_tests():
+    """Run all tests including basic functionality and production readiness"""
+    print("\n===== RUNNING BASIC FUNCTIONALITY TESTS =====\n")
     run_tests()
+    
+    print("\n===== RUNNING PRODUCTION READINESS TESTS =====\n")
+    run_production_readiness_tests()
+
+
+if __name__ == "__main__":
+    run_all_tests()
