@@ -138,6 +138,12 @@ function App() {
   const [projectView, setProjectView] = useState('grid'); // grid or timeline
   const [expandedTasks, setExpandedTasks] = useState({});
 
+  // New Intelligence Layer States
+  const [implementationPlan, setImplementationPlan] = useState(null);
+  const [showImplementationPlan, setShowImplementationPlan] = useState(false);
+  const [customizedPlaybook, setCustomizedPlaybook] = useState(null);
+  const [showCustomizedPlaybook, setShowCustomizedPlaybook] = useState(false);
+
   useEffect(() => {
     fetchAssessmentTypes(); // Fetch assessment types on component mount
   }, []);
