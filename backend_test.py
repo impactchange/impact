@@ -1765,6 +1765,56 @@ def run_production_readiness_tests():
     runner.run(test_suite)
 
 
+def run_comprehensive_intelligence_tests():
+    """Run comprehensive tests for the new intelligence layer features"""
+    test_suite = unittest.TestSuite()
+    
+    # Create a test instance to share the token and assessment IDs
+    test_instance = IMPACTMethodologyAPITest('test_03_user_login')
+    test_instance.setUp()
+    test_instance.test_03_user_login()
+    
+    # Create different assessment types for testing
+    assessment_tests = [
+        IMPACTMethodologyAPITest('test_06_create_general_readiness_assessment'),
+        IMPACTMethodologyAPITest('test_07_create_software_implementation_assessment'),
+        IMPACTMethodologyAPITest('test_08_create_business_process_assessment'),
+        IMPACTMethodologyAPITest('test_09_create_manufacturing_operations_assessment')
+    ]
+    
+    for test in assessment_tests:
+        test.setUp()
+        test.token = test_instance.token
+        test.user_id = test_instance.user_id
+        test_suite.addTest(test)
+    
+    # Get the assessment IDs from the last test
+    last_test = assessment_tests[-1]
+    
+    # Add new intelligence layer tests
+    intelligence_tests = [
+        'test_25_new_week_by_week_implementation_plan',
+        'test_26_customized_playbook_generation',
+        'test_27_intelligence_layer_different_readiness_levels',
+        'test_28_budget_prediction_accuracy',
+        'test_29_impact_phase_alignment',
+        'test_30_success_probability_calculations',
+        'test_31_manufacturing_specific_features'
+    ]
+    
+    for test_name in intelligence_tests:
+        intelligence_test = IMPACTMethodologyAPITest(test_name)
+        intelligence_test.setUp()
+        intelligence_test.token = test_instance.token
+        intelligence_test.user_id = test_instance.user_id
+        intelligence_test.assessment_id = last_test.assessment_id
+        intelligence_test.typed_assessment_ids = last_test.typed_assessment_ids
+        test_suite.addTest(intelligence_test)
+    
+    runner = unittest.TextTestRunner(verbosity=2)
+    return runner.run(test_suite)
+
+
 def run_all_tests():
     """Run all tests including basic functionality and production readiness"""
     print("\n===== RUNNING BASIC FUNCTIONALITY TESTS =====\n")
@@ -1775,4 +1825,12 @@ def run_all_tests():
 
 
 if __name__ == "__main__":
-    run_all_tests()
+    print("🚀 Starting Comprehensive Intelligence Layer Testing...")
+    print("=" * 80)
+    result = run_comprehensive_intelligence_tests()
+    print("=" * 80)
+    if result.wasSuccessful():
+        print("✅ ALL INTELLIGENCE LAYER TESTS PASSED!")
+    else:
+        print("❌ Some tests failed. Check the output above for details.")
+        print(f"Failures: {len(result.failures)}, Errors: {len(result.errors)}")
