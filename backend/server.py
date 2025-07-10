@@ -3465,6 +3465,255 @@ async def generate_real_time_risk_monitoring(
         print(f"Risk Monitoring Generation Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to generate risk monitoring: {str(e)}")
 
+@app.post("/api/projects/{project_id}/detailed-budget-tracking")
+async def generate_detailed_budget_tracking_endpoint(
+    project_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Generate detailed task-level and phase-level budget tracking"""
+    try:
+        # Get project data
+        project = await db.projects.find_one({"id": project_id, "user_id": current_user.id})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Get associated assessment and implementation plan
+        assessment_id = project.get("assessment_id")
+        assessment_data = {}
+        implementation_plan = {}
+        
+        if assessment_id:
+            assessment = await db.assessments.find_one({"id": assessment_id, "user_id": current_user.id})
+            if assessment:
+                assessment_data = {
+                    "leadership_support": assessment.get("leadership_support", {}).get("score", 3),
+                    "resource_availability": assessment.get("resource_availability", {}).get("score", 3),
+                    "change_management_maturity": assessment.get("change_management_maturity", {}).get("score", 3),
+                    "communication_effectiveness": assessment.get("communication_effectiveness", {}).get("score", 3),
+                    "workforce_adaptability": assessment.get("workforce_adaptability", {}).get("score", 3),
+                    "technical_readiness": assessment.get("technical_readiness", {}).get("score", 3),
+                    "stakeholder_engagement": assessment.get("stakeholder_engagement", {}).get("score", 3)
+                }
+                
+                # Generate implementation plan for budget tracking
+                overall_score = assessment.get("overall_score", 3.0)
+                assessment_type = assessment.get("assessment_type", "general_readiness")
+                implementation_plan = generate_week_by_week_plan(assessment_data, assessment_type, overall_score)
+        
+        # Generate detailed budget tracking
+        budget_tracking = generate_detailed_budget_tracking(project, assessment_data, implementation_plan)
+        
+        return budget_tracking
+        
+    except Exception as e:
+        print(f"Detailed Budget Tracking Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate detailed budget tracking: {str(e)}")
+
+@app.post("/api/projects/{project_id}/advanced-forecasting")
+async def generate_advanced_project_forecasting_endpoint(
+    project_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Generate advanced project outcome forecasting"""
+    try:
+        # Get project data
+        project = await db.projects.find_one({"id": project_id, "user_id": current_user.id})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Get associated assessment and analytics
+        assessment_id = project.get("assessment_id")
+        assessment_data = {}
+        predictive_analytics = {}
+        budget_tracking = {}
+        
+        if assessment_id:
+            assessment = await db.assessments.find_one({"id": assessment_id, "user_id": current_user.id})
+            if assessment:
+                assessment_data = {
+                    "overall_score": assessment.get("overall_score", 3.0),
+                    "leadership_support": assessment.get("leadership_support", {}).get("score", 3),
+                    "resource_availability": assessment.get("resource_availability", {}).get("score", 3),
+                    "change_management_maturity": assessment.get("change_management_maturity", {}).get("score", 3),
+                    "communication_effectiveness": assessment.get("communication_effectiveness", {}).get("score", 3),
+                    "workforce_adaptability": assessment.get("workforce_adaptability", {}).get("score", 3),
+                    "technical_readiness": assessment.get("technical_readiness", {}).get("score", 3),
+                    "stakeholder_engagement": assessment.get("stakeholder_engagement", {}).get("score", 3),
+                    "maintenance_operations_alignment": assessment.get("maintenance_operations_alignment", {}).get("score", 3)
+                }
+                
+                # Generate predictive analytics for forecasting
+                assessment_type = assessment.get("assessment_type", "general_readiness")
+                overall_score = assessment.get("overall_score", 3.0)
+                
+                # Simulate predictive analytics data
+                predictive_analytics = {
+                    "project_outlook": {
+                        "success_probability": min(95, max(15, overall_score * 18))
+                    }
+                }
+                
+                # Simulate budget tracking data
+                implementation_plan = generate_week_by_week_plan(assessment_data, assessment_type, overall_score)
+                budget_tracking = generate_detailed_budget_tracking(project, assessment_data, implementation_plan)
+        
+        # Generate advanced forecasting
+        forecasting = generate_advanced_project_forecasting(project, assessment_data, predictive_analytics, budget_tracking)
+        
+        return forecasting
+        
+    except Exception as e:
+        print(f"Advanced Forecasting Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate advanced forecasting: {str(e)}")
+
+@app.post("/api/projects/{project_id}/stakeholder-communications")
+async def generate_stakeholder_communications_endpoint(
+    project_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Generate automated stakeholder communication content"""
+    try:
+        # Get project data
+        project = await db.projects.find_one({"id": project_id, "user_id": current_user.id})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Get associated assessment
+        assessment_id = project.get("assessment_id")
+        assessment_data = {}
+        
+        if assessment_id:
+            assessment = await db.assessments.find_one({"id": assessment_id, "user_id": current_user.id})
+            if assessment:
+                assessment_data = {
+                    "leadership_support": assessment.get("leadership_support", {}).get("score", 3),
+                    "resource_availability": assessment.get("resource_availability", {}).get("score", 3),
+                    "change_management_maturity": assessment.get("change_management_maturity", {}).get("score", 3),
+                    "communication_effectiveness": assessment.get("communication_effectiveness", {}).get("score", 3),
+                    "workforce_adaptability": assessment.get("workforce_adaptability", {}).get("score", 3),
+                    "technical_readiness": assessment.get("technical_readiness", {}).get("score", 3)
+                }
+                
+                # Generate supporting data
+                overall_score = assessment.get("overall_score", 3.0)
+                assessment_type = assessment.get("assessment_type", "general_readiness")
+                implementation_plan = generate_week_by_week_plan(assessment_data, assessment_type, overall_score)
+                budget_tracking = generate_detailed_budget_tracking(project, assessment_data, implementation_plan)
+                
+                predictive_analytics = {
+                    "project_outlook": {
+                        "success_probability": min(95, max(15, overall_score * 18))
+                    }
+                }
+                
+                project_forecasting = generate_advanced_project_forecasting(project, assessment_data, predictive_analytics, budget_tracking)
+        
+        # Generate stakeholder communications
+        communications = generate_stakeholder_communications(project, budget_tracking, project_forecasting, assessment_data)
+        
+        return communications
+        
+    except Exception as e:
+        print(f"Stakeholder Communications Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate stakeholder communications: {str(e)}")
+
+@app.post("/api/projects/{project_id}/manufacturing-excellence-tracking")
+async def generate_manufacturing_excellence_tracking(
+    project_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Generate manufacturing excellence correlation tracking"""
+    try:
+        # Get project data
+        project = await db.projects.find_one({"id": project_id, "user_id": current_user.id})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Get associated assessment
+        assessment_id = project.get("assessment_id")
+        assessment_data = {}
+        
+        if assessment_id:
+            assessment = await db.assessments.find_one({"id": assessment_id, "user_id": current_user.id})
+            if assessment:
+                assessment_data = {
+                    "maintenance_operations_alignment": assessment.get("maintenance_operations_alignment", {}).get("score", 3),
+                    "technical_readiness": assessment.get("technical_readiness", {}).get("score", 3),
+                    "workforce_adaptability": assessment.get("workforce_adaptability", {}).get("score", 3),
+                    "safety_compliance": assessment.get("safety_compliance", {}).get("score", 3),
+                    "shift_work_considerations": assessment.get("shift_work_considerations", {}).get("score", 3)
+                }
+        
+        # Calculate manufacturing excellence metrics
+        maintenance_excellence_score = assessment_data.get("maintenance_operations_alignment", 3.0)
+        operational_efficiency_potential = (
+            assessment_data.get("technical_readiness", 3.0) +
+            assessment_data.get("workforce_adaptability", 3.0) +
+            assessment_data.get("safety_compliance", 3.0)
+        ) / 3
+        
+        # Manufacturing performance predictions
+        performance_improvements = {
+            "unplanned_downtime_reduction": min(60, max(10, maintenance_excellence_score * 12)),
+            "overall_equipment_effectiveness": min(35, max(5, maintenance_excellence_score * 7)),
+            "maintenance_cost_reduction": min(30, max(5, maintenance_excellence_score * 6)),
+            "safety_performance_improvement": min(25, max(5, assessment_data.get("safety_compliance", 3.0) * 5)),
+            "operational_efficiency_gain": min(40, max(5, operational_efficiency_potential * 8))
+        }
+        
+        # ROI calculations
+        estimated_annual_savings = sum(performance_improvements.values()) * 1000  # Simplified calculation
+        implementation_cost = project.get("total_budget", 90000)
+        roi_percentage = ((estimated_annual_savings - implementation_cost) / implementation_cost * 100) if implementation_cost > 0 else 0
+        
+        excellence_tracking = {
+            "project_id": project_id,
+            "project_name": project.get("project_name", ""),
+            "maintenance_excellence": {
+                "current_score": round(maintenance_excellence_score, 1),
+                "potential_score": min(5.0, maintenance_excellence_score + 1.5),
+                "improvement_pathway": generate_excellence_pathway(maintenance_excellence_score, operational_efficiency_potential * 20),
+                "critical_success_factors": [
+                    "Maintenance-operations alignment",
+                    "Technical readiness and adoption",
+                    "Workforce adaptability and training",
+                    "Safety and compliance integration"
+                ]
+            },
+            "performance_predictions": {
+                "unplanned_downtime_reduction": f"{performance_improvements['unplanned_downtime_reduction']:.1f}%",
+                "oee_improvement": f"{performance_improvements['overall_equipment_effectiveness']:.1f}%",
+                "maintenance_cost_reduction": f"{performance_improvements['maintenance_cost_reduction']:.1f}%",
+                "safety_improvement": f"{performance_improvements['safety_performance_improvement']:.1f}%",
+                "operational_efficiency": f"{performance_improvements['operational_efficiency_gain']:.1f}%"
+            },
+            "roi_analysis": {
+                "estimated_annual_savings": round(estimated_annual_savings, 0),
+                "implementation_investment": implementation_cost,
+                "roi_percentage": round(roi_percentage, 1),
+                "payback_period_months": max(6, min(36, 12 / (roi_percentage / 100))) if roi_percentage > 0 else 36,
+                "business_case_strength": "Strong" if roi_percentage > 50 else "Moderate" if roi_percentage > 20 else "Developing"
+            },
+            "correlation_metrics": {
+                "maintenance_operations_correlation": round(assessment_data.get("maintenance_operations_alignment", 3.0) / 5.0, 2),
+                "technology_adoption_correlation": round(assessment_data.get("technical_readiness", 3.0) / 5.0, 2),
+                "workforce_readiness_correlation": round(assessment_data.get("workforce_adaptability", 3.0) / 5.0, 2)
+            },
+            "manufacturing_kpis": {
+                "equipment_reliability": f"{60 + maintenance_excellence_score * 8:.1f}%",
+                "planned_maintenance_ratio": f"{40 + maintenance_excellence_score * 12:.1f}%",
+                "mean_time_to_repair": f"{24 - maintenance_excellence_score * 4:.1f} hours",
+                "maintenance_productivity": f"{70 + operational_efficiency_potential * 6:.1f}%"
+            },
+            "generated_at": datetime.utcnow()
+        }
+        
+        return excellence_tracking
+        
+    except Exception as e:
+        print(f"Manufacturing Excellence Tracking Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate manufacturing excellence tracking: {str(e)}")
+
 def generate_recommended_actions(task_predictions: List[dict], budget_risk: dict, scope_creep_risk: dict) -> List[str]:
     """Generate recommended actions based on predictive analytics"""
     actions = []
