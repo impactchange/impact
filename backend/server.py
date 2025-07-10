@@ -2194,6 +2194,157 @@ async def get_project(project_id: str, current_user: User = Depends(get_current_
         print(f"Get Project Error: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to retrieve project")
 
+@app.post("/api/assessments/{assessment_id}/implementation-plan")
+async def generate_implementation_plan_endpoint(
+    assessment_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Generate customized week-by-week implementation plan based on assessment results"""
+    try:
+        # Get assessment data
+        assessment = await db.assessments.find_one({"id": assessment_id, "user_id": current_user.id})
+        if not assessment:
+            raise HTTPException(status_code=404, detail="Assessment not found")
+        
+        # Extract assessment data for plan generation
+        assessment_data = {
+            "leadership_support": assessment.get("leadership_support", {}).get("score", 3),
+            "resource_availability": assessment.get("resource_availability", {}).get("score", 3),
+            "change_management_maturity": assessment.get("change_management_maturity", {}).get("score", 3),
+            "communication_effectiveness": assessment.get("communication_effectiveness", {}).get("score", 3),
+            "workforce_adaptability": assessment.get("workforce_adaptability", {}).get("score", 3)
+        }
+        
+        assessment_type = assessment.get("assessment_type", "general_readiness")
+        overall_score = assessment.get("overall_score", 3.0)
+        
+        # Generate week-by-week plan
+        implementation_plan = generate_week_by_week_plan(assessment_data, assessment_type, overall_score)
+        
+        # Add project-specific metadata
+        implementation_plan["metadata"] = {
+            "assessment_id": assessment_id,
+            "project_name": assessment.get("project_name", ""),
+            "organization": assessment.get("organization", ""),
+            "assessment_type": assessment_type,
+            "overall_readiness_score": overall_score,
+            "readiness_level": assessment.get("readiness_level", ""),
+            "generated_at": datetime.utcnow(),
+            "generated_by": current_user.full_name
+        }
+        
+        return implementation_plan
+        
+    except Exception as e:
+        print(f"Implementation Plan Generation Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate implementation plan: {str(e)}")
+
+@app.post("/api/assessments/{assessment_id}/customized-playbook")
+async def generate_customized_playbook(
+    assessment_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Generate customized change management playbook based on assessment results"""
+    try:
+        # Get assessment data
+        assessment = await db.assessments.find_one({"id": assessment_id, "user_id": current_user.id})
+        if not assessment:
+            raise HTTPException(status_code=404, detail="Assessment not found")
+        
+        # Generate AI-powered customized playbook
+        chat = LlmChat(
+            api_key=ANTHROPIC_API_KEY,
+            session_id=f"playbook_generation_{assessment_id}",
+            system_message="""You are an expert change management consultant specializing in the IMPACT Methodology and DigitalThinker's proven approach to manufacturing excellence. 
+
+            Generate a comprehensive, customized change management playbook based on the assessment results. The playbook should be tailored to the specific organization's readiness level, strengths, and challenges.
+
+            Structure the playbook with:
+            1. Executive Summary
+            2. Assessment-Based Recommendations
+            3. Phase-by-Phase Implementation Guide
+            4. Risk Mitigation Strategies
+            5. Success Metrics and Monitoring
+            6. Stakeholder Engagement Strategy
+            7. Communication Plan
+            8. Training and Development Plan
+            9. Resistance Management Approach
+            10. Guarantee-Backed Success Framework
+
+            Focus on practical, actionable guidance that consultants can implement immediately."""
+        ).with_model("anthropic", "claude-sonnet-4-20250514")
+        
+        # Create detailed prompt for playbook generation
+        assessment_data = {
+            "leadership_support": assessment.get("leadership_support", {}).get("score", 3),
+            "resource_availability": assessment.get("resource_availability", {}).get("score", 3),
+            "change_management_maturity": assessment.get("change_management_maturity", {}).get("score", 3),
+            "communication_effectiveness": assessment.get("communication_effectiveness", {}).get("score", 3),
+            "workforce_adaptability": assessment.get("workforce_adaptability", {}).get("score", 3)
+        }
+        
+        prompt = f"""
+        Generate a comprehensive, customized change management playbook for the following organization:
+
+        PROJECT DETAILS:
+        • Project Name: {assessment.get("project_name", "")}
+        • Organization: {assessment.get("organization", "")}
+        • Assessment Type: {assessment.get("assessment_type", "")}
+        • Overall Readiness Score: {assessment.get("overall_score", 0)}/5
+        • Readiness Level: {assessment.get("readiness_level", "")}
+
+        ASSESSMENT SCORES (1-5 scale):
+        • Leadership Support: {assessment_data["leadership_support"]}/5
+        • Resource Availability: {assessment_data["resource_availability"]}/5
+        • Change Management Maturity: {assessment_data["change_management_maturity"]}/5
+        • Communication Effectiveness: {assessment_data["communication_effectiveness"]}/5
+        • Workforce Adaptability: {assessment_data["workforce_adaptability"]}/5
+
+        EXISTING RECOMMENDATIONS:
+        {'; '.join(assessment.get("recommendations", []))}
+
+        RISK FACTORS:
+        {'; '.join(assessment.get("risk_factors", []))}
+
+        SUCCESS PROBABILITY: {assessment.get("success_probability", 0)}%
+
+        Please generate a detailed, actionable playbook that addresses the specific strengths and challenges identified in this assessment. Focus on practical implementation guidance that will ensure project success.
+
+        The playbook should be approximately 2000-3000 words and include specific tactics, tools, and strategies tailored to this organization's unique profile.
+        """
+        
+        # Generate playbook content
+        response = await chat.send_message(UserMessage(content=prompt))
+        playbook_content = response.text
+        
+        # Structure the playbook response
+        playbook = {
+            "assessment_id": assessment_id,
+            "project_name": assessment.get("project_name", ""),
+            "organization": assessment.get("organization", ""),
+            "assessment_type": assessment.get("assessment_type", ""),
+            "overall_readiness_score": assessment.get("overall_score", 0),
+            "readiness_level": assessment.get("readiness_level", ""),
+            "success_probability": assessment.get("success_probability", 0),
+            "content": playbook_content,
+            "generated_at": datetime.utcnow(),
+            "generated_by": current_user.full_name,
+            "version": "1.0",
+            "customization_factors": {
+                "leadership_support": assessment_data["leadership_support"],
+                "resource_availability": assessment_data["resource_availability"],
+                "change_management_maturity": assessment_data["change_management_maturity"],
+                "communication_effectiveness": assessment_data["communication_effectiveness"],
+                "workforce_adaptability": assessment_data["workforce_adaptability"]
+            }
+        }
+        
+        return playbook
+        
+    except Exception as e:
+        print(f"Customized Playbook Generation Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate customized playbook: {str(e)}")
+
 @app.put("/api/projects/{project_id}")
 async def update_project(
     project_id: str,
