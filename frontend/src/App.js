@@ -1267,6 +1267,51 @@ function App() {
                   </div>
                 </div>
               )}
+
+              {/* Enhancement 3: Detailed Project Management Features */}
+              <div className="mb-6 border-t pt-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                  <BarChart3 className="h-5 w-5 mr-2" />
+                  Advanced Project Management
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <button
+                    onClick={() => generateDetailedBudgetTracking(selectedProject.id)}
+                    className="flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Budget Tracking
+                  </button>
+                  <button
+                    onClick={() => generateAdvancedForecasting(selectedProject.id)}
+                    className="flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Project Forecasting
+                  </button>
+                  <button
+                    onClick={() => generateStakeholderCommunications(selectedProject.id)}
+                    className="flex items-center justify-center px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Stakeholder Comms
+                  </button>
+                  <button
+                    onClick={() => generateRiskMonitoring(selectedProject.id)}
+                    className="flex items-center justify-center px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                  >
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                    Risk Monitoring
+                  </button>
+                  <button
+                    onClick={() => generateManufacturingExcellenceTracking(selectedProject.id)}
+                    className="flex items-center justify-center px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                  >
+                    <Award className="h-4 w-4 mr-2" />
+                    Manufacturing Excellence
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
