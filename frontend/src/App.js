@@ -1577,7 +1577,7 @@ function App() {
               )}
 
               {assessment.recommendations && assessment.recommendations.length > 0 && (
-                <div>
+                <div className="mb-4">
                   <h4 className="font-semibold text-gray-800 mb-2 flex items-center">
                     <CheckCircle className="h-4 w-4 mr-1" />
                     AI Recommendations
@@ -1594,6 +1594,30 @@ function App() {
                   </ul>
                 </div>
               )}
+
+              {/* New Intelligence Features */}
+              <div className="mt-6 border-t pt-4">
+                <h4 className="font-semibold text-gray-800 mb-3 flex items-center">
+                  <Lightbulb className="h-4 w-4 mr-1" />
+                  Implementation Intelligence
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <button
+                    onClick={() => generateImplementationPlan(assessment.id)}
+                    className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Generate Week-by-Week Plan
+                  </button>
+                  <button
+                    onClick={() => generateCustomizedPlaybook(assessment.id)}
+                    className="flex items-center justify-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Generate Custom Playbook
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
         </div>
