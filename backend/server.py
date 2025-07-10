@@ -2315,7 +2315,7 @@ async def generate_customized_playbook(
         
         # Generate playbook content
         response = await chat.send_message(UserMessage(prompt))
-        playbook_content = response.text
+        playbook_content = response if isinstance(response, str) else response.text
         
         # Structure the playbook response
         playbook = {
