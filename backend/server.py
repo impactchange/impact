@@ -2792,6 +2792,218 @@ async def generate_customized_playbook(
         print(f"Customized Playbook Generation Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to generate customized playbook: {str(e)}")
 
+@app.post("/api/assessments/{assessment_id}/predictive-analytics")
+async def generate_predictive_analytics(
+    assessment_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Generate comprehensive predictive analytics based on assessment results"""
+    try:
+        # Get assessment data
+        assessment = await db.assessments.find_one({"id": assessment_id, "user_id": current_user.id})
+        if not assessment:
+            raise HTTPException(status_code=404, detail="Assessment not found")
+        
+        # Extract assessment data for analytics
+        assessment_data = {
+            "leadership_support": assessment.get("leadership_support", {}).get("score", 3),
+            "resource_availability": assessment.get("resource_availability", {}).get("score", 3),
+            "change_management_maturity": assessment.get("change_management_maturity", {}).get("score", 3),
+            "communication_effectiveness": assessment.get("communication_effectiveness", {}).get("score", 3),
+            "workforce_adaptability": assessment.get("workforce_adaptability", {}).get("score", 3),
+            "technical_readiness": assessment.get("technical_readiness", {}).get("score", 3),
+            "stakeholder_engagement": assessment.get("stakeholder_engagement", {}).get("score", 3)
+        }
+        
+        assessment_type = assessment.get("assessment_type", "general_readiness")
+        overall_score = assessment.get("overall_score", 3.0)
+        
+        # Generate task-specific success predictions
+        task_predictions = []
+        for task_num in range(1, 11):
+            task_id = f"task_{task_num}"
+            prediction = predict_task_success_probability(task_id, assessment_data, overall_score)
+            task_predictions.append(prediction)
+        
+        # Estimate total budget from implementation plan (default if not available)
+        total_budget = 90000  # Default budget estimate
+        
+        # Generate predictive analytics
+        budget_risk = predict_budget_overrun_risk(assessment_data, overall_score, total_budget)
+        scope_creep_risk = predict_scope_creep_risk(assessment_data, assessment_type)
+        timeline_optimization = predict_timeline_optimization(assessment_data, overall_score)
+        risk_trending = generate_predictive_risk_trending(assessment_data, overall_score)
+        
+        # Compile comprehensive analytics
+        predictive_analytics = {
+            "assessment_id": assessment_id,
+            "project_name": assessment.get("project_name", ""),
+            "organization": assessment.get("organization", ""),
+            "assessment_type": assessment_type,
+            "overall_readiness_score": overall_score,
+            "generated_at": datetime.utcnow(),
+            "generated_by": current_user.full_name,
+            
+            # Task-specific predictions
+            "task_success_predictions": task_predictions,
+            "highest_risk_tasks": sorted(task_predictions, key=lambda x: x["success_probability"])[:3],
+            "lowest_risk_tasks": sorted(task_predictions, key=lambda x: x["success_probability"], reverse=True)[:3],
+            
+            # Budget predictions
+            "budget_risk_analysis": budget_risk,
+            
+            # Scope predictions
+            "scope_creep_analysis": scope_creep_risk,
+            
+            # Timeline predictions
+            "timeline_optimization": timeline_optimization,
+            
+            # Risk trending
+            "risk_trending": risk_trending,
+            
+            # Overall project outlook
+            "project_outlook": {
+                "overall_risk_level": "High" if overall_score < 2.5 else "Medium" if overall_score < 3.5 else "Low",
+                "success_probability": round(min(95, max(15, overall_score * 18)), 1),
+                "recommended_actions": generate_recommended_actions(task_predictions, budget_risk, scope_creep_risk),
+                "critical_success_factors": identify_critical_success_factors(assessment_data),
+                "key_monitoring_points": risk_trending["critical_monitoring_weeks"]
+            }
+        }
+        
+        return predictive_analytics
+        
+    except Exception as e:
+        print(f"Predictive Analytics Generation Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate predictive analytics: {str(e)}")
+
+@app.post("/api/projects/{project_id}/risk-monitoring")
+async def generate_real_time_risk_monitoring(
+    project_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Generate real-time risk monitoring dashboard for active projects"""
+    try:
+        # Get project data
+        project = await db.projects.find_one({"id": project_id, "user_id": current_user.id})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Get associated assessment if available
+        assessment_id = project.get("assessment_id")
+        assessment_data = {}
+        if assessment_id:
+            assessment = await db.assessments.find_one({"id": assessment_id, "user_id": current_user.id})
+            if assessment:
+                assessment_data = {
+                    "leadership_support": assessment.get("leadership_support", {}).get("score", 3),
+                    "resource_availability": assessment.get("resource_availability", {}).get("score", 3),
+                    "change_management_maturity": assessment.get("change_management_maturity", {}).get("score", 3),
+                    "communication_effectiveness": assessment.get("communication_effectiveness", {}).get("score", 3),
+                    "workforce_adaptability": assessment.get("workforce_adaptability", {}).get("score", 3)
+                }
+        
+        # Calculate current project metrics
+        overall_progress = calculate_project_progress(project)
+        spent_budget = project.get("spent_budget", 0)
+        total_budget = project.get("total_budget", 90000)
+        budget_utilization = (spent_budget / total_budget * 100) if total_budget > 0 else 0
+        
+        # Generate risk alerts
+        risk_alerts = []
+        
+        # Budget risk alerts
+        if budget_utilization > 80:
+            risk_alerts.append({
+                "type": "Budget",
+                "severity": "High",
+                "message": f"Budget utilization at {budget_utilization:.1f}% - immediate attention required",
+                "recommended_action": "Review remaining activities and implement cost controls"
+            })
+        elif budget_utilization > 60:
+            risk_alerts.append({
+                "type": "Budget",
+                "severity": "Medium",
+                "message": f"Budget utilization at {budget_utilization:.1f}% - monitor closely",
+                "recommended_action": "Review upcoming expenses and optimize resource allocation"
+            })
+        
+        # Schedule risk alerts
+        if overall_progress < 60 and budget_utilization > 70:
+            risk_alerts.append({
+                "type": "Schedule",
+                "severity": "High",
+                "message": "Project behind schedule with high budget utilization",
+                "recommended_action": "Accelerate critical path activities and review scope"
+            })
+        
+        # Generate trending analysis
+        current_week = min(10, max(1, int(overall_progress / 10) + 1))
+        
+        risk_monitoring = {
+            "project_id": project_id,
+            "project_name": project.get("project_name", ""),
+            "current_status": {
+                "overall_progress": round(overall_progress, 1),
+                "current_week": current_week,
+                "budget_utilization": round(budget_utilization, 1),
+                "health_status": project.get("health_status", "green")
+            },
+            "risk_alerts": risk_alerts,
+            "trend_analysis": {
+                "budget_trend": "On Track" if budget_utilization <= overall_progress else "Over Budget",
+                "schedule_trend": "On Track" if overall_progress >= (current_week * 10) else "Behind Schedule",
+                "scope_trend": "Stable" if len(risk_alerts) == 0 else "At Risk"
+            },
+            "predictive_insights": {
+                "completion_probability": min(95, max(30, 100 - len(risk_alerts) * 20)),
+                "budget_overrun_risk": "Low" if budget_utilization < 80 else "High",
+                "timeline_risk": "Low" if overall_progress >= (current_week * 8) else "High"
+            },
+            "recommendations": generate_real_time_recommendations(risk_alerts, overall_progress, budget_utilization),
+            "generated_at": datetime.utcnow()
+        }
+        
+        return risk_monitoring
+        
+    except Exception as e:
+        print(f"Risk Monitoring Generation Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate risk monitoring: {str(e)}")
+
+def generate_recommended_actions(task_predictions: List[dict], budget_risk: dict, scope_creep_risk: dict) -> List[str]:
+    """Generate recommended actions based on predictive analytics"""
+    actions = []
+    
+    # Task-specific recommendations
+    high_risk_tasks = [task for task in task_predictions if task["success_probability"] < 60]
+    if high_risk_tasks:
+        actions.append(f"Focus additional attention on {len(high_risk_tasks)} high-risk tasks")
+    
+    # Budget recommendations
+    if budget_risk["risk_level"] == "High":
+        actions.append("Implement strict budget controls and regular monitoring")
+    
+    # Scope recommendations
+    if scope_creep_risk["impact_level"] == "High":
+        actions.append("Establish formal change control process immediately")
+    
+    return actions
+
+def generate_real_time_recommendations(risk_alerts: List[dict], progress: float, budget_utilization: float) -> List[str]:
+    """Generate real-time recommendations for project management"""
+    recommendations = []
+    
+    if len(risk_alerts) > 2:
+        recommendations.append("Implement immediate risk mitigation measures")
+    
+    if budget_utilization > progress + 10:
+        recommendations.append("Review and optimize resource allocation")
+    
+    if progress < 50:
+        recommendations.append("Accelerate critical path activities")
+    
+    return recommendations
+
 @app.put("/api/projects/{project_id}")
 async def update_project(
     project_id: str,
