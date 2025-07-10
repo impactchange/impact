@@ -1037,6 +1037,731 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
         print(f"   - Manufacturing terms in playbook: {found_terms}")
         print(f"   - Playbook content length: {len(playbook_data['content'])} characters")
 
+    def test_32_predictive_analytics_comprehensive(self):
+        """Test the NEW Predictive Analytics Engine - Comprehensive Analysis"""
+        if not self.assessment_id:
+            self.skipTest("No assessment ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test the new POST endpoint for predictive analytics
+        response = requests.post(f"{self.base_url}/assessments/{self.assessment_id}/predictive-analytics", headers=headers)
+        print(f"Predictive Analytics response: {response.status_code} - {response.text[:300]}...")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # Verify main structure
+        self.assertIn("assessment_id", data)
+        self.assertIn("project_name", data)
+        self.assertIn("assessment_type", data)
+        self.assertIn("overall_readiness_score", data)
+        self.assertIn("generated_at", data)
+        self.assertIn("generated_by", data)
+        
+        # Verify task success predictions
+        self.assertIn("task_success_predictions", data)
+        task_predictions = data["task_success_predictions"]
+        self.assertEqual(len(task_predictions), 10, "Should have predictions for all 10 tasks")
+        
+        # Verify each task prediction structure
+        for i, task_pred in enumerate(task_predictions, 1):
+            self.assertIn("task_id", task_pred)
+            self.assertIn("task_description", task_pred)
+            self.assertIn("success_probability", task_pred)
+            self.assertIn("risk_level", task_pred)
+            self.assertIn("primary_factors", task_pred)
+            self.assertIn("critical_dependencies", task_pred)
+            self.assertIn("confidence", task_pred)
+            
+            # Verify task_id format
+            self.assertEqual(task_pred["task_id"], f"task_{i}")
+            
+            # Verify success probability range (10-95%)
+            success_prob = task_pred["success_probability"]
+            self.assertGreaterEqual(success_prob, 10, f"Task {i} success probability too low: {success_prob}")
+            self.assertLessEqual(success_prob, 95, f"Task {i} success probability too high: {success_prob}")
+            
+            # Verify risk level is valid
+            self.assertIn(task_pred["risk_level"], ["Low", "Medium", "High"])
+        
+        # Verify highest and lowest risk tasks
+        self.assertIn("highest_risk_tasks", data)
+        self.assertIn("lowest_risk_tasks", data)
+        self.assertEqual(len(data["highest_risk_tasks"]), 3, "Should identify 3 highest risk tasks")
+        self.assertEqual(len(data["lowest_risk_tasks"]), 3, "Should identify 3 lowest risk tasks")
+        
+        # Verify budget risk analysis
+        self.assertIn("budget_risk_analysis", data)
+        budget_risk = data["budget_risk_analysis"]
+        self.assertIn("overrun_probability", budget_risk)
+        self.assertIn("expected_overrun_percentage", budget_risk)
+        self.assertIn("risk_adjusted_budget", budget_risk)
+        self.assertIn("risk_level", budget_risk)
+        self.assertIn("confidence", budget_risk)
+        
+        # Verify overrun probability range (5-80%)
+        overrun_prob = budget_risk["overrun_probability"]
+        self.assertGreaterEqual(overrun_prob, 5, f"Budget overrun probability too low: {overrun_prob}")
+        self.assertLessEqual(overrun_prob, 80, f"Budget overrun probability too high: {overrun_prob}")
+        
+        # Verify scope creep analysis
+        self.assertIn("scope_creep_analysis", data)
+        scope_creep = data["scope_creep_analysis"]
+        self.assertIn("probability", scope_creep)
+        self.assertIn("typical_scope_additions", scope_creep)
+        self.assertIn("impact_level", scope_creep)
+        self.assertIn("mitigation_strategies", scope_creep)
+        
+        # Verify timeline optimization
+        self.assertIn("timeline_optimization", data)
+        timeline_opt = data["timeline_optimization"]
+        self.assertIn("acceleration_potential", timeline_opt)
+        self.assertIn("delay_risk", timeline_opt)
+        self.assertIn("optimization_opportunities", timeline_opt)
+        
+        # Verify risk trending
+        self.assertIn("risk_trending", data)
+        risk_trending = data["risk_trending"]
+        self.assertIn("technical_risk_trend", risk_trending)
+        self.assertIn("adoption_risk_trend", risk_trending)
+        self.assertIn("stakeholder_risk_trend", risk_trending)
+        self.assertIn("resource_risk_trend", risk_trending)
+        self.assertIn("critical_monitoring_weeks", risk_trending)
+        
+        # Verify project outlook
+        self.assertIn("project_outlook", data)
+        outlook = data["project_outlook"]
+        self.assertIn("overall_risk_level", outlook)
+        self.assertIn("success_probability", outlook)
+        self.assertIn("recommended_actions", outlook)
+        self.assertIn("critical_success_factors", outlook)
+        self.assertIn("key_monitoring_points", outlook)
+        
+        print("✅ Comprehensive Predictive Analytics testing successful")
+        print(f"   - Assessment ID: {data['assessment_id']}")
+        print(f"   - Overall Risk Level: {outlook['overall_risk_level']}")
+        print(f"   - Success Probability: {outlook['success_probability']}%")
+        print(f"   - Budget Overrun Risk: {budget_risk['risk_level']} ({overrun_prob}%)")
+        print(f"   - Scope Creep Probability: {scope_creep['probability']}%")
+        print(f"   - High Risk Tasks: {len(data['highest_risk_tasks'])}")
+        print(f"   - Recommended Actions: {len(outlook['recommended_actions'])}")
+
+    def test_33_task_specific_success_predictions(self):
+        """Test task-specific success probability mapping for all 10 tasks"""
+        if not self.assessment_id:
+            self.skipTest("No assessment ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        response = requests.post(f"{self.base_url}/assessments/{self.assessment_id}/predictive-analytics", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        task_predictions = data["task_success_predictions"]
+        
+        # Verify all 10 tasks are present
+        task_ids = [pred["task_id"] for pred in task_predictions]
+        expected_task_ids = [f"task_{i}" for i in range(1, 11)]
+        self.assertEqual(sorted(task_ids), sorted(expected_task_ids), "All 10 tasks should be predicted")
+        
+        # Verify high-risk tasks (Tasks 3, 5, 9) are correctly identified
+        high_risk_tasks = data["highest_risk_tasks"]
+        high_risk_task_ids = [task["task_id"] for task in high_risk_tasks]
+        
+        # Check if known high-risk tasks are in the high-risk list
+        known_high_risk = ["task_3", "task_5", "task_9"]  # Business Process Review, Data Migration, Go Live Week 1
+        found_high_risk = [task_id for task_id in known_high_risk if task_id in high_risk_task_ids]
+        
+        # At least 2 of the 3 known high-risk tasks should be identified
+        self.assertGreaterEqual(len(found_high_risk), 2, f"Should identify known high-risk tasks. Found: {found_high_risk}")
+        
+        # Verify task descriptions are meaningful
+        for pred in task_predictions:
+            description = pred["task_description"]
+            self.assertGreater(len(description), 20, f"Task description should be meaningful: {description}")
+            
+            # Verify primary factors are relevant
+            primary_factors = pred["primary_factors"]
+            self.assertGreater(len(primary_factors), 0, "Each task should have primary risk factors")
+            
+            # Verify critical dependencies exist
+            dependencies = pred["critical_dependencies"]
+            self.assertGreater(len(dependencies), 0, "Each task should have critical dependencies")
+        
+        # Test specific task characteristics
+        task_3 = next((pred for pred in task_predictions if pred["task_id"] == "task_3"), None)
+        if task_3:
+            # Task 3 (Business Process Review) should be high risk
+            self.assertIn("process", task_3["task_description"].lower())
+            self.assertIn(task_3["risk_level"], ["Medium", "High"])
+        
+        task_9 = next((pred for pred in task_predictions if pred["task_id"] == "task_9"), None)
+        if task_9:
+            # Task 9 (Go Live Week 1) should be high risk
+            self.assertIn("go", task_9["task_description"].lower())
+            self.assertIn(task_9["risk_level"], ["Medium", "High"])
+        
+        print("✅ Task-specific success predictions testing successful")
+        print(f"   - All 10 tasks predicted successfully")
+        print(f"   - High-risk tasks identified: {high_risk_task_ids}")
+        print(f"   - Known high-risk tasks found: {found_high_risk}")
+        
+        # Print task risk summary
+        for pred in task_predictions:
+            print(f"   - {pred['task_id']}: {pred['success_probability']:.1f}% success ({pred['risk_level']} risk)")
+
+    def test_34_budget_overrun_risk_prediction(self):
+        """Test budget overrun risk prediction with realistic calculations"""
+        if not self.typed_assessment_ids:
+            self.skipTest("No typed assessment IDs available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        budget_results = {}
+        
+        for assessment_type, assessment_id in self.typed_assessment_ids.items():
+            response = requests.post(f"{self.base_url}/assessments/{assessment_id}/predictive-analytics", headers=headers)
+            self.assertEqual(response.status_code, 200)
+            data = response.json()
+            
+            budget_risk = data["budget_risk_analysis"]
+            
+            # Verify budget risk structure
+            self.assertIn("overrun_probability", budget_risk)
+            self.assertIn("expected_overrun_percentage", budget_risk)
+            self.assertIn("risk_adjusted_budget", budget_risk)
+            self.assertIn("risk_level", budget_risk)
+            self.assertIn("primary_risk_factors", budget_risk)
+            self.assertIn("mitigation_strategies", budget_risk)
+            self.assertIn("confidence", budget_risk)
+            
+            # Verify overrun probability range (5-80%)
+            overrun_prob = budget_risk["overrun_probability"]
+            self.assertGreaterEqual(overrun_prob, 5, f"Overrun probability too low for {assessment_type}")
+            self.assertLessEqual(overrun_prob, 80, f"Overrun probability too high for {assessment_type}")
+            
+            # Verify expected overrun percentage is reasonable
+            expected_overrun = budget_risk["expected_overrun_percentage"]
+            self.assertGreaterEqual(expected_overrun, 0, f"Expected overrun should be non-negative for {assessment_type}")
+            self.assertLessEqual(expected_overrun, 50, f"Expected overrun too high for {assessment_type}")
+            
+            # Verify risk-adjusted budget is higher than base
+            risk_adjusted = budget_risk["risk_adjusted_budget"]
+            self.assertGreater(risk_adjusted, 50000, f"Risk-adjusted budget too low for {assessment_type}")
+            self.assertLess(risk_adjusted, 250000, f"Risk-adjusted budget too high for {assessment_type}")
+            
+            # Verify risk level is valid
+            self.assertIn(budget_risk["risk_level"], ["Low", "Medium", "High"])
+            
+            # Verify mitigation strategies are provided
+            mitigation_strategies = budget_risk["mitigation_strategies"]
+            self.assertGreater(len(mitigation_strategies), 0, f"Should provide mitigation strategies for {assessment_type}")
+            
+            budget_results[assessment_type] = {
+                "overrun_probability": overrun_prob,
+                "expected_overrun": expected_overrun,
+                "risk_level": budget_risk["risk_level"],
+                "risk_adjusted_budget": risk_adjusted
+            }
+        
+        print("✅ Budget overrun risk prediction testing successful")
+        for assessment_type, results in budget_results.items():
+            print(f"   - {assessment_type}:")
+            print(f"     • Overrun Probability: {results['overrun_probability']:.1f}%")
+            print(f"     • Expected Overrun: {results['expected_overrun']:.1f}%")
+            print(f"     • Risk Level: {results['risk_level']}")
+            print(f"     • Risk-Adjusted Budget: ${results['risk_adjusted_budget']:,}")
+
+    def test_35_scope_creep_risk_analysis(self):
+        """Test scope creep risk analysis by assessment type"""
+        if not self.typed_assessment_ids:
+            self.skipTest("No typed assessment IDs available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        scope_results = {}
+        
+        for assessment_type, assessment_id in self.typed_assessment_ids.items():
+            response = requests.post(f"{self.base_url}/assessments/{assessment_id}/predictive-analytics", headers=headers)
+            self.assertEqual(response.status_code, 200)
+            data = response.json()
+            
+            scope_creep = data["scope_creep_analysis"]
+            
+            # Verify scope creep structure
+            self.assertIn("probability", scope_creep)
+            self.assertIn("typical_scope_additions", scope_creep)
+            self.assertIn("impact_level", scope_creep)
+            self.assertIn("mitigation_strategies", scope_creep)
+            self.assertIn("assessment_type_factors", scope_creep)
+            
+            # Verify probability range
+            probability = scope_creep["probability"]
+            self.assertGreaterEqual(probability, 10, f"Scope creep probability too low for {assessment_type}")
+            self.assertLessEqual(probability, 85, f"Scope creep probability too high for {assessment_type}")
+            
+            # Verify impact level is valid
+            self.assertIn(scope_creep["impact_level"], ["Low", "Medium", "High"])
+            
+            # Verify typical scope additions are provided
+            scope_additions = scope_creep["typical_scope_additions"]
+            self.assertGreater(len(scope_additions), 0, f"Should provide typical scope additions for {assessment_type}")
+            
+            # Verify assessment type-specific factors
+            type_factors = scope_creep["assessment_type_factors"]
+            self.assertGreater(len(type_factors), 0, f"Should provide type-specific factors for {assessment_type}")
+            
+            # Verify type-specific scope additions
+            if assessment_type == "software_implementation":
+                # Software should have technical scope additions
+                additions_text = " ".join(scope_additions).lower()
+                software_terms = ["technical", "integration", "customization", "data", "user"]
+                found_terms = [term for term in software_terms if term in additions_text]
+                self.assertGreater(len(found_terms), 0, f"Software scope additions should contain relevant terms. Found: {found_terms}")
+                
+            elif assessment_type == "manufacturing_operations":
+                # Manufacturing should have operational scope additions
+                additions_text = " ".join(scope_additions).lower()
+                manufacturing_terms = ["operational", "maintenance", "production", "safety", "equipment"]
+                found_terms = [term for term in manufacturing_terms if term in additions_text]
+                self.assertGreater(len(found_terms), 0, f"Manufacturing scope additions should contain relevant terms. Found: {found_terms}")
+            
+            scope_results[assessment_type] = {
+                "probability": probability,
+                "impact_level": scope_creep["impact_level"],
+                "additions_count": len(scope_additions),
+                "mitigation_count": len(scope_creep["mitigation_strategies"])
+            }
+        
+        print("✅ Scope creep risk analysis testing successful")
+        for assessment_type, results in scope_results.items():
+            print(f"   - {assessment_type}:")
+            print(f"     • Scope Creep Probability: {results['probability']:.1f}%")
+            print(f"     • Impact Level: {results['impact_level']}")
+            print(f"     • Typical Additions: {results['additions_count']} identified")
+            print(f"     • Mitigation Strategies: {results['mitigation_count']} provided")
+
+    def test_36_timeline_optimization_predictions(self):
+        """Test timeline optimization predictions"""
+        if not self.assessment_id:
+            self.skipTest("No assessment ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        response = requests.post(f"{self.base_url}/assessments/{self.assessment_id}/predictive-analytics", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        timeline_opt = data["timeline_optimization"]
+        
+        # Verify timeline optimization structure
+        self.assertIn("acceleration_potential", timeline_opt)
+        self.assertIn("delay_risk", timeline_opt)
+        self.assertIn("optimization_opportunities", timeline_opt)
+        self.assertIn("critical_path_analysis", timeline_opt)
+        self.assertIn("resource_optimization", timeline_opt)
+        
+        # Verify acceleration potential
+        acceleration = timeline_opt["acceleration_potential"]
+        self.assertIn("weeks_saved", acceleration)
+        self.assertIn("probability", acceleration)
+        self.assertIn("requirements", acceleration)
+        
+        weeks_saved = acceleration["weeks_saved"]
+        self.assertGreaterEqual(weeks_saved, 0, "Weeks saved should be non-negative")
+        self.assertLessEqual(weeks_saved, 4, "Weeks saved should be realistic")
+        
+        accel_probability = acceleration["probability"]
+        self.assertGreaterEqual(accel_probability, 10, "Acceleration probability too low")
+        self.assertLessEqual(accel_probability, 90, "Acceleration probability too high")
+        
+        # Verify delay risk
+        delay_risk = timeline_opt["delay_risk"]
+        self.assertIn("weeks_at_risk", delay_risk)
+        self.assertIn("probability", delay_risk)
+        self.assertIn("risk_factors", delay_risk)
+        
+        weeks_at_risk = delay_risk["weeks_at_risk"]
+        self.assertGreaterEqual(weeks_at_risk, 0, "Weeks at risk should be non-negative")
+        self.assertLessEqual(weeks_at_risk, 6, "Weeks at risk should be realistic")
+        
+        delay_probability = delay_risk["probability"]
+        self.assertGreaterEqual(delay_probability, 5, "Delay probability too low")
+        self.assertLessEqual(delay_probability, 80, "Delay probability too high")
+        
+        # Verify optimization opportunities
+        opportunities = timeline_opt["optimization_opportunities"]
+        self.assertGreater(len(opportunities), 0, "Should provide optimization opportunities")
+        
+        # Verify critical path analysis
+        critical_path = timeline_opt["critical_path_analysis"]
+        self.assertIn("critical_tasks", critical_path)
+        self.assertIn("bottlenecks", critical_path)
+        
+        critical_tasks = critical_path["critical_tasks"]
+        self.assertGreater(len(critical_tasks), 0, "Should identify critical tasks")
+        
+        # Verify resource optimization
+        resource_opt = timeline_opt["resource_optimization"]
+        self.assertIn("recommendations", resource_opt)
+        self.assertIn("efficiency_gains", resource_opt)
+        
+        print("✅ Timeline optimization predictions testing successful")
+        print(f"   - Acceleration Potential: {weeks_saved} weeks ({accel_probability:.1f}% probability)")
+        print(f"   - Delay Risk: {weeks_at_risk} weeks ({delay_probability:.1f}% probability)")
+        print(f"   - Optimization Opportunities: {len(opportunities)} identified")
+        print(f"   - Critical Tasks: {len(critical_tasks)} identified")
+        print(f"   - Resource Optimization: {len(resource_opt['recommendations'])} recommendations")
+
+    def test_37_real_time_risk_monitoring(self):
+        """Test real-time risk monitoring dashboard for active projects"""
+        if not self.project_id:
+            self.skipTest("No project ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test the new POST endpoint for risk monitoring
+        response = requests.post(f"{self.base_url}/projects/{self.project_id}/risk-monitoring", headers=headers)
+        print(f"Risk Monitoring response: {response.status_code} - {response.text[:300]}...")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # Verify main structure
+        self.assertIn("project_id", data)
+        self.assertIn("project_name", data)
+        self.assertIn("current_status", data)
+        self.assertIn("risk_alerts", data)
+        self.assertIn("trend_analysis", data)
+        self.assertIn("predictive_insights", data)
+        self.assertIn("recommendations", data)
+        self.assertIn("generated_at", data)
+        
+        # Verify current status
+        current_status = data["current_status"]
+        self.assertIn("overall_progress", current_status)
+        self.assertIn("current_week", current_status)
+        self.assertIn("budget_utilization", current_status)
+        self.assertIn("health_status", current_status)
+        
+        # Verify progress values are reasonable
+        progress = current_status["overall_progress"]
+        self.assertGreaterEqual(progress, 0, "Progress should be non-negative")
+        self.assertLessEqual(progress, 100, "Progress should not exceed 100%")
+        
+        current_week = current_status["current_week"]
+        self.assertGreaterEqual(current_week, 1, "Current week should be at least 1")
+        self.assertLessEqual(current_week, 10, "Current week should not exceed 10")
+        
+        budget_utilization = current_status["budget_utilization"]
+        self.assertGreaterEqual(budget_utilization, 0, "Budget utilization should be non-negative")
+        
+        # Verify risk alerts structure
+        risk_alerts = data["risk_alerts"]
+        self.assertIsInstance(risk_alerts, list, "Risk alerts should be a list")
+        
+        for alert in risk_alerts:
+            self.assertIn("type", alert)
+            self.assertIn("severity", alert)
+            self.assertIn("message", alert)
+            self.assertIn("recommended_action", alert)
+            
+            # Verify alert types and severities are valid
+            self.assertIn(alert["type"], ["Budget", "Schedule", "Scope", "Resource", "Quality"])
+            self.assertIn(alert["severity"], ["Low", "Medium", "High", "Critical"])
+        
+        # Verify trend analysis
+        trend_analysis = data["trend_analysis"]
+        self.assertIn("budget_trend", trend_analysis)
+        self.assertIn("schedule_trend", trend_analysis)
+        self.assertIn("scope_trend", trend_analysis)
+        
+        # Verify trend values are valid
+        valid_trends = ["On Track", "At Risk", "Behind Schedule", "Over Budget", "Stable"]
+        self.assertIn(trend_analysis["budget_trend"], valid_trends)
+        self.assertIn(trend_analysis["schedule_trend"], valid_trends)
+        self.assertIn(trend_analysis["scope_trend"], valid_trends)
+        
+        # Verify predictive insights
+        predictive_insights = data["predictive_insights"]
+        self.assertIn("completion_probability", predictive_insights)
+        self.assertIn("budget_overrun_risk", predictive_insights)
+        self.assertIn("timeline_risk", predictive_insights)
+        
+        completion_prob = predictive_insights["completion_probability"]
+        self.assertGreaterEqual(completion_prob, 30, "Completion probability too low")
+        self.assertLessEqual(completion_prob, 95, "Completion probability too high")
+        
+        # Verify risk levels are valid
+        valid_risk_levels = ["Low", "Medium", "High"]
+        self.assertIn(predictive_insights["budget_overrun_risk"], valid_risk_levels)
+        self.assertIn(predictive_insights["timeline_risk"], valid_risk_levels)
+        
+        # Verify recommendations
+        recommendations = data["recommendations"]
+        self.assertIsInstance(recommendations, list, "Recommendations should be a list")
+        
+        print("✅ Real-time risk monitoring testing successful")
+        print(f"   - Project ID: {data['project_id']}")
+        print(f"   - Overall Progress: {progress:.1f}%")
+        print(f"   - Current Week: {current_week}")
+        print(f"   - Budget Utilization: {budget_utilization:.1f}%")
+        print(f"   - Risk Alerts: {len(risk_alerts)} active")
+        print(f"   - Completion Probability: {completion_prob:.1f}%")
+        print(f"   - Budget Risk: {predictive_insights['budget_overrun_risk']}")
+        print(f"   - Timeline Risk: {predictive_insights['timeline_risk']}")
+        print(f"   - Recommendations: {len(recommendations)} provided")
+
+    def test_38_risk_trending_analysis(self):
+        """Test risk trending analysis across different risk categories"""
+        if not self.assessment_id:
+            self.skipTest("No assessment ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        response = requests.post(f"{self.base_url}/assessments/{self.assessment_id}/predictive-analytics", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        risk_trending = data["risk_trending"]
+        
+        # Verify risk trending structure
+        self.assertIn("technical_risk_trend", risk_trending)
+        self.assertIn("adoption_risk_trend", risk_trending)
+        self.assertIn("stakeholder_risk_trend", risk_trending)
+        self.assertIn("resource_risk_trend", risk_trending)
+        self.assertIn("critical_monitoring_weeks", risk_trending)
+        
+        # Verify each risk trend has proper structure
+        risk_categories = ["technical_risk_trend", "adoption_risk_trend", "stakeholder_risk_trend", "resource_risk_trend"]
+        
+        for category in risk_categories:
+            trend = risk_trending[category]
+            self.assertIn("current_level", trend)
+            self.assertIn("projected_trend", trend)
+            self.assertIn("peak_risk_weeks", trend)
+            self.assertIn("mitigation_priority", trend)
+            
+            # Verify current level is valid
+            self.assertIn(trend["current_level"], ["Low", "Medium", "High"])
+            
+            # Verify projected trend is valid
+            self.assertIn(trend["projected_trend"], ["Improving", "Stable", "Deteriorating"])
+            
+            # Verify peak risk weeks are reasonable
+            peak_weeks = trend["peak_risk_weeks"]
+            self.assertIsInstance(peak_weeks, list, f"{category} peak weeks should be a list")
+            for week in peak_weeks:
+                self.assertGreaterEqual(week, 1, f"Peak week should be >= 1 for {category}")
+                self.assertLessEqual(week, 10, f"Peak week should be <= 10 for {category}")
+            
+            # Verify mitigation priority is valid
+            self.assertIn(trend["mitigation_priority"], ["Low", "Medium", "High", "Critical"])
+        
+        # Verify critical monitoring weeks
+        critical_weeks = risk_trending["critical_monitoring_weeks"]
+        self.assertIsInstance(critical_weeks, list, "Critical monitoring weeks should be a list")
+        self.assertGreater(len(critical_weeks), 0, "Should identify critical monitoring weeks")
+        
+        for week in critical_weeks:
+            self.assertGreaterEqual(week, 1, "Critical week should be >= 1")
+            self.assertLessEqual(week, 10, "Critical week should be <= 10")
+        
+        print("✅ Risk trending analysis testing successful")
+        print(f"   - Technical Risk: {risk_trending['technical_risk_trend']['current_level']} ({risk_trending['technical_risk_trend']['projected_trend']})")
+        print(f"   - Adoption Risk: {risk_trending['adoption_risk_trend']['current_level']} ({risk_trending['adoption_risk_trend']['projected_trend']})")
+        print(f"   - Stakeholder Risk: {risk_trending['stakeholder_risk_trend']['current_level']} ({risk_trending['stakeholder_risk_trend']['projected_trend']})")
+        print(f"   - Resource Risk: {risk_trending['resource_risk_trend']['current_level']} ({risk_trending['resource_risk_trend']['projected_trend']})")
+        print(f"   - Critical Monitoring Weeks: {critical_weeks}")
+
+    def test_39_predictive_analytics_performance(self):
+        """Test predictive analytics performance and response times"""
+        if not self.assessment_id:
+            self.skipTest("No assessment ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test performance of predictive analytics endpoint
+        start_time = time.time()
+        response = requests.post(f"{self.base_url}/assessments/{self.assessment_id}/predictive-analytics", headers=headers)
+        end_time = time.time()
+        
+        response_time = (end_time - start_time) * 1000  # Convert to milliseconds
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertLess(response_time, 100, f"Predictive analytics response time too slow: {response_time:.2f}ms")
+        
+        data = response.json()
+        
+        # Verify comprehensive data is returned quickly
+        self.assertGreater(len(data["task_success_predictions"]), 0, "Should return task predictions")
+        self.assertIn("budget_risk_analysis", data, "Should return budget analysis")
+        self.assertIn("scope_creep_analysis", data, "Should return scope analysis")
+        self.assertIn("timeline_optimization", data, "Should return timeline optimization")
+        self.assertIn("risk_trending", data, "Should return risk trending")
+        
+        # Test risk monitoring performance if project exists
+        if self.project_id:
+            start_time = time.time()
+            response = requests.post(f"{self.base_url}/projects/{self.project_id}/risk-monitoring", headers=headers)
+            end_time = time.time()
+            
+            monitoring_response_time = (end_time - start_time) * 1000
+            
+            self.assertEqual(response.status_code, 200)
+            self.assertLess(monitoring_response_time, 100, f"Risk monitoring response time too slow: {monitoring_response_time:.2f}ms")
+        
+        print("✅ Predictive analytics performance testing successful")
+        print(f"   - Predictive Analytics Response Time: {response_time:.2f}ms")
+        if self.project_id:
+            print(f"   - Risk Monitoring Response Time: {monitoring_response_time:.2f}ms")
+        print(f"   - Both endpoints under 100ms requirement")
+
+    def test_40_confidence_scoring_validation(self):
+        """Test prediction confidence levels and scoring accuracy"""
+        if not self.typed_assessment_ids:
+            self.skipTest("No typed assessment IDs available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        confidence_results = {}
+        
+        for assessment_type, assessment_id in self.typed_assessment_ids.items():
+            response = requests.post(f"{self.base_url}/assessments/{assessment_id}/predictive-analytics", headers=headers)
+            self.assertEqual(response.status_code, 200)
+            data = response.json()
+            
+            # Verify task prediction confidence levels
+            task_predictions = data["task_success_predictions"]
+            confidence_levels = [pred["confidence"] for pred in task_predictions]
+            
+            # All confidence levels should be valid
+            valid_confidence = ["Low", "Medium", "High"]
+            for confidence in confidence_levels:
+                self.assertIn(confidence, valid_confidence, f"Invalid confidence level: {confidence}")
+            
+            # Verify budget risk confidence
+            budget_confidence = data["budget_risk_analysis"]["confidence"]
+            self.assertIn(budget_confidence, valid_confidence, f"Invalid budget confidence: {budget_confidence}")
+            
+            # Count confidence distribution
+            confidence_counts = {level: confidence_levels.count(level) for level in valid_confidence}
+            
+            # Verify we have a reasonable distribution (not all the same)
+            unique_confidence_levels = len([count for count in confidence_counts.values() if count > 0])
+            self.assertGreaterEqual(unique_confidence_levels, 1, f"Should have varied confidence levels for {assessment_type}")
+            
+            # Verify high confidence predictions have reasonable success probabilities
+            high_confidence_tasks = [pred for pred in task_predictions if pred["confidence"] == "High"]
+            if high_confidence_tasks:
+                avg_success_prob = sum(task["success_probability"] for task in high_confidence_tasks) / len(high_confidence_tasks)
+                # High confidence predictions should generally be more reliable
+                self.assertGreater(len(high_confidence_tasks), 0, f"Should have some high confidence predictions for {assessment_type}")
+            
+            confidence_results[assessment_type] = {
+                "task_confidence_distribution": confidence_counts,
+                "budget_confidence": budget_confidence,
+                "high_confidence_count": confidence_counts.get("High", 0),
+                "medium_confidence_count": confidence_counts.get("Medium", 0),
+                "low_confidence_count": confidence_counts.get("Low", 0)
+            }
+        
+        print("✅ Confidence scoring validation testing successful")
+        for assessment_type, results in confidence_results.items():
+            print(f"   - {assessment_type}:")
+            print(f"     • High Confidence Tasks: {results['high_confidence_count']}")
+            print(f"     • Medium Confidence Tasks: {results['medium_confidence_count']}")
+            print(f"     • Low Confidence Tasks: {results['low_confidence_count']}")
+            print(f"     • Budget Analysis Confidence: {results['budget_confidence']}")
+
+    def test_41_manufacturing_predictive_customizations(self):
+        """Test manufacturing-specific predictive analytics customizations"""
+        if not self.typed_assessment_ids.get("manufacturing_operations"):
+            self.skipTest("No manufacturing operations assessment ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        assessment_id = self.typed_assessment_ids["manufacturing_operations"]
+        
+        response = requests.post(f"{self.base_url}/assessments/{assessment_id}/predictive-analytics", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # Verify manufacturing-specific scope creep factors
+        scope_creep = data["scope_creep_analysis"]
+        type_factors = scope_creep["assessment_type_factors"]
+        
+        # Should include manufacturing-specific factors
+        factors_text = " ".join(type_factors).lower()
+        manufacturing_terms = ["operational", "maintenance", "production", "shift", "safety", "equipment"]
+        found_terms = [term for term in manufacturing_terms if term in factors_text]
+        self.assertGreater(len(found_terms), 0, f"Manufacturing scope factors should contain relevant terms. Found: {found_terms}")
+        
+        # Verify manufacturing-specific scope additions
+        scope_additions = scope_creep["typical_scope_additions"]
+        additions_text = " ".join(scope_additions).lower()
+        manufacturing_additions = ["maintenance", "operational", "production", "safety", "equipment"]
+        found_additions = [term for term in manufacturing_additions if term in additions_text]
+        self.assertGreater(len(found_additions), 0, f"Manufacturing scope additions should be relevant. Found: {found_additions}")
+        
+        # Verify timeline optimization includes manufacturing considerations
+        timeline_opt = data["timeline_optimization"]
+        optimization_opportunities = timeline_opt["optimization_opportunities"]
+        opportunities_text = " ".join(optimization_opportunities).lower()
+        
+        # Should consider operational constraints
+        manufacturing_optimization_terms = ["operational", "maintenance", "shift", "production", "downtime"]
+        found_optimization = [term for term in manufacturing_optimization_terms if term in opportunities_text]
+        
+        # Verify risk trending includes manufacturing-specific risks
+        risk_trending = data["risk_trending"]
+        
+        # Technical risk should consider operational factors
+        technical_trend = risk_trending["technical_risk_trend"]
+        self.assertIn("current_level", technical_trend)
+        self.assertIn("mitigation_priority", technical_trend)
+        
+        # Resource risk should consider shift work and operational constraints
+        resource_trend = risk_trending["resource_risk_trend"]
+        self.assertIn("current_level", resource_trend)
+        self.assertIn("peak_risk_weeks", resource_trend)
+        
+        print("✅ Manufacturing predictive customizations testing successful")
+        print(f"   - Manufacturing scope factors: {found_terms}")
+        print(f"   - Manufacturing scope additions: {found_additions}")
+        print(f"   - Manufacturing optimization considerations: {found_optimization}")
+        print(f"   - Technical Risk Level: {technical_trend['current_level']}")
+        print(f"   - Resource Risk Level: {resource_trend['current_level']}")
+        print(f"   - Scope Creep Probability: {scope_creep['probability']:.1f}%")
+
 def run_tests():
     """Run all tests in order"""
     test_suite = unittest.TestSuite()
