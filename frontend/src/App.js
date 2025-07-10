@@ -561,6 +561,83 @@ function App() {
     }
   };
 
+  // Enhancement 3: Detailed Project Management Functions
+  const generateDetailedBudgetTracking = async (projectId) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/projects/${projectId}/detailed-budget-tracking`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setBudgetTracking(response.data);
+      setShowBudgetTracking(true);
+      
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to generate detailed budget tracking');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateAdvancedForecasting = async (projectId) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/projects/${projectId}/advanced-forecasting`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setProjectForecasting(response.data);
+      setShowProjectForecasting(true);
+      
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to generate advanced forecasting');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateStakeholderCommunications = async (projectId) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/projects/${projectId}/stakeholder-communications`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setStakeholderComms(response.data);
+      setShowStakeholderComms(true);
+      
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to generate stakeholder communications');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateManufacturingExcellenceTracking = async (projectId) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/projects/${projectId}/manufacturing-excellence-tracking`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setManufacturingExcellence(response.data);
+      setShowManufacturingExcellence(true);
+      
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to generate manufacturing excellence tracking');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDeliverableUpdate = async (projectId, deliverableId, updates) => {
     try {
       await axios.put(`${API_BASE_URL}/api/projects/${projectId}/deliverables/${deliverableId}`, updates, {
