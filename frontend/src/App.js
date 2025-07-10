@@ -510,6 +510,47 @@ function App() {
     }
   };
 
+  // Enhancement 2: Predictive Analytics Functions
+  const generatePredictiveAnalytics = async (assessmentId) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/assessments/${assessmentId}/predictive-analytics`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Show predictive analytics in a modal
+      setPredictiveAnalytics(response.data);
+      setShowPredictiveAnalytics(true);
+      
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to generate predictive analytics');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateRiskMonitoring = async (projectId) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/projects/${projectId}/risk-monitoring`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Show risk monitoring dashboard
+      setRiskMonitoring(response.data);
+      setShowRiskMonitoring(true);
+      
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to generate risk monitoring');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDeliverableUpdate = async (projectId, deliverableId, updates) => {
     try {
       await axios.put(`${API_BASE_URL}/api/projects/${projectId}/deliverables/${deliverableId}`, updates, {
