@@ -149,6 +149,16 @@ function App() {
   const [showPredictiveAnalytics, setShowPredictiveAnalytics] = useState(false);
   const [riskMonitoring, setRiskMonitoring] = useState(null);
   const [showRiskMonitoring, setShowRiskMonitoring] = useState(false);
+  
+  // Enhancement 3: Detailed Project Management States
+  const [budgetTracking, setBudgetTracking] = useState(null);
+  const [showBudgetTracking, setShowBudgetTracking] = useState(false);
+  const [projectForecasting, setProjectForecasting] = useState(null);
+  const [showProjectForecasting, setShowProjectForecasting] = useState(false);
+  const [stakeholderComms, setStakeholderComms] = useState(null);
+  const [showStakeholderComms, setShowStakeholderComms] = useState(false);
+  const [manufacturingExcellence, setManufacturingExcellence] = useState(null);
+  const [showManufacturingExcellence, setShowManufacturingExcellence] = useState(false);
 
   useEffect(() => {
     fetchAssessmentTypes(); // Fetch assessment types on component mount
