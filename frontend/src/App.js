@@ -1961,6 +1961,248 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Predictive Analytics Modal */}
+      {showPredictiveAnalytics && predictiveAnalytics && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-7xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b p-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-800">Predictive Analytics Dashboard</h2>
+                <button
+                  onClick={() => setShowPredictiveAnalytics(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                <div className="bg-blue-50 p-3 rounded">
+                  <p className="font-semibold text-blue-800">Project Outlook</p>
+                  <p className="text-lg font-bold text-blue-600">{predictiveAnalytics.project_outlook?.overall_risk_level || 'Unknown'}</p>
+                </div>
+                <div className="bg-green-50 p-3 rounded">
+                  <p className="font-semibold text-green-800">Success Probability</p>
+                  <p className="text-xl font-bold text-green-600">{predictiveAnalytics.project_outlook?.success_probability || 0}%</p>
+                </div>
+                <div className="bg-orange-50 p-3 rounded">
+                  <p className="font-semibold text-orange-800">Budget Risk</p>
+                  <p className="text-lg font-bold text-orange-600">{predictiveAnalytics.budget_risk_analysis?.risk_level || 'Unknown'}</p>
+                </div>
+                <div className="bg-purple-50 p-3 rounded">
+                  <p className="font-semibold text-purple-800">Timeline Risk</p>
+                  <p className="text-lg font-bold text-purple-600">{predictiveAnalytics.timeline_optimization?.timeline_outlook || 'Unknown'}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Task Success Predictions */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                  <Target className="h-5 w-5 mr-2" />
+                  Task Success Predictions
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-medium text-red-700 mb-3">Highest Risk Tasks</h4>
+                    <div className="space-y-2">
+                      {predictiveAnalytics.highest_risk_tasks?.slice(0, 3).map((task, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-2 bg-red-50 rounded">
+                          <span className="text-sm font-medium">{task.task_description}</span>
+                          <span className="text-sm font-bold text-red-600">{task.success_probability}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-green-700 mb-3">Lowest Risk Tasks</h4>
+                    <div className="space-y-2">
+                      {predictiveAnalytics.lowest_risk_tasks?.slice(0, 3).map((task, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-2 bg-green-50 rounded">
+                          <span className="text-sm font-medium">{task.task_description}</span>
+                          <span className="text-sm font-bold text-green-600">{task.success_probability}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Budget Risk Analysis */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                  <AlertTriangle className="h-5 w-5 mr-2" />
+                  Budget Risk Analysis
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-3 bg-gray-50 rounded">
+                    <p className="text-sm text-gray-600">Overrun Probability</p>
+                    <p className="text-2xl font-bold text-orange-600">{predictiveAnalytics.budget_risk_analysis?.overrun_probability || 0}%</p>
+                  </div>
+                  <div className="text-center p-3 bg-gray-50 rounded">
+                    <p className="text-sm text-gray-600">Expected Overrun</p>
+                    <p className="text-2xl font-bold text-red-600">{predictiveAnalytics.budget_risk_analysis?.expected_overrun_percentage || 0}%</p>
+                  </div>
+                  <div className="text-center p-3 bg-gray-50 rounded">
+                    <p className="text-sm text-gray-600">Risk-Adjusted Budget</p>
+                    <p className="text-lg font-bold text-blue-600">${predictiveAnalytics.budget_risk_analysis?.risk_adjusted_budget?.toLocaleString() || 0}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Scope Creep Analysis */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                  <TrendingUp className="h-5 w-5 mr-2" />
+                  Scope Creep Analysis
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-center p-3 bg-yellow-50 rounded">
+                      <p className="text-sm text-yellow-800">Scope Creep Probability</p>
+                      <p className="text-2xl font-bold text-yellow-600">{predictiveAnalytics.scope_creep_analysis?.scope_creep_probability || 0}%</p>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-center p-3 bg-purple-50 rounded">
+                      <p className="text-sm text-purple-800">Expected Impact</p>
+                      <p className="text-lg font-bold text-purple-600">{predictiveAnalytics.scope_creep_analysis?.expected_impact || 'Unknown'}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <h4 className="font-medium text-gray-700 mb-2">Typical Scope Additions:</h4>
+                  <ul className="space-y-1">
+                    {predictiveAnalytics.scope_creep_analysis?.typical_scope_additions?.map((addition, idx) => (
+                      <li key={idx} className="text-sm text-gray-600 flex items-start">
+                        <span className="w-2 h-2 bg-yellow-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                        {addition}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Recommended Actions */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                  <CheckCircle className="h-5 w-5 mr-2" />
+                  Recommended Actions
+                </h3>
+                <div className="space-y-2">
+                  {predictiveAnalytics.project_outlook?.recommended_actions?.map((action, idx) => (
+                    <div key={idx} className="flex items-start p-3 bg-blue-50 rounded">
+                      <span className="inline-block w-5 h-5 bg-blue-500 text-white rounded-full text-xs flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
+                        {idx + 1}
+                      </span>
+                      <span className="text-sm text-gray-700">{action}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Risk Monitoring Modal */}
+      {showRiskMonitoring && riskMonitoring && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-5xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b p-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-800">Real-Time Risk Monitoring</h2>
+                <button
+                  onClick={() => setShowRiskMonitoring(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                <div className="bg-blue-50 p-3 rounded">
+                  <p className="font-semibold text-blue-800">Project Progress</p>
+                  <p className="text-xl font-bold text-blue-600">{riskMonitoring.current_status?.overall_progress || 0}%</p>
+                </div>
+                <div className="bg-green-50 p-3 rounded">
+                  <p className="font-semibold text-green-800">Current Week</p>
+                  <p className="text-xl font-bold text-green-600">Week {riskMonitoring.current_status?.current_week || 0}</p>
+                </div>
+                <div className="bg-orange-50 p-3 rounded">
+                  <p className="font-semibold text-orange-800">Budget Utilization</p>
+                  <p className="text-xl font-bold text-orange-600">{riskMonitoring.current_status?.budget_utilization || 0}%</p>
+                </div>
+                <div className="bg-purple-50 p-3 rounded">
+                  <p className="font-semibold text-purple-800">Health Status</p>
+                  <p className="text-lg font-bold text-purple-600">{riskMonitoring.current_status?.health_status || 'Unknown'}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Risk Alerts */}
+              {riskMonitoring.risk_alerts && riskMonitoring.risk_alerts.length > 0 && (
+                <div className="bg-white border rounded-lg p-4">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <AlertTriangle className="h-5 w-5 mr-2" />
+                    Active Risk Alerts
+                  </h3>
+                  <div className="space-y-3">
+                    {riskMonitoring.risk_alerts.map((alert, idx) => (
+                      <div key={idx} className={`p-3 rounded border-l-4 ${
+                        alert.severity === 'High' ? 'bg-red-50 border-red-500' :
+                        alert.severity === 'Medium' ? 'bg-yellow-50 border-yellow-500' :
+                        'bg-blue-50 border-blue-500'
+                      }`}>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium text-gray-800">{alert.message}</p>
+                            <p className="text-sm text-gray-600 mt-1">{alert.recommended_action}</p>
+                          </div>
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            alert.severity === 'High' ? 'bg-red-100 text-red-800' :
+                            alert.severity === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-blue-100 text-blue-800'
+                          }`}>
+                            {alert.severity}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Trend Analysis */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                  <TrendingUp className="h-5 w-5 mr-2" />
+                  Trend Analysis
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-3 bg-gray-50 rounded">
+                    <p className="text-sm text-gray-600">Budget Trend</p>
+                    <p className="text-lg font-bold text-gray-800">{riskMonitoring.trend_analysis?.budget_trend || 'Unknown'}</p>
+                  </div>
+                  <div className="text-center p-3 bg-gray-50 rounded">
+                    <p className="text-sm text-gray-600">Schedule Trend</p>
+                    <p className="text-lg font-bold text-gray-800">{riskMonitoring.trend_analysis?.schedule_trend || 'Unknown'}</p>
+                  </div>
+                  <div className="text-center p-3 bg-gray-50 rounded">
+                    <p className="text-sm text-gray-600">Scope Trend</p>
+                    <p className="text-lg font-bold text-gray-800">{riskMonitoring.trend_analysis?.scope_trend || 'Unknown'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
