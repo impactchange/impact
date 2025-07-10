@@ -3581,6 +3581,8 @@ async def generate_stakeholder_communications_endpoint(
         # Get associated assessment
         assessment_id = project.get("assessment_id")
         assessment_data = {}
+        budget_tracking = {}
+        project_forecasting = {}
         
         if assessment_id:
             assessment = await db.assessments.find_one({"id": assessment_id, "user_id": current_user.id})
