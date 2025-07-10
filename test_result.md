@@ -394,14 +394,16 @@ Conduct final comprehensive testing and debugging to prepare the IMPACT Methodol
 
 ## test_plan:
   current_focus:
-    - "Week-by-Week Implementation Plan Generation"
-    - "Customized Change Management Playbook Generation"
-    - "Assessment-to-Action Intelligence Enhancement"
-    - "Budget Prediction and Risk Assessment"
-    - "Manufacturing-Specific Intelligence Features"
+    - "Predictive Analytics Engine - Task Success Probability Mapping"
+    - "Predictive Analytics Engine - Budget Overrun Risk Prediction"
+    - "Predictive Analytics Engine - Scope Creep Risk Analysis"
+    - "Predictive Analytics Engine - Timeline Optimization Predictions"
+    - "Predictive Analytics Engine - Real-Time Risk Monitoring"
+    - "Predictive Analytics Engine - Risk Trending Analysis"
+    - "Predictive Analytics Engine - Confidence Scoring"
   stuck_tasks: []
   test_all: true
-  test_priority: "intelligence_layer_validation"
+  test_priority: "predictive_analytics_validation"
 
 ## agent_communication:
   - agent: "main"
