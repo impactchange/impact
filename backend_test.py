@@ -664,6 +664,379 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
             print(f"   - Critical Success Factors: {len(data['critical_success_factors'])}")
             print(f"   - Key Milestones: {len(data['key_milestones'])}")
 
+    def test_25_new_week_by_week_implementation_plan(self):
+        """Test the NEW week-by-week implementation plan generation endpoint"""
+        if not self.assessment_id:
+            self.skipTest("No assessment ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test the new POST endpoint for week-by-week implementation plan
+        response = requests.post(f"{self.base_url}/assessments/{self.assessment_id}/implementation-plan", headers=headers)
+        print(f"NEW Week-by-week implementation plan response: {response.status_code} - {response.text[:300]}...")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # Verify the new structure with weeks
+        self.assertIn("weeks", data)
+        self.assertIn("summary", data)
+        self.assertIn("metadata", data)
+        
+        # Verify weeks structure
+        weeks = data["weeks"]
+        self.assertEqual(len(weeks), 10, "Should have exactly 10 weeks")
+        
+        for week_num in range(1, 11):
+            week_data = weeks[str(week_num)]
+            self.assertIn("week", week_data)
+            self.assertIn("phase", week_data)
+            self.assertIn("title", week_data)
+            self.assertIn("description", week_data)
+            self.assertIn("base_activities", week_data)
+            self.assertIn("deliverables", week_data)
+            self.assertIn("duration_hours", week_data)
+            self.assertIn("final_budget", week_data)
+            self.assertIn("risk_level", week_data)
+            self.assertIn("impact_phase_alignment", week_data)
+            
+        # Verify summary structure
+        summary = data["summary"]
+        self.assertIn("total_weeks", summary)
+        self.assertIn("total_budget", summary)
+        self.assertIn("total_hours", summary)
+        self.assertIn("overall_risk_level", summary)
+        self.assertIn("success_probability", summary)
+        self.assertIn("key_risk_factors", summary)
+        self.assertIn("critical_success_factors", summary)
+        
+        # Verify metadata structure
+        metadata = data["metadata"]
+        self.assertIn("assessment_id", metadata)
+        self.assertIn("project_name", metadata)
+        self.assertIn("assessment_type", metadata)
+        self.assertIn("overall_readiness_score", metadata)
+        self.assertIn("generated_at", metadata)
+        self.assertIn("generated_by", metadata)
+        
+        print("✅ NEW Week-by-week implementation plan generation successful")
+        print(f"   - Total Weeks: {summary['total_weeks']}")
+        print(f"   - Total Budget: ${summary['total_budget']:,}")
+        print(f"   - Total Hours: {summary['total_hours']}")
+        print(f"   - Overall Risk Level: {summary['overall_risk_level']}")
+        print(f"   - Success Probability: {summary['success_probability']}%")
+
+    def test_26_customized_playbook_generation(self):
+        """Test the NEW customized change management playbook generation"""
+        if not self.assessment_id:
+            self.skipTest("No assessment ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test the new POST endpoint for customized playbook
+        response = requests.post(f"{self.base_url}/assessments/{self.assessment_id}/customized-playbook", headers=headers)
+        print(f"NEW Customized playbook generation response: {response.status_code} - {response.text[:300]}...")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # Verify playbook structure
+        self.assertIn("assessment_id", data)
+        self.assertIn("project_name", data)
+        self.assertIn("organization", data)
+        self.assertIn("assessment_type", data)
+        self.assertIn("overall_readiness_score", data)
+        self.assertIn("readiness_level", data)
+        self.assertIn("success_probability", data)
+        self.assertIn("content", data)
+        self.assertIn("generated_at", data)
+        self.assertIn("generated_by", data)
+        self.assertIn("version", data)
+        self.assertIn("customization_factors", data)
+        
+        # Verify content is substantial (AI-generated playbook should be comprehensive)
+        content = data["content"]
+        self.assertGreater(len(content), 1000, "Playbook content should be comprehensive (>1000 characters)")
+        
+        # Verify customization factors
+        customization_factors = data["customization_factors"]
+        self.assertIn("leadership_support", customization_factors)
+        self.assertIn("resource_availability", customization_factors)
+        self.assertIn("change_management_maturity", customization_factors)
+        self.assertIn("communication_effectiveness", customization_factors)
+        self.assertIn("workforce_adaptability", customization_factors)
+        
+        # Verify playbook contains key sections (basic content validation)
+        content_lower = content.lower()
+        expected_sections = ["executive summary", "implementation", "risk", "stakeholder", "communication"]
+        found_sections = [section for section in expected_sections if section in content_lower]
+        self.assertGreaterEqual(len(found_sections), 3, f"Playbook should contain key sections. Found: {found_sections}")
+        
+        print("✅ NEW Customized playbook generation successful")
+        print(f"   - Assessment ID: {data['assessment_id']}")
+        print(f"   - Project: {data['project_name']}")
+        print(f"   - Content Length: {len(content)} characters")
+        print(f"   - Success Probability: {data['success_probability']}%")
+        print(f"   - Key Sections Found: {found_sections}")
+
+    def test_27_intelligence_layer_different_readiness_levels(self):
+        """Test intelligence layer features with different readiness levels"""
+        if not self.typed_assessment_ids:
+            self.skipTest("No typed assessment IDs available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test implementation plans for different assessment types
+        for assessment_type, assessment_id in self.typed_assessment_ids.items():
+            print(f"\n--- Testing Intelligence Layer for {assessment_type} ---")
+            
+            # Test week-by-week implementation plan
+            response = requests.post(f"{self.base_url}/assessments/{assessment_id}/implementation-plan", headers=headers)
+            self.assertEqual(response.status_code, 200)
+            plan_data = response.json()
+            
+            # Verify readiness-based customizations
+            summary = plan_data["summary"]
+            overall_risk = summary["overall_risk_level"]
+            success_prob = summary["success_probability"]
+            
+            # Test customized playbook
+            response = requests.post(f"{self.base_url}/assessments/{assessment_id}/customized-playbook", headers=headers)
+            self.assertEqual(response.status_code, 200)
+            playbook_data = response.json()
+            
+            # Verify type-specific content
+            content = playbook_data["content"].lower()
+            
+            if assessment_type == "software_implementation":
+                # Should contain software-specific terms
+                software_terms = ["technical", "system", "user adoption", "data migration"]
+                found_terms = [term for term in software_terms if term in content]
+                self.assertGreater(len(found_terms), 0, f"Software playbook should contain relevant terms. Found: {found_terms}")
+                
+            elif assessment_type == "manufacturing_operations":
+                # Should contain manufacturing-specific terms
+                manufacturing_terms = ["operational", "maintenance", "shift", "safety", "production"]
+                found_terms = [term for term in manufacturing_terms if term in content]
+                self.assertGreater(len(found_terms), 0, f"Manufacturing playbook should contain relevant terms. Found: {found_terms}")
+                
+            elif assessment_type == "business_process":
+                # Should contain process-specific terms
+                process_terms = ["process", "workflow", "cross-functional", "performance"]
+                found_terms = [term for term in process_terms if term in content]
+                self.assertGreater(len(found_terms), 0, f"Business process playbook should contain relevant terms. Found: {found_terms}")
+            
+            print(f"✅ Intelligence layer testing for {assessment_type} successful")
+            print(f"   - Risk Level: {overall_risk}")
+            print(f"   - Success Probability: {success_prob}%")
+            print(f"   - Total Budget: ${summary['total_budget']:,}")
+            print(f"   - Playbook Length: {len(playbook_data['content'])} characters")
+
+    def test_28_budget_prediction_accuracy(self):
+        """Test budget prediction accuracy and risk-based adjustments"""
+        if not self.typed_assessment_ids:
+            self.skipTest("No typed assessment IDs available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        budget_results = {}
+        
+        for assessment_type, assessment_id in self.typed_assessment_ids.items():
+            response = requests.post(f"{self.base_url}/assessments/{assessment_id}/implementation-plan", headers=headers)
+            self.assertEqual(response.status_code, 200)
+            data = response.json()
+            
+            summary = data["summary"]
+            total_budget = summary["total_budget"]
+            risk_level = summary["overall_risk_level"]
+            
+            # Verify budget is reasonable (between $50K and $200K for 10-week project)
+            self.assertGreaterEqual(total_budget, 50000, f"Budget too low for {assessment_type}: ${total_budget}")
+            self.assertLessEqual(total_budget, 200000, f"Budget too high for {assessment_type}: ${total_budget}")
+            
+            # Verify risk-based adjustments
+            weeks = data["weeks"]
+            base_budgets = [weeks[str(i)]["base_budget"] for i in range(1, 11)]
+            final_budgets = [weeks[str(i)]["final_budget"] for i in range(1, 11)]
+            
+            total_base = sum(base_budgets)
+            total_final = sum(final_budgets)
+            
+            if risk_level == "High":
+                self.assertGreater(total_final, total_base, f"High risk should increase budget for {assessment_type}")
+            elif risk_level == "Low":
+                self.assertGreaterEqual(total_final, total_base, f"Low risk budget should be >= base for {assessment_type}")
+            
+            budget_results[assessment_type] = {
+                "total_budget": total_budget,
+                "risk_level": risk_level,
+                "risk_adjustment": ((total_final - total_base) / total_base) * 100
+            }
+        
+        print("✅ Budget prediction accuracy testing successful")
+        for assessment_type, results in budget_results.items():
+            print(f"   - {assessment_type}:")
+            print(f"     • Total Budget: ${results['total_budget']:,}")
+            print(f"     • Risk Level: {results['risk_level']}")
+            print(f"     • Risk Adjustment: {results['risk_adjustment']:.1f}%")
+
+    def test_29_impact_phase_alignment(self):
+        """Test IMPACT phase alignment in implementation plans"""
+        if not self.assessment_id:
+            self.skipTest("No assessment ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        response = requests.post(f"{self.base_url}/assessments/{self.assessment_id}/implementation-plan", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        weeks = data["weeks"]
+        
+        # Verify IMPACT phase alignment for each week
+        expected_phases = {
+            "1": "Investigate & Assess",
+            "2": "Investigate & Assess", 
+            "3": "Mobilize & Prepare",
+            "4": "Mobilize & Prepare",
+            "5": "Pilot & Adapt",
+            "6": "Pilot & Adapt",
+            "7": "Activate & Deploy",
+            "8": "Activate & Deploy",
+            "9": "Cement & Transfer",
+            "10": "Track & Optimize"
+        }
+        
+        for week_num, expected_phase in expected_phases.items():
+            week_data = weeks[week_num]
+            actual_phase = week_data["impact_phase_alignment"]
+            self.assertEqual(actual_phase, expected_phase, 
+                           f"Week {week_num} should align with {expected_phase}, got {actual_phase}")
+        
+        # Verify phase progression makes sense
+        phase_sequence = [weeks[str(i)]["impact_phase_alignment"] for i in range(1, 11)]
+        unique_phases = list(dict.fromkeys(phase_sequence))  # Preserve order, remove duplicates
+        
+        expected_sequence = ["Investigate & Assess", "Mobilize & Prepare", "Pilot & Adapt", 
+                           "Activate & Deploy", "Cement & Transfer", "Track & Optimize"]
+        
+        self.assertEqual(unique_phases, expected_sequence, "IMPACT phase sequence should be correct")
+        
+        print("✅ IMPACT phase alignment testing successful")
+        print(f"   - All 10 weeks properly aligned with IMPACT phases")
+        print(f"   - Phase sequence: {' → '.join(unique_phases)}")
+
+    def test_30_success_probability_calculations(self):
+        """Test success probability calculations across different assessment types"""
+        if not self.typed_assessment_ids:
+            self.skipTest("No typed assessment IDs available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        probability_results = {}
+        
+        for assessment_type, assessment_id in self.typed_assessment_ids.items():
+            # Get assessment details
+            response = requests.get(f"{self.base_url}/assessments/{assessment_id}", headers=headers)
+            self.assertEqual(response.status_code, 200)
+            assessment_data = response.json()
+            
+            # Get implementation plan
+            response = requests.post(f"{self.base_url}/assessments/{assessment_id}/implementation-plan", headers=headers)
+            self.assertEqual(response.status_code, 200)
+            plan_data = response.json()
+            
+            overall_score = assessment_data.get("overall_score", 0)
+            success_probability = plan_data["summary"]["success_probability"]
+            
+            # Verify success probability is reasonable (15-95% range)
+            self.assertGreaterEqual(success_probability, 15, f"Success probability too low for {assessment_type}")
+            self.assertLessEqual(success_probability, 95, f"Success probability too high for {assessment_type}")
+            
+            # Verify correlation with overall score (higher score should generally mean higher probability)
+            expected_min_probability = max(15, overall_score * 15)  # Rough correlation
+            self.assertGreaterEqual(success_probability, expected_min_probability - 10, 
+                                  f"Success probability should correlate with overall score for {assessment_type}")
+            
+            probability_results[assessment_type] = {
+                "overall_score": overall_score,
+                "success_probability": success_probability,
+                "correlation_ratio": success_probability / (overall_score * 20) if overall_score > 0 else 0
+            }
+        
+        print("✅ Success probability calculations testing successful")
+        for assessment_type, results in probability_results.items():
+            print(f"   - {assessment_type}:")
+            print(f"     • Overall Score: {results['overall_score']:.1f}/5")
+            print(f"     • Success Probability: {results['success_probability']:.1f}%")
+            print(f"     • Score-Probability Ratio: {results['correlation_ratio']:.2f}")
+
+    def test_31_manufacturing_specific_features(self):
+        """Test manufacturing-specific features in intelligence layer"""
+        if not self.typed_assessment_ids.get("manufacturing_operations"):
+            self.skipTest("No manufacturing operations assessment ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        assessment_id = self.typed_assessment_ids["manufacturing_operations"]
+        
+        # Test implementation plan for manufacturing
+        response = requests.post(f"{self.base_url}/assessments/{assessment_id}/implementation-plan", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        plan_data = response.json()
+        
+        # Verify manufacturing-specific activities are included
+        weeks = plan_data["weeks"]
+        manufacturing_activities_found = False
+        
+        for week_num in range(1, 11):
+            week_data = weeks[str(week_num)]
+            type_specific_activities = week_data.get("type_specific_activities", [])
+            
+            # Check for manufacturing-specific terms
+            activities_text = " ".join(type_specific_activities).lower()
+            manufacturing_terms = ["maintenance", "operations", "shift", "manufacturing", "operational", "production"]
+            
+            if any(term in activities_text for term in manufacturing_terms):
+                manufacturing_activities_found = True
+                break
+        
+        self.assertTrue(manufacturing_activities_found, "Manufacturing-specific activities should be included")
+        
+        # Test customized playbook for manufacturing
+        response = requests.post(f"{self.base_url}/assessments/{assessment_id}/customized-playbook", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        playbook_data = response.json()
+        
+        content = playbook_data["content"].lower()
+        manufacturing_terms = ["maintenance", "operations", "manufacturing", "operational", "production", "shift", "safety"]
+        found_terms = [term for term in manufacturing_terms if term in content]
+        
+        self.assertGreaterEqual(len(found_terms), 3, f"Manufacturing playbook should contain manufacturing terms. Found: {found_terms}")
+        
+        print("✅ Manufacturing-specific features testing successful")
+        print(f"   - Manufacturing activities included in implementation plan")
+        print(f"   - Manufacturing terms in playbook: {found_terms}")
+        print(f"   - Playbook content length: {len(playbook_data['content'])} characters")
+
 def run_tests():
     """Run all tests in order"""
     test_suite = unittest.TestSuite()
