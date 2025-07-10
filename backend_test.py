@@ -1855,65 +1855,63 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
         
         # Verify main structure
         self.assertIn("project_id", data)
-        self.assertIn("project_name", data)
+        self.assertIn("forecasting_confidence", data)
+        self.assertIn("overall_success_score", data)
         self.assertIn("generated_at", data)
-        self.assertIn("generated_by", data)
         
         # Verify delivery outcome predictions
-        self.assertIn("delivery_outcome_predictions", data)
-        delivery_predictions = data["delivery_outcome_predictions"]
+        self.assertIn("delivery_outcomes", data)
+        delivery_outcomes = data["delivery_outcomes"]
         
-        self.assertIn("on_time_delivery_probability", delivery_predictions)
-        self.assertIn("on_budget_delivery_probability", delivery_predictions)
-        self.assertIn("scope_completion_probability", delivery_predictions)
-        self.assertIn("quality_achievement_probability", delivery_predictions)
-        self.assertIn("stakeholder_satisfaction_probability", delivery_predictions)
+        self.assertIn("on_time_delivery", delivery_outcomes)
+        self.assertIn("budget_compliance", delivery_outcomes)
+        self.assertIn("scope_completion", delivery_outcomes)
+        self.assertIn("quality_achievement", delivery_outcomes)
+        self.assertIn("stakeholder_satisfaction", delivery_outcomes)
         
         # Verify probability ranges (0-100%)
-        for key, probability in delivery_predictions.items():
+        for key, probability in delivery_outcomes.items():
             if isinstance(probability, (int, float)):
                 self.assertGreaterEqual(probability, 0, f"{key} probability too low: {probability}")
                 self.assertLessEqual(probability, 100, f"{key} probability too high: {probability}")
         
-        # Verify comprehensive risk analysis
-        self.assertIn("comprehensive_risk_analysis", data)
-        risk_analysis = data["comprehensive_risk_analysis"]
+        # Verify success drivers and risk mitigations
+        self.assertIn("success_drivers", data)
+        self.assertIn("risk_mitigations", data)
+        self.assertIn("recommendations", data)
         
-        self.assertIn("technical_risks", risk_analysis)
-        self.assertIn("organizational_risks", risk_analysis)
-        self.assertIn("external_risks", risk_analysis)
-        self.assertIn("mitigation_strategies", risk_analysis)
+        # Verify manufacturing excellence correlation
+        self.assertIn("manufacturing_excellence", data)
+        manufacturing_excellence = data["manufacturing_excellence"]
         
-        # Verify scenario analysis
-        self.assertIn("scenario_analysis", data)
-        scenario_analysis = data["scenario_analysis"]
+        self.assertIn("correlation_strength", manufacturing_excellence)
+        self.assertIn("maintenance_excellence_potential", manufacturing_excellence)
+        self.assertIn("operational_performance_impact", manufacturing_excellence)
+        self.assertIn("manufacturing_readiness", manufacturing_excellence)
+        self.assertIn("excellence_pathway", manufacturing_excellence)
         
-        self.assertIn("best_case_scenario", scenario_analysis)
-        self.assertIn("most_likely_scenario", scenario_analysis)
-        self.assertIn("worst_case_scenario", scenario_analysis)
+        # Verify correlation strength is valid (0-1)
+        correlation_strength = manufacturing_excellence["correlation_strength"]
+        self.assertGreaterEqual(correlation_strength, 0, "Correlation strength should be >= 0")
+        self.assertLessEqual(correlation_strength, 1, "Correlation strength should be <= 1")
         
-        for scenario_name, scenario in scenario_analysis.items():
-            if isinstance(scenario, dict):
-                self.assertIn("probability", scenario)
-                self.assertIn("timeline_weeks", scenario)
-                self.assertIn("budget_variance", scenario)
-                self.assertIn("key_assumptions", scenario)
+        # Verify manufacturing readiness level
+        manufacturing_readiness = manufacturing_excellence["manufacturing_readiness"]
+        self.assertIn(manufacturing_readiness, ["Low", "Medium", "High"], f"Invalid manufacturing readiness: {manufacturing_readiness}")
         
-        # Verify success factors analysis
-        self.assertIn("success_factors_analysis", data)
-        success_factors = data["success_factors_analysis"]
-        
-        self.assertIn("critical_success_factors", success_factors)
-        self.assertIn("risk_mitigation_priorities", success_factors)
-        self.assertIn("recommended_actions", success_factors)
+        # Verify confidence level
+        self.assertIn("confidence_level", data)
+        confidence_level = data["confidence_level"]
+        self.assertIn(confidence_level, ["Low", "Medium", "High"], f"Invalid confidence level: {confidence_level}")
         
         print("✅ Advanced Project Forecasting testing successful")
         print(f"   - Project ID: {data['project_id']}")
-        print(f"   - On-time probability: {delivery_predictions.get('on_time_delivery_probability', 'N/A')}%")
-        print(f"   - On-budget probability: {delivery_predictions.get('on_budget_delivery_probability', 'N/A')}%")
-        print(f"   - Quality probability: {delivery_predictions.get('quality_achievement_probability', 'N/A')}%")
-        print(f"   - Scenarios analyzed: {len(scenario_analysis)}")
-        print(f"   - Critical success factors: {len(success_factors.get('critical_success_factors', []))}")
+        print(f"   - Forecasting Confidence: {data['forecasting_confidence']}%")
+        print(f"   - Overall Success Score: {data['overall_success_score']}%")
+        print(f"   - On-time Delivery: {delivery_outcomes['on_time_delivery']}%")
+        print(f"   - Budget Compliance: {delivery_outcomes['budget_compliance']}%")
+        print(f"   - Manufacturing Readiness: {manufacturing_readiness}")
+        print(f"   - Confidence Level: {confidence_level}")
 
     def test_44_stakeholder_communications(self):
         """Test Enhancement 3: Stakeholder Communication Automation endpoint"""
