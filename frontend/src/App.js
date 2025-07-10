@@ -1695,7 +1695,7 @@ function App() {
                   <Lightbulb className="h-4 w-4 mr-1" />
                   Implementation Intelligence
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <button
                     onClick={() => generateImplementationPlan(assessment.id)}
                     className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -1709,6 +1709,13 @@ function App() {
                   >
                     <FileText className="h-4 w-4 mr-2" />
                     Generate Custom Playbook
+                  </button>
+                  <button
+                    onClick={() => generatePredictiveAnalytics(assessment.id)}
+                    className="flex items-center justify-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                  >
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Predictive Analytics
                   </button>
                 </div>
               </div>
