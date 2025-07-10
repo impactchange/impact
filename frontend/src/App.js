@@ -2335,6 +2335,359 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Enhancement 3 Modals */}
+
+      {/* Detailed Budget Tracking Modal */}
+      {showBudgetTracking && budgetTracking && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-7xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b p-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-800">Detailed Budget Tracking</h2>
+                <button
+                  onClick={() => setShowBudgetTracking(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                <div className="bg-blue-50 p-3 rounded">
+                  <p className="font-semibold text-blue-800">Total Budget</p>
+                  <p className="text-xl font-bold text-blue-600">${budgetTracking.budget_tracking?.overall_metrics?.total_budgeted?.toLocaleString() || 0}</p>
+                </div>
+                <div className="bg-green-50 p-3 rounded">
+                  <p className="font-semibold text-green-800">Budget Utilization</p>
+                  <p className="text-xl font-bold text-green-600">{budgetTracking.budget_tracking?.overall_metrics?.budget_utilization?.toFixed(1) || 0}%</p>
+                </div>
+                <div className="bg-orange-50 p-3 rounded">
+                  <p className="font-semibold text-orange-800">Cost Performance</p>
+                  <p className="text-xl font-bold text-orange-600">{budgetTracking.budget_tracking?.overall_metrics?.cost_performance_index || 1.0}</p>
+                </div>
+                <div className="bg-purple-50 p-3 rounded">
+                  <p className="font-semibold text-purple-800">Budget Health</p>
+                  <p className="text-lg font-bold text-purple-600">{budgetTracking.budget_tracking?.overall_metrics?.budget_health || 'Unknown'}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Task-Level Budget Breakdown */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Task-Level Budget Breakdown</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Week</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk Level</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phase</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {budgetTracking.budget_tracking?.task_level_budgets?.slice(0, 10).map((task, idx) => (
+                        <tr key={idx}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Week {task.week}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{task.task_name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${task.budgeted_amount?.toLocaleString() || 0}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              task.risk_level === 'High' ? 'bg-red-100 text-red-800' :
+                              task.risk_level === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-green-100 text-green-800'
+                            }`}>
+                              {task.risk_level}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{task.phase}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Budget Alerts */}
+              {budgetTracking.budget_alerts && budgetTracking.budget_alerts.length > 0 && (
+                <div className="bg-white border rounded-lg p-4">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Budget Alerts</h3>
+                  <div className="space-y-3">
+                    {budgetTracking.budget_alerts.map((alert, idx) => (
+                      <div key={idx} className={`p-3 rounded border-l-4 ${
+                        alert.severity === 'High' ? 'bg-red-50 border-red-500' :
+                        alert.severity === 'Medium' ? 'bg-yellow-50 border-yellow-500' :
+                        'bg-blue-50 border-blue-500'
+                      }`}>
+                        <p className="font-medium text-gray-800">{alert.message}</p>
+                        <p className="text-sm text-gray-600 mt-1">{alert.recommended_action}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Project Forecasting Modal */}
+      {showProjectForecasting && projectForecasting && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-6xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b p-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-800">Advanced Project Forecasting</h2>
+                <button
+                  onClick={() => setShowProjectForecasting(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                <div className="bg-blue-50 p-3 rounded">
+                  <p className="font-semibold text-blue-800">Success Score</p>
+                  <p className="text-xl font-bold text-blue-600">{projectForecasting.overall_success_score || 0}%</p>
+                </div>
+                <div className="bg-green-50 p-3 rounded">
+                  <p className="font-semibold text-green-800">On-Time Probability</p>
+                  <p className="text-xl font-bold text-green-600">{projectForecasting.delivery_outcomes?.on_time_delivery || 0}%</p>
+                </div>
+                <div className="bg-orange-50 p-3 rounded">
+                  <p className="font-semibold text-orange-800">Budget Compliance</p>
+                  <p className="text-xl font-bold text-orange-600">{projectForecasting.delivery_outcomes?.budget_compliance || 0}%</p>
+                </div>
+                <div className="bg-purple-50 p-3 rounded">
+                  <p className="font-semibold text-purple-800">Quality Achievement</p>
+                  <p className="text-xl font-bold text-purple-600">{projectForecasting.delivery_outcomes?.quality_achievement || 0}%</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Delivery Outcomes */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Delivery Outcomes Forecast</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">On-Time Delivery</span>
+                      <span className="text-sm font-bold text-green-600">{projectForecasting.delivery_outcomes?.on_time_delivery || 0}%</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">Budget Compliance</span>
+                      <span className="text-sm font-bold text-blue-600">{projectForecasting.delivery_outcomes?.budget_compliance || 0}%</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">Scope Completion</span>
+                      <span className="text-sm font-bold text-purple-600">{projectForecasting.delivery_outcomes?.scope_completion || 0}%</span>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">Quality Achievement</span>
+                      <span className="text-sm font-bold text-orange-600">{projectForecasting.delivery_outcomes?.quality_achievement || 0}%</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">Stakeholder Satisfaction</span>
+                      <span className="text-sm font-bold text-indigo-600">{projectForecasting.delivery_outcomes?.stakeholder_satisfaction || 0}%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Manufacturing Excellence Correlation */}
+              {projectForecasting.manufacturing_excellence && (
+                <div className="bg-white border rounded-lg p-4">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Manufacturing Excellence Correlation</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="text-center p-3 bg-blue-50 rounded">
+                      <p className="text-sm text-blue-800">Correlation Strength</p>
+                      <p className="text-xl font-bold text-blue-600">{projectForecasting.manufacturing_excellence.correlation_strength || 0}</p>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded">
+                      <p className="text-sm text-green-800">Maintenance Potential</p>
+                      <p className="text-xl font-bold text-green-600">{projectForecasting.manufacturing_excellence.maintenance_excellence_potential || 0}%</p>
+                    </div>
+                    <div className="text-center p-3 bg-orange-50 rounded">
+                      <p className="text-sm text-orange-800">Manufacturing Readiness</p>
+                      <p className="text-lg font-bold text-orange-600">{projectForecasting.manufacturing_excellence.manufacturing_readiness || 'Unknown'}</p>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <h4 className="font-medium text-gray-700 mb-2">Excellence Pathway:</h4>
+                    <ul className="space-y-1">
+                      {projectForecasting.manufacturing_excellence.excellence_pathway?.map((step, idx) => (
+                        <li key={idx} className="text-sm text-gray-600 flex items-start">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                          {step}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Stakeholder Communications Modal */}
+      {showStakeholderComms && stakeholderComms && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-5xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b p-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-800">Stakeholder Communications</h2>
+                <button
+                  onClick={() => setShowStakeholderComms(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Executive Summary */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Executive Summary</h3>
+                <div className="text-gray-700 whitespace-pre-wrap">
+                  {stakeholderComms.executive_summary}
+                </div>
+              </div>
+
+              {/* Stakeholder Messages */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Stakeholder-Specific Messages</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {stakeholderComms.stakeholder_messages && Object.entries(stakeholderComms.stakeholder_messages).map(([role, message]) => (
+                    <div key={role} className="p-3 bg-gray-50 rounded">
+                      <h4 className="font-medium text-gray-800 mb-2 capitalize">{role.replace('_', ' ')}</h4>
+                      <p className="text-sm text-gray-600">{message}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Communication Schedule */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Communication Schedule</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-blue-50 rounded">
+                    <p className="text-sm text-blue-800">Recommended Frequency</p>
+                    <p className="text-lg font-bold text-blue-600">{stakeholderComms.recommended_frequency || 'Weekly'}</p>
+                  </div>
+                  <div className="text-center p-3 bg-green-50 rounded">
+                    <p className="text-sm text-green-800">Next Communication</p>
+                    <p className="text-lg font-bold text-green-600">
+                      {stakeholderComms.next_communication_date ? 
+                        new Date(stakeholderComms.next_communication_date).toLocaleDateString() : 
+                        'TBD'
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manufacturing Excellence Modal */}
+      {showManufacturingExcellence && manufacturingExcellence && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-6xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b p-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-800">Manufacturing Excellence Tracking</h2>
+                <button
+                  onClick={() => setShowManufacturingExcellence(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                <div className="bg-blue-50 p-3 rounded">
+                  <p className="font-semibold text-blue-800">Current Score</p>
+                  <p className="text-xl font-bold text-blue-600">{manufacturingExcellence.maintenance_excellence?.current_score || 0}/5</p>
+                </div>
+                <div className="bg-green-50 p-3 rounded">
+                  <p className="font-semibold text-green-800">ROI Percentage</p>
+                  <p className="text-xl font-bold text-green-600">{manufacturingExcellence.roi_analysis?.roi_percentage || 0}%</p>
+                </div>
+                <div className="bg-orange-50 p-3 rounded">
+                  <p className="font-semibold text-orange-800">Payback Period</p>
+                  <p className="text-xl font-bold text-orange-600">{manufacturingExcellence.roi_analysis?.payback_period_months || 0} months</p>
+                </div>
+                <div className="bg-purple-50 p-3 rounded">
+                  <p className="font-semibold text-purple-800">Business Case</p>
+                  <p className="text-lg font-bold text-purple-600">{manufacturingExcellence.roi_analysis?.business_case_strength || 'Unknown'}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Performance Predictions */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Manufacturing Performance Predictions</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {manufacturingExcellence.performance_predictions && Object.entries(manufacturingExcellence.performance_predictions).map(([metric, value]) => (
+                    <div key={metric} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                      <span className="text-sm font-medium text-gray-700 capitalize">{metric.replace(/_/g, ' ')}</span>
+                      <span className="text-sm font-bold text-green-600">{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Manufacturing KPIs */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Manufacturing KPIs</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {manufacturingExcellence.manufacturing_kpis && Object.entries(manufacturingExcellence.manufacturing_kpis).map(([kpi, value]) => (
+                    <div key={kpi} className="flex items-center justify-between p-3 bg-blue-50 rounded">
+                      <span className="text-sm font-medium text-blue-700 capitalize">{kpi.replace(/_/g, ' ')}</span>
+                      <span className="text-sm font-bold text-blue-600">{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ROI Analysis */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">ROI Analysis</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-3 bg-green-50 rounded">
+                    <p className="text-sm text-green-800">Annual Savings</p>
+                    <p className="text-xl font-bold text-green-600">${manufacturingExcellence.roi_analysis?.estimated_annual_savings?.toLocaleString() || 0}</p>
+                  </div>
+                  <div className="text-center p-3 bg-blue-50 rounded">
+                    <p className="text-sm text-blue-800">Investment</p>
+                    <p className="text-xl font-bold text-blue-600">${manufacturingExcellence.roi_analysis?.implementation_investment?.toLocaleString() || 0}</p>
+                  </div>
+                  <div className="text-center p-3 bg-purple-50 rounded">
+                    <p className="text-sm text-purple-800">ROI</p>
+                    <p className="text-xl font-bold text-purple-600">{manufacturingExcellence.roi_analysis?.roi_percentage || 0}%</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
