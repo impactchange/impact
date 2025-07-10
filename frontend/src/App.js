@@ -453,7 +453,48 @@ function App() {
         setSelectedProject(updatedProject.data);
       }
     } catch (err) {
-      console.error('Failed to update task:', err);
+      setError(err.response?.data?.detail || 'Failed to update task');
+    }
+  };
+
+  // New Intelligence Functions
+  const generateImplementationPlan = async (assessmentId) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/assessments/${assessmentId}/implementation-plan`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Show implementation plan in a modal or new tab
+      setImplementationPlan(response.data);
+      setShowImplementationPlan(true);
+      
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to generate implementation plan');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateCustomizedPlaybook = async (assessmentId) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/assessments/${assessmentId}/customized-playbook`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Show customized playbook in a modal or new tab
+      setCustomizedPlaybook(response.data);
+      setShowCustomizedPlaybook(true);
+      
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to generate customized playbook');
+    } finally {
+      setLoading(false);
     }
   };
 
