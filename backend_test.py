@@ -1762,6 +1762,449 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
         print(f"   - Resource Risk Level: {resource_trend['current_level']}")
         print(f"   - Scope Creep Probability: {scope_creep['probability']:.1f}%")
 
+    def test_42_detailed_budget_tracking(self):
+        """Test Enhancement 3: Detailed Budget Tracking endpoint"""
+        if not self.project_id:
+            self.skipTest("No project ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test the new POST endpoint for detailed budget tracking
+        response = requests.post(f"{self.base_url}/projects/{self.project_id}/detailed-budget-tracking", headers=headers)
+        print(f"Detailed Budget Tracking response: {response.status_code} - {response.text[:300]}...")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # Verify main structure
+        self.assertIn("project_id", data)
+        self.assertIn("project_name", data)
+        self.assertIn("generated_at", data)
+        self.assertIn("generated_by", data)
+        
+        # Verify task-level budget tracking
+        self.assertIn("task_level_tracking", data)
+        task_tracking = data["task_level_tracking"]
+        self.assertEqual(len(task_tracking), 10, "Should have budget tracking for all 10 tasks")
+        
+        for i, task in enumerate(task_tracking, 1):
+            self.assertIn("task_id", task)
+            self.assertIn("task_name", task)
+            self.assertIn("planned_budget", task)
+            self.assertIn("actual_spent", task)
+            self.assertIn("remaining_budget", task)
+            self.assertIn("utilization_percentage", task)
+            self.assertIn("budget_status", task)
+            self.assertIn("variance", task)
+            
+            # Verify budget amounts are realistic
+            planned_budget = task["planned_budget"]
+            self.assertGreater(planned_budget, 1000, f"Task {i} planned budget too low: ${planned_budget}")
+            self.assertLess(planned_budget, 25000, f"Task {i} planned budget too high: ${planned_budget}")
+        
+        # Verify phase-level budget aggregation
+        self.assertIn("phase_level_tracking", data)
+        phase_tracking = data["phase_level_tracking"]
+        
+        # Should have IMPACT phases
+        expected_phases = ["Investigate & Assess", "Mobilize & Prepare", "Pilot & Adapt", 
+                          "Activate & Deploy", "Cement & Transfer", "Track & Optimize"]
+        
+        for phase_data in phase_tracking:
+            self.assertIn("phase_name", phase_data)
+            self.assertIn("total_planned_budget", phase_data)
+            self.assertIn("total_actual_spent", phase_data)
+            self.assertIn("budget_utilization", phase_data)
+            self.assertIn("phase_status", phase_data)
+            self.assertIn("tasks_in_phase", phase_data)
+        
+        # Verify budget alerts
+        self.assertIn("budget_alerts", data)
+        budget_alerts = data["budget_alerts"]
+        
+        for alert in budget_alerts:
+            self.assertIn("alert_type", alert)
+            self.assertIn("severity", alert)
+            self.assertIn("message", alert)
+            self.assertIn("threshold", alert)
+            self.assertIn("current_value", alert)
+            
+            # Verify severity levels
+            self.assertIn(alert["severity"], ["Low", "Medium", "High", "Critical"])
+        
+        # Verify cost performance metrics
+        self.assertIn("cost_performance_metrics", data)
+        cpi_metrics = data["cost_performance_metrics"]
+        self.assertIn("cost_performance_index", cpi_metrics)
+        self.assertIn("estimate_at_completion", cpi_metrics)
+        self.assertIn("variance_at_completion", cpi_metrics)
+        self.assertIn("budget_health_status", cpi_metrics)
+        
+        print("✅ Detailed Budget Tracking testing successful")
+        print(f"   - Project ID: {data['project_id']}")
+        print(f"   - Task-level tracking: {len(task_tracking)} tasks")
+        print(f"   - Phase-level tracking: {len(phase_tracking)} phases")
+        print(f"   - Budget alerts: {len(budget_alerts)} alerts")
+        print(f"   - CPI: {cpi_metrics.get('cost_performance_index', 'N/A')}")
+
+    def test_43_advanced_project_forecasting(self):
+        """Test Enhancement 3: Advanced Project Outcome Forecasting endpoint"""
+        if not self.project_id:
+            self.skipTest("No project ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test the new POST endpoint for advanced forecasting
+        response = requests.post(f"{self.base_url}/projects/{self.project_id}/advanced-forecasting", headers=headers)
+        print(f"Advanced Forecasting response: {response.status_code} - {response.text[:300]}...")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # Verify main structure
+        self.assertIn("project_id", data)
+        self.assertIn("project_name", data)
+        self.assertIn("generated_at", data)
+        self.assertIn("generated_by", data)
+        
+        # Verify delivery outcome predictions
+        self.assertIn("delivery_outcome_predictions", data)
+        delivery_predictions = data["delivery_outcome_predictions"]
+        
+        self.assertIn("on_time_delivery_probability", delivery_predictions)
+        self.assertIn("on_budget_delivery_probability", delivery_predictions)
+        self.assertIn("scope_completion_probability", delivery_predictions)
+        self.assertIn("quality_achievement_probability", delivery_predictions)
+        self.assertIn("stakeholder_satisfaction_probability", delivery_predictions)
+        
+        # Verify probability ranges (0-100%)
+        for key, probability in delivery_predictions.items():
+            if isinstance(probability, (int, float)):
+                self.assertGreaterEqual(probability, 0, f"{key} probability too low: {probability}")
+                self.assertLessEqual(probability, 100, f"{key} probability too high: {probability}")
+        
+        # Verify comprehensive risk analysis
+        self.assertIn("comprehensive_risk_analysis", data)
+        risk_analysis = data["comprehensive_risk_analysis"]
+        
+        self.assertIn("technical_risks", risk_analysis)
+        self.assertIn("organizational_risks", risk_analysis)
+        self.assertIn("external_risks", risk_analysis)
+        self.assertIn("mitigation_strategies", risk_analysis)
+        
+        # Verify scenario analysis
+        self.assertIn("scenario_analysis", data)
+        scenario_analysis = data["scenario_analysis"]
+        
+        self.assertIn("best_case_scenario", scenario_analysis)
+        self.assertIn("most_likely_scenario", scenario_analysis)
+        self.assertIn("worst_case_scenario", scenario_analysis)
+        
+        for scenario_name, scenario in scenario_analysis.items():
+            if isinstance(scenario, dict):
+                self.assertIn("probability", scenario)
+                self.assertIn("timeline_weeks", scenario)
+                self.assertIn("budget_variance", scenario)
+                self.assertIn("key_assumptions", scenario)
+        
+        # Verify success factors analysis
+        self.assertIn("success_factors_analysis", data)
+        success_factors = data["success_factors_analysis"]
+        
+        self.assertIn("critical_success_factors", success_factors)
+        self.assertIn("risk_mitigation_priorities", success_factors)
+        self.assertIn("recommended_actions", success_factors)
+        
+        print("✅ Advanced Project Forecasting testing successful")
+        print(f"   - Project ID: {data['project_id']}")
+        print(f"   - On-time probability: {delivery_predictions.get('on_time_delivery_probability', 'N/A')}%")
+        print(f"   - On-budget probability: {delivery_predictions.get('on_budget_delivery_probability', 'N/A')}%")
+        print(f"   - Quality probability: {delivery_predictions.get('quality_achievement_probability', 'N/A')}%")
+        print(f"   - Scenarios analyzed: {len(scenario_analysis)}")
+        print(f"   - Critical success factors: {len(success_factors.get('critical_success_factors', []))}")
+
+    def test_44_stakeholder_communications(self):
+        """Test Enhancement 3: Stakeholder Communication Automation endpoint"""
+        if not self.project_id:
+            self.skipTest("No project ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test the new POST endpoint for stakeholder communications
+        response = requests.post(f"{self.base_url}/projects/{self.project_id}/stakeholder-communications", headers=headers)
+        print(f"Stakeholder Communications response: {response.status_code} - {response.text[:300]}...")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # Verify main structure
+        self.assertIn("project_id", data)
+        self.assertIn("project_name", data)
+        self.assertIn("generated_at", data)
+        self.assertIn("generated_by", data)
+        
+        # Verify role-specific communications
+        self.assertIn("role_specific_communications", data)
+        role_communications = data["role_specific_communications"]
+        
+        # Should have communications for different stakeholder roles
+        expected_roles = ["executive_leadership", "project_managers", "end_users", "technical_teams"]
+        
+        for role_data in role_communications:
+            self.assertIn("stakeholder_role", role_data)
+            self.assertIn("communication_content", role_data)
+            self.assertIn("key_messages", role_data)
+            self.assertIn("recommended_frequency", role_data)
+            self.assertIn("communication_channels", role_data)
+            
+            # Verify content is substantial
+            content = role_data["communication_content"]
+            self.assertGreater(len(content), 200, f"Communication content should be substantial for {role_data.get('stakeholder_role', 'unknown role')}")
+            
+            # Verify frequency recommendations
+            frequency = role_data["recommended_frequency"]
+            self.assertIn(frequency, ["Daily", "Weekly", "Bi-weekly", "Monthly"], f"Invalid frequency: {frequency}")
+        
+        # Verify automated status updates
+        self.assertIn("automated_status_updates", data)
+        status_updates = data["automated_status_updates"]
+        
+        self.assertIn("weekly_status_report", status_updates)
+        self.assertIn("milestone_notifications", status_updates)
+        self.assertIn("risk_alerts", status_updates)
+        self.assertIn("budget_updates", status_updates)
+        
+        # Verify escalation procedures
+        self.assertIn("escalation_procedures", data)
+        escalation = data["escalation_procedures"]
+        
+        self.assertIn("risk_escalation_matrix", escalation)
+        self.assertIn("issue_escalation_paths", escalation)
+        self.assertIn("decision_escalation_criteria", escalation)
+        
+        # Verify communication templates
+        self.assertIn("communication_templates", data)
+        templates = data["communication_templates"]
+        
+        for template in templates:
+            self.assertIn("template_name", template)
+            self.assertIn("template_content", template)
+            self.assertIn("target_audience", template)
+            self.assertIn("usage_guidelines", template)
+        
+        print("✅ Stakeholder Communications testing successful")
+        print(f"   - Project ID: {data['project_id']}")
+        print(f"   - Role-specific communications: {len(role_communications)} roles")
+        print(f"   - Status update types: {len(status_updates)} types")
+        print(f"   - Communication templates: {len(templates)} templates")
+        print(f"   - Escalation procedures: {len(escalation)} categories")
+
+    def test_45_manufacturing_excellence_tracking(self):
+        """Test Enhancement 3: Manufacturing Excellence Integration endpoint"""
+        if not self.project_id:
+            self.skipTest("No project ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test the new POST endpoint for manufacturing excellence tracking
+        response = requests.post(f"{self.base_url}/projects/{self.project_id}/manufacturing-excellence-tracking", headers=headers)
+        print(f"Manufacturing Excellence Tracking response: {response.status_code} - {response.text[:300]}...")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # Verify main structure
+        self.assertIn("project_id", data)
+        self.assertIn("project_name", data)
+        
+        # Verify maintenance excellence tracking
+        self.assertIn("maintenance_excellence", data)
+        maintenance_excellence = data["maintenance_excellence"]
+        
+        self.assertIn("current_score", maintenance_excellence)
+        self.assertIn("potential_score", maintenance_excellence)
+        self.assertIn("improvement_pathway", maintenance_excellence)
+        self.assertIn("critical_success_factors", maintenance_excellence)
+        
+        # Verify scores are in valid range (0-5)
+        current_score = maintenance_excellence["current_score"]
+        potential_score = maintenance_excellence["potential_score"]
+        self.assertGreaterEqual(current_score, 0, f"Current score too low: {current_score}")
+        self.assertLessEqual(current_score, 5, f"Current score too high: {current_score}")
+        self.assertGreaterEqual(potential_score, current_score, "Potential score should be >= current score")
+        self.assertLessEqual(potential_score, 5, f"Potential score too high: {potential_score}")
+        
+        # Verify performance predictions
+        self.assertIn("performance_predictions", data)
+        performance_predictions = data["performance_predictions"]
+        
+        expected_metrics = ["unplanned_downtime_reduction", "oee_improvement", "maintenance_cost_reduction", 
+                           "safety_improvement", "operational_efficiency"]
+        
+        for metric in expected_metrics:
+            self.assertIn(metric, performance_predictions)
+            # Verify percentage format
+            value = performance_predictions[metric]
+            self.assertTrue(value.endswith('%'), f"{metric} should be in percentage format")
+        
+        # Verify ROI analysis
+        self.assertIn("roi_analysis", data)
+        roi_analysis = data["roi_analysis"]
+        
+        self.assertIn("estimated_annual_savings", roi_analysis)
+        self.assertIn("implementation_investment", roi_analysis)
+        self.assertIn("roi_percentage", roi_analysis)
+        self.assertIn("payback_period_months", roi_analysis)
+        self.assertIn("business_case_strength", roi_analysis)
+        
+        # Verify ROI calculations are realistic
+        annual_savings = roi_analysis["estimated_annual_savings"]
+        investment = roi_analysis["implementation_investment"]
+        roi_percentage = roi_analysis["roi_percentage"]
+        payback_months = roi_analysis["payback_period_months"]
+        
+        self.assertGreater(annual_savings, 0, "Annual savings should be positive")
+        self.assertGreater(investment, 0, "Investment should be positive")
+        self.assertGreaterEqual(payback_months, 6, "Payback period should be at least 6 months")
+        self.assertLessEqual(payback_months, 36, "Payback period should be at most 36 months")
+        
+        # Verify business case strength
+        business_case = roi_analysis["business_case_strength"]
+        self.assertIn(business_case, ["Strong", "Moderate", "Developing"], f"Invalid business case strength: {business_case}")
+        
+        # Verify correlation metrics
+        self.assertIn("correlation_metrics", data)
+        correlation_metrics = data["correlation_metrics"]
+        
+        expected_correlations = ["maintenance_operations_correlation", "technology_adoption_correlation", "workforce_readiness_correlation"]
+        
+        for correlation in expected_correlations:
+            self.assertIn(correlation, correlation_metrics)
+            value = correlation_metrics[correlation]
+            self.assertGreaterEqual(value, 0, f"{correlation} should be >= 0")
+            self.assertLessEqual(value, 1, f"{correlation} should be <= 1")
+        
+        print("✅ Manufacturing Excellence Tracking testing successful")
+        print(f"   - Project ID: {data['project_id']}")
+        print(f"   - Current maintenance score: {current_score}")
+        print(f"   - Potential score: {potential_score}")
+        print(f"   - ROI percentage: {roi_percentage}%")
+        print(f"   - Payback period: {payback_months} months")
+        print(f"   - Business case: {business_case}")
+        print(f"   - Annual savings: ${annual_savings:,}")
+
+    def test_46_enhancement_3_performance_validation(self):
+        """Test Enhancement 3: Performance validation for all new endpoints"""
+        if not self.project_id:
+            self.skipTest("No project ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test performance of all Enhancement 3 endpoints
+        endpoints = [
+            ("detailed-budget-tracking", "Detailed Budget Tracking"),
+            ("advanced-forecasting", "Advanced Forecasting"),
+            ("stakeholder-communications", "Stakeholder Communications"),
+            ("manufacturing-excellence-tracking", "Manufacturing Excellence Tracking")
+        ]
+        
+        performance_results = {}
+        
+        for endpoint, name in endpoints:
+            start_time = time.time()
+            
+            response = requests.post(f"{self.base_url}/projects/{self.project_id}/{endpoint}", headers=headers)
+            
+            end_time = time.time()
+            response_time = (end_time - start_time) * 1000  # Convert to milliseconds
+            
+            self.assertEqual(response.status_code, 200, f"{name} endpoint failed")
+            self.assertLess(response_time, 100, f"{name} response time too slow: {response_time:.1f}ms")
+            
+            performance_results[name] = response_time
+        
+        print("✅ Enhancement 3 Performance Validation successful")
+        for name, response_time in performance_results.items():
+            print(f"   - {name}: {response_time:.1f}ms")
+        
+        # Verify average performance
+        avg_response_time = sum(performance_results.values()) / len(performance_results)
+        self.assertLess(avg_response_time, 75, f"Average response time too slow: {avg_response_time:.1f}ms")
+        print(f"   - Average response time: {avg_response_time:.1f}ms")
+
+    def test_47_enhancement_3_data_validation(self):
+        """Test Enhancement 3: Data validation and mathematical accuracy"""
+        if not self.project_id:
+            self.skipTest("No project ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test detailed budget tracking calculations
+        response = requests.post(f"{self.base_url}/projects/{self.project_id}/detailed-budget-tracking", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        budget_data = response.json()
+        
+        # Verify budget calculations are mathematically sound
+        task_tracking = budget_data["task_level_tracking"]
+        total_planned = sum(task["planned_budget"] for task in task_tracking)
+        total_spent = sum(task["actual_spent"] for task in task_tracking)
+        
+        self.assertGreater(total_planned, 0, "Total planned budget should be positive")
+        self.assertGreaterEqual(total_spent, 0, "Total spent should be non-negative")
+        self.assertLessEqual(total_spent, total_planned * 1.5, "Total spent should not exceed 150% of planned")
+        
+        # Test phase-level aggregation accuracy
+        phase_tracking = budget_data["phase_level_tracking"]
+        phase_total_planned = sum(phase["total_planned_budget"] for phase in phase_tracking)
+        
+        # Phase totals should approximately equal task totals (allowing for rounding)
+        self.assertAlmostEqual(phase_total_planned, total_planned, delta=100, 
+                              msg="Phase budget totals should match task budget totals")
+        
+        # Test manufacturing excellence ROI calculations
+        response = requests.post(f"{self.base_url}/projects/{self.project_id}/manufacturing-excellence-tracking", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        manufacturing_data = response.json()
+        
+        roi_analysis = manufacturing_data["roi_analysis"]
+        annual_savings = roi_analysis["estimated_annual_savings"]
+        investment = roi_analysis["implementation_investment"]
+        roi_percentage = roi_analysis["roi_percentage"]
+        payback_months = roi_analysis["payback_period_months"]
+        
+        # Verify ROI calculation accuracy
+        expected_roi = ((annual_savings - investment) / investment * 100) if investment > 0 else 0
+        self.assertAlmostEqual(roi_percentage, expected_roi, delta=5, 
+                              msg="ROI percentage calculation should be accurate")
+        
+        # Verify payback period calculation
+        if roi_percentage > 0:
+            expected_payback = 12 / (roi_percentage / 100)
+            expected_payback = max(6, min(36, expected_payback))  # Bounded between 6-36 months
+            self.assertAlmostEqual(payback_months, expected_payback, delta=2, 
+                                  msg="Payback period calculation should be accurate")
+        
+        print("✅ Enhancement 3 Data Validation successful")
+        print(f"   - Total planned budget: ${total_planned:,}")
+        print(f"   - Total spent: ${total_spent:,}")
+        print(f"   - Phase budget accuracy: ±${abs(phase_total_planned - total_planned):.0f}")
+        print(f"   - ROI calculation accuracy: ±{abs(roi_percentage - expected_roi):.1f}%")
+        print(f"   - Manufacturing annual savings: ${annual_savings:,}")
+
 def run_tests():
     """Run all tests in order"""
     test_suite = unittest.TestSuite()
