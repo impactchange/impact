@@ -143,6 +143,12 @@ function App() {
   const [showImplementationPlan, setShowImplementationPlan] = useState(false);
   const [customizedPlaybook, setCustomizedPlaybook] = useState(null);
   const [showCustomizedPlaybook, setShowCustomizedPlaybook] = useState(false);
+  
+  // Predictive Analytics States
+  const [predictiveAnalytics, setPredictiveAnalytics] = useState(null);
+  const [showPredictiveAnalytics, setShowPredictiveAnalytics] = useState(false);
+  const [riskMonitoring, setRiskMonitoring] = useState(null);
+  const [showRiskMonitoring, setShowRiskMonitoring] = useState(false);
 
   useEffect(() => {
     fetchAssessmentTypes(); // Fetch assessment types on component mount
