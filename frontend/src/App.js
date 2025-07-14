@@ -2961,6 +2961,370 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Enhancement 4 Modals */}
+
+      {/* Phase Intelligence Modal */}
+      {showPhaseIntelligence && phaseIntelligence && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-6xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b p-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-800">Phase Intelligence: {phaseIntelligence.phase_name}</h2>
+                <button
+                  onClick={() => setShowPhaseIntelligence(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                <div className="bg-blue-50 p-3 rounded">
+                  <p className="font-semibold text-blue-800">Phase Number</p>
+                  <p className="text-xl font-bold text-blue-600">{phaseIntelligence.phase_number}/6</p>
+                </div>
+                <div className="bg-green-50 p-3 rounded">
+                  <p className="font-semibold text-green-800">Success Probability</p>
+                  <p className="text-xl font-bold text-green-600">{phaseIntelligence.phase_intelligence?.success_probability || 0}%</p>
+                </div>
+                <div className="bg-orange-50 p-3 rounded">
+                  <p className="font-semibold text-orange-800">Duration</p>
+                  <p className="text-xl font-bold text-orange-600">{phaseIntelligence.phase_intelligence?.typical_duration_weeks || 0} weeks</p>
+                </div>
+                <div className="bg-purple-50 p-3 rounded">
+                  <p className="font-semibold text-purple-800">Budget %</p>
+                  <p className="text-xl font-bold text-purple-600">{phaseIntelligence.phase_intelligence?.budget_percentage || 0}%</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Key Activities */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Key Activities</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {phaseIntelligence.phase_intelligence?.key_activities?.map((activity, idx) => (
+                    <div key={idx} className="flex items-center p-2 bg-blue-50 rounded">
+                      <CheckCircle className="h-4 w-4 text-blue-600 mr-2" />
+                      <span className="text-sm text-gray-700">{activity}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recommendations */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">AI Recommendations</h3>
+                <div className="space-y-2">
+                  {phaseIntelligence.phase_intelligence?.recommendations?.map((rec, idx) => (
+                    <div key={idx} className="flex items-start p-3 bg-green-50 rounded">
+                      <span className="inline-block w-5 h-5 bg-green-500 text-white rounded-full text-xs flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
+                        {idx + 1}
+                      </span>
+                      <span className="text-sm text-gray-700">{rec}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Budget Recommendations */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Budget Recommendations</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-3 bg-blue-50 rounded">
+                    <p className="text-sm text-blue-800">Recommended Budget</p>
+                    <p className="text-xl font-bold text-blue-600">${phaseIntelligence.phase_intelligence?.budget_recommendations?.recommended_budget?.toLocaleString() || 0}</p>
+                  </div>
+                  <div className="text-center p-3 bg-yellow-50 rounded">
+                    <p className="text-sm text-yellow-800">Risk Level</p>
+                    <p className="text-xl font-bold text-yellow-600">{phaseIntelligence.phase_intelligence?.budget_recommendations?.risk_level || 'Unknown'}</p>
+                  </div>
+                  <div className="text-center p-3 bg-purple-50 rounded">
+                    <p className="text-sm text-purple-800">Contingency</p>
+                    <p className="text-xl font-bold text-purple-600">{phaseIntelligence.phase_intelligence?.budget_recommendations?.contingency_percentage || 0}%</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Risks and Mitigations */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Risks and Mitigations</h3>
+                <div className="space-y-3">
+                  {phaseIntelligence.phase_intelligence?.risks_and_mitigations?.map((risk, idx) => (
+                    <div key={idx} className="border-l-4 border-red-500 pl-4 py-2">
+                      <p className="font-medium text-red-700">{risk.risk}</p>
+                      <p className="text-sm text-gray-600 mt-1">{risk.mitigation}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Phase Progress Modal */}
+      {showPhaseProgressModal && selectedPhaseForProgress && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b p-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-800">Update Phase Progress: {selectedPhaseForProgress.phase_name}</h2>
+                <button
+                  onClick={() => setShowPhaseProgressModal(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                if (phaseProgress.status === 'completed') {
+                  completePhaseWithAnalysis(selectedProject.id, phaseProgress.phase_name, phaseProgress);
+                } else {
+                  updatePhaseProgress(selectedProject.id, phaseProgress.phase_name, phaseProgress);
+                }
+              }}>
+                {/* Progress and Status */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Completion Percentage
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={phaseProgress.completion_percentage}
+                      onChange={(e) => setPhaseProgress({...phaseProgress, completion_percentage: parseFloat(e.target.value)})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Status
+                    </label>
+                    <select
+                      value={phaseProgress.status}
+                      onChange={(e) => setPhaseProgress({...phaseProgress, status: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="not_started">Not Started</option>
+                      <option value="in_progress">In Progress</option>
+                      <option value="completed">Completed</option>
+                      <option value="failed">Failed</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Success Status */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Success Status
+                  </label>
+                  <select
+                    value={phaseProgress.success_status}
+                    onChange={(e) => setPhaseProgress({...phaseProgress, success_status: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select Status</option>
+                    <option value="successful">Successful</option>
+                    <option value="partially_successful">Partially Successful</option>
+                    <option value="failed">Failed</option>
+                  </select>
+                </div>
+
+                {/* Success/Failure Reasons */}
+                {phaseProgress.success_status === 'successful' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Success Reason
+                    </label>
+                    <textarea
+                      value={phaseProgress.success_reason}
+                      onChange={(e) => setPhaseProgress({...phaseProgress, success_reason: e.target.value})}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="What made this phase successful?"
+                    />
+                  </div>
+                )}
+
+                {phaseProgress.success_status === 'failed' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Failure Reason
+                    </label>
+                    <textarea
+                      value={phaseProgress.failure_reason}
+                      onChange={(e) => setPhaseProgress({...phaseProgress, failure_reason: e.target.value})}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="What caused this phase to fail?"
+                    />
+                  </div>
+                )}
+
+                {/* Lessons Learned */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Lessons Learned
+                  </label>
+                  <textarea
+                    value={phaseProgress.lessons_learned}
+                    onChange={(e) => setPhaseProgress({...phaseProgress, lessons_learned: e.target.value})}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="What did you learn from this phase?"
+                  />
+                </div>
+
+                {/* Budget Spent */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Budget Spent ($)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={phaseProgress.budget_spent}
+                    onChange={(e) => setPhaseProgress({...phaseProgress, budget_spent: parseFloat(e.target.value) || 0})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowPhaseProgressModal(false)}
+                    className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className={`px-4 py-2 text-white rounded-md transition-colors ${
+                      phaseProgress.status === 'completed' 
+                        ? 'bg-green-600 hover:bg-green-700' 
+                        : 'bg-blue-600 hover:bg-blue-700'
+                    }`}
+                  >
+                    {phaseProgress.status === 'completed' ? 'Complete Phase with Analysis' : 'Update Progress'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Workflow Status Modal */}
+      {showWorkflowStatus && workflowStatus && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-6xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b p-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-800">Project Workflow Status</h2>
+                <button
+                  onClick={() => setShowWorkflowStatus(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                <div className="bg-blue-50 p-3 rounded">
+                  <p className="font-semibold text-blue-800">Overall Progress</p>
+                  <p className="text-xl font-bold text-blue-600">{workflowStatus.workflow_status?.overall_progress || 0}%</p>
+                </div>
+                <div className="bg-green-50 p-3 rounded">
+                  <p className="font-semibold text-green-800">Current Phase</p>
+                  <p className="text-sm font-bold text-green-600">{workflowStatus.workflow_status?.current_phase || 'None'}</p>
+                </div>
+                <div className="bg-orange-50 p-3 rounded">
+                  <p className="font-semibold text-orange-800">Budget Utilization</p>
+                  <p className="text-xl font-bold text-orange-600">{workflowStatus.workflow_status?.budget_utilization || 0}%</p>
+                </div>
+                <div className="bg-purple-50 p-3 rounded">
+                  <p className="font-semibold text-purple-800">Success Rate</p>
+                  <p className="text-xl font-bold text-purple-600">{workflowStatus.workflow_status?.success_rate || 0}%</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Phase Summary */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Phase Summary</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-3 bg-green-50 rounded">
+                    <p className="text-sm text-green-800">Completed</p>
+                    <p className="text-2xl font-bold text-green-600">{workflowStatus.workflow_status?.phase_summary?.completed_phases || 0}</p>
+                  </div>
+                  <div className="text-center p-3 bg-blue-50 rounded">
+                    <p className="text-sm text-blue-800">In Progress</p>
+                    <p className="text-2xl font-bold text-blue-600">{workflowStatus.workflow_status?.phase_summary?.in_progress_phases || 0}</p>
+                  </div>
+                  <div className="text-center p-3 bg-gray-50 rounded">
+                    <p className="text-sm text-gray-800">Not Started</p>
+                    <p className="text-2xl font-bold text-gray-600">{workflowStatus.workflow_status?.phase_summary?.not_started_phases || 0}</p>
+                  </div>
+                  <div className="text-center p-3 bg-red-50 rounded">
+                    <p className="text-sm text-red-800">Failed</p>
+                    <p className="text-2xl font-bold text-red-600">{workflowStatus.workflow_status?.phase_summary?.failed_phases || 0}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Phase Details */}
+              <div className="bg-white border rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Phase Details</h3>
+                <div className="space-y-3">
+                  {workflowStatus.workflow_status?.phases_detail?.map((phase, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                      <div className="flex items-center">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold mr-3 ${
+                          phase.status === 'completed' ? 'bg-green-500' :
+                          phase.status === 'in_progress' ? 'bg-blue-500' :
+                          phase.status === 'failed' ? 'bg-red-500' :
+                          'bg-gray-400'
+                        }`}>
+                          {idx + 1}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-800">{phase.phase_name}</p>
+                          <p className="text-sm text-gray-600">{phase.completion_percentage || 0}% complete</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          phase.status === 'completed' ? 'bg-green-100 text-green-800' :
+                          phase.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                          phase.status === 'failed' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {phase.status?.replace('_', ' ')}
+                        </span>
+                        <p className="text-sm text-gray-600 mt-1">${phase.budget_spent || 0} spent</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
