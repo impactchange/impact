@@ -3594,51 +3594,107 @@ async def health_check():
 
 # Authentication routes
 @app.post("/api/auth/register")
-async def register_user(user_data: UserRegistration):
+async def register_user(user: UserRegistration):
+    """Register a new user with admin approval required"""
     try:
         # Check if user already exists
-        existing_user = await db.users.find_one({"email": user_data.email})
+        existing_user = await db.users.find_one({"email": user.email})
         if existing_user:
-            raise HTTPException(status_code=400, detail="User already exists")
+            raise HTTPException(status_code=400, detail="Email already registered")
         
-        # Create new user
+        # Check if username is taken
+        existing_username = await db.users.find_one({"username": user.username})
+        if existing_username:
+            raise HTTPException(status_code=400, detail="Username already taken")
+        
+        # Hash password
+        hashed_password = get_password_hash(user.password)
+        
+        # Create user with pending approval status
         user_id = str(uuid.uuid4())
-        hashed_password = hash_password(user_data.password)
-        
-        user = {
+        user_data = {
             "id": user_id,
-            "email": user_data.email,
-            "password": hashed_password,
-            "full_name": user_data.full_name,
-            "organization": user_data.organization,
-            "role": user_data.role,
-            "created_at": datetime.utcnow()
+            "username": user.username,
+            "email": user.email,
+            "hashed_password": hashed_password,
+            "full_name": user.full_name,
+            "organization": user.organization,
+            "role": user.role,
+            "status": "pending_approval",  # New field for approval status
+            "created_at": datetime.utcnow(),
+            "approved_at": None,
+            "approved_by": None,
+            "rejection_reason": None,
+            "is_admin": False,
+            "is_active": False  # User cannot login until approved
         }
         
-        await db.users.insert_one(user)
+        await db.users.insert_one(user_data)
         
-        # Create JWT token
-        token = create_jwt_token(user_id, user_data.email)
+        # Create admin notification for approval
+        await create_admin_notification(
+            "user_registration",
+            f"New user registration: {user.full_name} ({user.email})",
+            {"user_id": user_id, "user_email": user.email, "user_name": user.full_name}
+        )
         
         return {
-            "user": User(**user),
-            "token": token,
-            "message": "User registered successfully"
+            "message": "Registration submitted successfully. Your account is pending admin approval.",
+            "user_id": user_id,
+            "status": "pending_approval"
         }
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Registration failed: {str(e)}")
+        print(f"Registration error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
 @app.post("/api/auth/login")
-async def login_user(login_data: UserLogin):
+async def login_user(user: UserLogin):
+    """Login user with approval status check"""
     try:
-        # Find user
-        user = await db.users.find_one({"email": login_data.email})
-        if not user:
+        # Find user by email
+        user_data = await db.users.find_one({"email": user.email})
+        if not user_data:
             raise HTTPException(status_code=401, detail="Invalid credentials")
         
+        # Check if user is approved
+        if user_data.get("status") != "approved":
+            status = user_data.get("status", "pending_approval")
+            if status == "pending_approval":
+                raise HTTPException(status_code=403, detail="Account pending admin approval")
+            elif status == "rejected":
+                rejection_reason = user_data.get("rejection_reason", "No reason provided")
+                raise HTTPException(status_code=403, detail=f"Account rejected: {rejection_reason}")
+            else:
+                raise HTTPException(status_code=403, detail="Account not approved")
+        
         # Verify password
-        if not verify_password(login_data.password, user["password"]):
+        if not verify_password(user.password, user_data["hashed_password"]):
             raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        # Create access token
+        access_token = create_access_token(data={"sub": user_data["email"]})
+        
+        # Log user activity
+        await log_user_activity(
+            user_data["id"],
+            "login",
+            f"User {user_data['full_name']} logged in successfully"
+        )
+        
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": user_data["id"],
+                "username": user_data["username"],
+                "email": user_data["email"],
+                "full_name": user_data["full_name"],
+                "organization": user_data["organization"],
+                "role": user_data["role"],
+                "is_admin": user_data.get("is_admin", False),
+                "status": user_data["status"]
+            }
+        }
         
         # Create JWT token
         token = create_jwt_token(user["id"], user["email"])
