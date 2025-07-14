@@ -4365,27 +4365,46 @@ def generate_real_time_recommendations(risk_alerts: List[dict], progress: float,
 @app.put("/api/projects/{project_id}")
 async def update_project(
     project_id: str,
-    update_data: dict,
+    update_data: ProjectUpdate,
     current_user: User = Depends(get_current_user)
 ):
+    """Update project details"""
     try:
-        update_data["updated_at"] = datetime.utcnow()
-        
-        result = await db.projects.update_one(
-            {"id": project_id, "user_id": current_user.id},
-            {"$set": update_data}
-        )
-        
-        if result.matched_count == 0:
+        # Get existing project
+        existing_project = await db.projects.find_one({"id": project_id, "user_id": current_user.id})
+        if not existing_project:
             raise HTTPException(status_code=404, detail="Project not found")
         
+        # Update with provided data
+        update_dict = update_data.dict(exclude_unset=True)
+        
+        # Handle datetime fields
+        if "estimated_end_date" in update_dict and update_dict["estimated_end_date"]:
+            try:
+                update_dict["estimated_end_date"] = datetime.fromisoformat(update_dict["estimated_end_date"])
+            except ValueError:
+                pass
+        
+        update_dict["updated_at"] = datetime.utcnow()
+        
+        # Update in database
+        result = await db.projects.update_one(
+            {"id": project_id, "user_id": current_user.id},
+            {"$set": update_dict}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Project not found or no changes made")
+        
+        # Get updated project
         updated_project = await db.projects.find_one({"id": project_id, "user_id": current_user.id})
         updated_project["_id"] = str(updated_project["_id"])
+        
         return updated_project
         
     except Exception as e:
         print(f"Update Project Error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to update project")
+        raise HTTPException(status_code=500, detail=f"Failed to update project: {str(e)}")
 
 # Assessment routes - Enhanced for Manufacturing EAM
 @app.post("/api/assessments")
