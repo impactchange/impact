@@ -159,6 +159,16 @@ function App() {
   const [showStakeholderComms, setShowStakeholderComms] = useState(false);
   const [manufacturingExcellence, setManufacturingExcellence] = useState(null);
   const [showManufacturingExcellence, setShowManufacturingExcellence] = useState(false);
+  
+  // Enhancement 4: Advanced Project Workflow States
+  const [projectEditMode, setProjectEditMode] = useState(false);
+  const [phaseIntelligence, setPhaseIntelligence] = useState(null);
+  const [showPhaseIntelligence, setShowPhaseIntelligence] = useState(false);
+  const [phaseProgress, setPhaseProgress] = useState({});
+  const [showPhaseProgressModal, setShowPhaseProgressModal] = useState(false);
+  const [selectedPhaseForProgress, setSelectedPhaseForProgress] = useState(null);
+  const [workflowStatus, setWorkflowStatus] = useState(null);
+  const [showWorkflowStatus, setShowWorkflowStatus] = useState(false);
 
   useEffect(() => {
     fetchAssessmentTypes(); // Fetch assessment types on component mount
