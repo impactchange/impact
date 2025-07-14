@@ -2204,6 +2204,882 @@ class IMPACTMethodologyAPITest(unittest.TestCase):
         print(f"   - Manufacturing annual savings: ${annual_savings:,}")
         print(f"   - Overall success score: {overall_success_score}%")
 
+    # ====================================================================================
+    # ENHANCEMENT 4: ADVANCED PROJECT WORKFLOW MANAGEMENT WITH PHASE-BASED INTELLIGENCE
+    # ====================================================================================
+
+    def test_48_enhanced_project_editing(self):
+        """Test Enhancement 4: Enhanced project editing with ProjectUpdate model"""
+        if not self.project_id:
+            self.skipTest("No project ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test the enhanced PUT endpoint for project editing
+        project_update = {
+            "project_name": "Enhanced Project Name",
+            "description": "Updated project description with enhanced features",
+            "client_organization": "Enhanced Client Organization",
+            "objectives": [
+                "Implement advanced workflow management",
+                "Achieve phase-based intelligence integration",
+                "Optimize project lifecycle management"
+            ],
+            "scope": "Enhanced project scope with phase-based intelligence",
+            "total_budget": 125000.0,
+            "estimated_end_date": (datetime.utcnow() + timedelta(days=120)).isoformat(),
+            "current_phase": "mobilize",
+            "health_status": "healthy",
+            "spent_budget": 15000.0,
+            "team_members": ["team.member1@company.com", "team.member2@company.com"],
+            "stakeholders": ["stakeholder1@client.com", "stakeholder2@client.com"],
+            "key_milestones": [
+                {
+                    "name": "Phase 1 Completion",
+                    "target_date": (datetime.utcnow() + timedelta(days=30)).isoformat(),
+                    "status": "pending"
+                },
+                {
+                    "name": "Phase 2 Completion", 
+                    "target_date": (datetime.utcnow() + timedelta(days=60)).isoformat(),
+                    "status": "pending"
+                }
+            ]
+        }
+        
+        response = requests.put(f"{self.base_url}/projects/{self.project_id}", json=project_update, headers=headers)
+        print(f"Enhanced Project Editing response: {response.status_code} - {response.text[:300]}...")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # Verify project update structure
+        self.assertEqual(data["id"], self.project_id)
+        self.assertEqual(data["name"], project_update["project_name"])
+        self.assertEqual(data["description"], project_update["description"])
+        self.assertEqual(data["current_phase"], project_update["current_phase"])
+        self.assertEqual(data["status"], "active")  # Should remain active
+        self.assertEqual(data["budget"], project_update["total_budget"])
+        
+        # Verify objectives were updated
+        if "objectives" in data:
+            self.assertEqual(len(data["objectives"]), len(project_update["objectives"]))
+        
+        # Verify team members and stakeholders
+        if "team_members" in data:
+            self.assertEqual(len(data["team_members"]), len(project_update["team_members"]))
+        
+        if "stakeholders" in data:
+            self.assertEqual(len(data["stakeholders"]), len(project_update["stakeholders"]))
+        
+        # Verify milestones
+        if "milestones" in data:
+            self.assertGreaterEqual(len(data["milestones"]), len(project_update["key_milestones"]))
+        
+        # Verify datetime fields are handled properly
+        self.assertIn("updated_at", data)
+        
+        print("✅ Enhanced Project Editing testing successful")
+        print(f"   - Project ID: {data['id']}")
+        print(f"   - Updated Name: {data['name']}")
+        print(f"   - Current Phase: {data['current_phase']}")
+        print(f"   - Total Budget: ${data['budget']:,}")
+        print(f"   - Team Members: {len(data.get('team_members', []))}")
+        print(f"   - Stakeholders: {len(data.get('stakeholders', []))}")
+        print(f"   - Milestones: {len(data.get('milestones', []))}")
+
+    def test_49_phase_based_intelligence_generation(self):
+        """Test Enhancement 4: Phase-based intelligence and recommendations"""
+        if not self.project_id:
+            self.skipTest("No project ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test intelligence generation for different IMPACT phases
+        impact_phases = ["investigate", "mobilize", "pilot", "activate", "cement", "track"]
+        
+        intelligence_results = {}
+        
+        for phase_name in impact_phases:
+            response = requests.post(f"{self.base_url}/projects/{self.project_id}/phases/{phase_name}/intelligence", headers=headers)
+            print(f"Phase Intelligence for {phase_name} response: {response.status_code} - {response.text[:200]}...")
+            self.assertEqual(response.status_code, 200)
+            data = response.json()
+            
+            # Verify intelligence structure
+            self.assertIn("project_id", data)
+            self.assertIn("phase_name", data)
+            self.assertIn("phase_display_name", data)
+            self.assertIn("generated_at", data)
+            self.assertIn("generated_by", data)
+            
+            # Verify phase-specific intelligence
+            self.assertIn("phase_intelligence", data)
+            phase_intelligence = data["phase_intelligence"]
+            
+            self.assertIn("phase_objectives", phase_intelligence)
+            self.assertIn("key_activities", phase_intelligence)
+            self.assertIn("success_criteria", phase_intelligence)
+            self.assertIn("deliverables", phase_intelligence)
+            self.assertIn("newton_law_application", phase_intelligence)
+            
+            # Verify recommendations
+            self.assertIn("recommendations", data)
+            recommendations = data["recommendations"]
+            
+            self.assertIn("strategic_recommendations", recommendations)
+            self.assertIn("tactical_actions", recommendations)
+            self.assertIn("risk_mitigation", recommendations)
+            self.assertIn("success_factors", recommendations)
+            
+            # Verify success probability calculation
+            self.assertIn("success_probability", data)
+            success_probability = data["success_probability"]
+            self.assertGreaterEqual(success_probability, 15, f"Success probability too low for {phase_name}")
+            self.assertLessEqual(success_probability, 95, f"Success probability too high for {phase_name}")
+            
+            # Verify budget recommendations
+            self.assertIn("budget_recommendations", data)
+            budget_recommendations = data["budget_recommendations"]
+            
+            self.assertIn("phase_budget_estimate", budget_recommendations)
+            self.assertIn("risk_adjustment_factor", budget_recommendations)
+            self.assertIn("recommended_contingency", budget_recommendations)
+            self.assertIn("cost_optimization_opportunities", budget_recommendations)
+            
+            # Verify risk assessment
+            self.assertIn("risk_assessment", data)
+            risk_assessment = data["risk_assessment"]
+            
+            self.assertIn("phase_specific_risks", risk_assessment)
+            self.assertIn("risk_level", risk_assessment)
+            self.assertIn("mitigation_strategies", risk_assessment)
+            
+            # Verify risk level is valid
+            self.assertIn(risk_assessment["risk_level"], ["Low", "Medium", "High"])
+            
+            # Verify lessons learned integration
+            self.assertIn("lessons_learned", data)
+            lessons_learned = data["lessons_learned"]
+            
+            self.assertIn("previous_phase_insights", lessons_learned)
+            self.assertIn("best_practices", lessons_learned)
+            self.assertIn("improvement_opportunities", lessons_learned)
+            
+            intelligence_results[phase_name] = {
+                "success_probability": success_probability,
+                "risk_level": risk_assessment["risk_level"],
+                "phase_budget": budget_recommendations["phase_budget_estimate"],
+                "recommendations_count": len(recommendations["strategic_recommendations"])
+            }
+        
+        print("✅ Phase-based Intelligence Generation testing successful")
+        for phase_name, results in intelligence_results.items():
+            print(f"   - {phase_name.capitalize()}:")
+            print(f"     • Success Probability: {results['success_probability']:.1f}%")
+            print(f"     • Risk Level: {results['risk_level']}")
+            print(f"     • Phase Budget: ${results['phase_budget']:,}")
+            print(f"     • Recommendations: {results['recommendations_count']}")
+
+    def test_50_phase_progress_tracking(self):
+        """Test Enhancement 4: Phase progress tracking and updates"""
+        if not self.project_id:
+            self.skipTest("No project ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test progress updates for different phases
+        phase_updates = [
+            {
+                "phase_name": "investigate",
+                "completion_percentage": 75.0,
+                "status": "in_progress",
+                "success_status": "on_track",
+                "success_reason": "Strong stakeholder engagement and comprehensive analysis completed",
+                "lessons_learned": "Early stakeholder involvement critical for success",
+                "budget_spent": 12000.0,
+                "scope_changes": ["Added additional stakeholder interviews", "Extended analysis period"],
+                "tasks_completed": ["Stakeholder analysis", "Current state assessment"],
+                "deliverables_completed": ["Stakeholder Analysis Report", "Current State Analysis"],
+                "risks_identified": ["Resource availability concerns", "Timeline pressure"]
+            },
+            {
+                "phase_name": "mobilize",
+                "completion_percentage": 45.0,
+                "status": "in_progress",
+                "success_status": "at_risk",
+                "success_reason": "Some delays in resource allocation",
+                "failure_reason": "Delayed approval for additional resources",
+                "lessons_learned": "Need earlier resource planning and approval processes",
+                "budget_spent": 8500.0,
+                "scope_changes": ["Reduced training scope due to budget constraints"],
+                "tasks_completed": ["Change management plan development"],
+                "deliverables_completed": ["Change Management Plan"],
+                "risks_identified": ["Budget constraints", "Resource allocation delays"]
+            },
+            {
+                "phase_name": "pilot",
+                "completion_percentage": 0.0,
+                "status": "not_started",
+                "lessons_learned": "Awaiting completion of mobilize phase",
+                "budget_spent": 0.0,
+                "scope_changes": [],
+                "tasks_completed": [],
+                "deliverables_completed": [],
+                "risks_identified": ["Dependency on mobilize phase completion"]
+            }
+        ]
+        
+        progress_results = {}
+        
+        for update in phase_updates:
+            phase_name = update["phase_name"]
+            
+            response = requests.put(f"{self.base_url}/projects/{self.project_id}/phases/{phase_name}/progress", 
+                                  json=update, headers=headers)
+            print(f"Phase Progress Update for {phase_name} response: {response.status_code} - {response.text[:200]}...")
+            self.assertEqual(response.status_code, 200)
+            data = response.json()
+            
+            # Verify update response structure
+            self.assertIn("message", data)
+            self.assertIn("project_id", data)
+            self.assertIn("phase_name", data)
+            self.assertIn("updated_progress", data)
+            
+            # Verify updated progress details
+            updated_progress = data["updated_progress"]
+            self.assertEqual(updated_progress["completion_percentage"], update["completion_percentage"])
+            self.assertEqual(updated_progress["status"], update["status"])
+            self.assertEqual(updated_progress["budget_spent"], update["budget_spent"])
+            
+            if "success_status" in update:
+                self.assertEqual(updated_progress["success_status"], update["success_status"])
+            
+            if "lessons_learned" in update:
+                self.assertEqual(updated_progress["lessons_learned"], update["lessons_learned"])
+            
+            # Verify scope changes and tasks
+            if "scope_changes" in update:
+                self.assertEqual(len(updated_progress["scope_changes"]), len(update["scope_changes"]))
+            
+            if "tasks_completed" in update:
+                self.assertEqual(len(updated_progress["tasks_completed"]), len(update["tasks_completed"]))
+            
+            if "deliverables_completed" in update:
+                self.assertEqual(len(updated_progress["deliverables_completed"]), len(update["deliverables_completed"]))
+            
+            if "risks_identified" in update:
+                self.assertEqual(len(updated_progress["risks_identified"]), len(update["risks_identified"]))
+            
+            progress_results[phase_name] = {
+                "completion_percentage": updated_progress["completion_percentage"],
+                "status": updated_progress["status"],
+                "budget_spent": updated_progress["budget_spent"],
+                "risks_count": len(updated_progress.get("risks_identified", []))
+            }
+        
+        print("✅ Phase Progress Tracking testing successful")
+        for phase_name, results in progress_results.items():
+            print(f"   - {phase_name.capitalize()}:")
+            print(f"     • Completion: {results['completion_percentage']:.1f}%")
+            print(f"     • Status: {results['status']}")
+            print(f"     • Budget Spent: ${results['budget_spent']:,}")
+            print(f"     • Risks Identified: {results['risks_count']}")
+
+    def test_51_phase_completion_analysis(self):
+        """Test Enhancement 4: Phase completion and comprehensive analysis"""
+        if not self.project_id:
+            self.skipTest("No project ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test phase completion for investigate phase
+        completion_data = {
+            "completion_percentage": 100.0,
+            "success_status": "successful",
+            "success_reason": "All objectives met with stakeholder satisfaction",
+            "lessons_learned": "Early stakeholder engagement was key to success. Comprehensive analysis provided solid foundation.",
+            "budget_spent": 15000.0,
+            "scope_changes": ["Added stakeholder interviews", "Extended analysis period"],
+            "deliverables_completed": [
+                "Stakeholder Analysis Report",
+                "Current State Analysis", 
+                "Risk Assessment Matrix",
+                "Cultural Assessment Report"
+            ],
+            "final_notes": "Phase completed successfully with all deliverables approved",
+            "performance_metrics": {
+                "quality_score": 4.5,
+                "timeline_adherence": 0.95,
+                "budget_efficiency": 0.88,
+                "stakeholder_satisfaction": 4.2
+            }
+        }
+        
+        response = requests.post(f"{self.base_url}/projects/{self.project_id}/phases/investigate/complete", 
+                               json=completion_data, headers=headers)
+        print(f"Phase Completion Analysis response: {response.status_code} - {response.text[:300]}...")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # Verify completion analysis structure
+        self.assertIn("project_id", data)
+        self.assertIn("phase_name", data)
+        self.assertIn("completion_date", data)
+        self.assertIn("generated_at", data)
+        
+        # Verify completion analysis
+        self.assertIn("completion_analysis", data)
+        completion_analysis = data["completion_analysis"]
+        
+        self.assertIn("completion_score", completion_analysis)
+        self.assertIn("performance_metrics", completion_analysis)
+        self.assertIn("success_factors", completion_analysis)
+        self.assertIn("improvement_areas", completion_analysis)
+        self.assertIn("lessons_learned_summary", completion_analysis)
+        
+        # Verify completion score is reasonable (0-100)
+        completion_score = completion_analysis["completion_score"]
+        self.assertGreaterEqual(completion_score, 0, "Completion score should be >= 0")
+        self.assertLessEqual(completion_score, 100, "Completion score should be <= 100")
+        
+        # Verify performance metrics
+        performance_metrics = completion_analysis["performance_metrics"]
+        self.assertIn("overall_performance", performance_metrics)
+        self.assertIn("quality_achievement", performance_metrics)
+        self.assertIn("timeline_performance", performance_metrics)
+        self.assertIn("budget_performance", performance_metrics)
+        self.assertIn("stakeholder_satisfaction", performance_metrics)
+        
+        # Verify next phase readiness
+        self.assertIn("next_phase_readiness", data)
+        next_phase_readiness = data["next_phase_readiness"]
+        
+        self.assertIn("readiness_score", next_phase_readiness)
+        self.assertIn("readiness_level", next_phase_readiness)
+        self.assertIn("prerequisites_met", next_phase_readiness)
+        self.assertIn("preparation_recommendations", next_phase_readiness)
+        
+        # Verify readiness level is valid
+        readiness_level = next_phase_readiness["readiness_level"]
+        self.assertIn(readiness_level, ["Ready", "Conditionally Ready", "Not Ready"])
+        
+        # Verify next phase recommendations
+        self.assertIn("next_phase_recommendations", data)
+        next_phase_recommendations = data["next_phase_recommendations"]
+        
+        self.assertIn("recommended_actions", next_phase_recommendations)
+        self.assertIn("success_strategies", next_phase_recommendations)
+        self.assertIn("risk_mitigation", next_phase_recommendations)
+        self.assertIn("resource_requirements", next_phase_recommendations)
+        self.assertIn("timeline_recommendations", next_phase_recommendations)
+        
+        # Verify comprehensive insights
+        self.assertIn("comprehensive_insights", data)
+        comprehensive_insights = data["comprehensive_insights"]
+        
+        self.assertIn("phase_impact_assessment", comprehensive_insights)
+        self.assertIn("project_trajectory", comprehensive_insights)
+        self.assertIn("success_probability_update", comprehensive_insights)
+        self.assertIn("strategic_recommendations", comprehensive_insights)
+        
+        print("✅ Phase Completion Analysis testing successful")
+        print(f"   - Project ID: {data['project_id']}")
+        print(f"   - Phase: {data['phase_name']}")
+        print(f"   - Completion Score: {completion_score:.1f}")
+        print(f"   - Next Phase Readiness: {readiness_level}")
+        print(f"   - Success Factors: {len(completion_analysis['success_factors'])}")
+        print(f"   - Improvement Areas: {len(completion_analysis['improvement_areas'])}")
+        print(f"   - Next Phase Recommendations: {len(next_phase_recommendations['recommended_actions'])}")
+
+    def test_52_workflow_status_monitoring(self):
+        """Test Enhancement 4: Comprehensive workflow status monitoring"""
+        if not self.project_id:
+            self.skipTest("No project ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        response = requests.get(f"{self.base_url}/projects/{self.project_id}/workflow-status", headers=headers)
+        print(f"Workflow Status response: {response.status_code} - {response.text[:300]}...")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # Verify workflow status structure
+        self.assertIn("project_id", data)
+        self.assertIn("project_name", data)
+        self.assertIn("current_phase", data)
+        self.assertIn("generated_at", data)
+        
+        # Verify overall progress
+        self.assertIn("overall_progress", data)
+        overall_progress = data["overall_progress"]
+        
+        self.assertIn("completion_percentage", overall_progress)
+        self.assertIn("phases_completed", overall_progress)
+        self.assertIn("phases_in_progress", overall_progress)
+        self.assertIn("phases_not_started", overall_progress)
+        self.assertIn("project_health", overall_progress)
+        
+        # Verify completion percentage is valid
+        completion_percentage = overall_progress["completion_percentage"]
+        self.assertGreaterEqual(completion_percentage, 0, "Completion percentage should be >= 0")
+        self.assertLessEqual(completion_percentage, 100, "Completion percentage should be <= 100")
+        
+        # Verify project health is valid
+        project_health = overall_progress["project_health"]
+        self.assertIn(project_health, ["Excellent", "Good", "At Risk", "Critical"])
+        
+        # Verify phase completion summary
+        self.assertIn("phase_completion_summary", data)
+        phase_summary = data["phase_completion_summary"]
+        
+        # Should have all 6 IMPACT phases
+        impact_phases = ["investigate", "mobilize", "pilot", "activate", "cement", "track"]
+        for phase in impact_phases:
+            self.assertIn(phase, phase_summary)
+            phase_info = phase_summary[phase]
+            
+            self.assertIn("status", phase_info)
+            self.assertIn("completion_percentage", phase_info)
+            self.assertIn("budget_spent", phase_info)
+            self.assertIn("success_status", phase_info)
+            
+            # Verify status is valid
+            self.assertIn(phase_info["status"], ["not_started", "in_progress", "completed", "failed"])
+            
+            # Verify completion percentage is valid
+            phase_completion = phase_info["completion_percentage"]
+            self.assertGreaterEqual(phase_completion, 0, f"Phase {phase} completion should be >= 0")
+            self.assertLessEqual(phase_completion, 100, f"Phase {phase} completion should be <= 100")
+        
+        # Verify budget utilization
+        self.assertIn("budget_utilization", data)
+        budget_utilization = data["budget_utilization"]
+        
+        self.assertIn("total_budget", budget_utilization)
+        self.assertIn("total_spent", budget_utilization)
+        self.assertIn("remaining_budget", budget_utilization)
+        self.assertIn("utilization_percentage", budget_utilization)
+        self.assertIn("budget_health", budget_utilization)
+        self.assertIn("phase_budget_breakdown", budget_utilization)
+        
+        # Verify budget calculations
+        total_budget = budget_utilization["total_budget"]
+        total_spent = budget_utilization["total_spent"]
+        remaining_budget = budget_utilization["remaining_budget"]
+        
+        self.assertGreaterEqual(total_budget, 0, "Total budget should be non-negative")
+        self.assertGreaterEqual(total_spent, 0, "Total spent should be non-negative")
+        self.assertGreaterEqual(remaining_budget, 0, "Remaining budget should be non-negative")
+        
+        # Verify budget math consistency
+        if total_budget > 0:
+            self.assertAlmostEqual(total_budget, total_spent + remaining_budget, delta=1, 
+                                  msg="Budget math should be consistent")
+        
+        # Verify success rates
+        self.assertIn("success_rates", data)
+        success_rates = data["success_rates"]
+        
+        self.assertIn("completed_phases_success_rate", success_rates)
+        self.assertIn("overall_project_success_probability", success_rates)
+        self.assertIn("phase_success_breakdown", success_rates)
+        
+        # Verify success rates are valid percentages
+        completed_success_rate = success_rates["completed_phases_success_rate"]
+        overall_success_prob = success_rates["overall_project_success_probability"]
+        
+        self.assertGreaterEqual(completed_success_rate, 0, "Completed success rate should be >= 0")
+        self.assertLessEqual(completed_success_rate, 100, "Completed success rate should be <= 100")
+        self.assertGreaterEqual(overall_success_prob, 0, "Overall success probability should be >= 0")
+        self.assertLessEqual(overall_success_prob, 100, "Overall success probability should be <= 100")
+        
+        # Verify project insights
+        self.assertIn("project_insights", data)
+        project_insights = data["project_insights"]
+        
+        self.assertIn("key_achievements", project_insights)
+        self.assertIn("current_challenges", project_insights)
+        self.assertIn("upcoming_milestones", project_insights)
+        self.assertIn("recommended_actions", project_insights)
+        self.assertIn("risk_alerts", project_insights)
+        
+        print("✅ Workflow Status Monitoring testing successful")
+        print(f"   - Project ID: {data['project_id']}")
+        print(f"   - Current Phase: {data['current_phase']}")
+        print(f"   - Overall Completion: {completion_percentage:.1f}%")
+        print(f"   - Project Health: {project_health}")
+        print(f"   - Budget Utilization: {budget_utilization['utilization_percentage']:.1f}%")
+        print(f"   - Completed Phases Success Rate: {completed_success_rate:.1f}%")
+        print(f"   - Overall Success Probability: {overall_success_prob:.1f}%")
+        print(f"   - Key Achievements: {len(project_insights['key_achievements'])}")
+        print(f"   - Current Challenges: {len(project_insights['current_challenges'])}")
+        print(f"   - Risk Alerts: {len(project_insights['risk_alerts'])}")
+
+    def test_53_enhancement_4_integration_workflow(self):
+        """Test Enhancement 4: Complete workflow integration from assessment to project completion"""
+        if not self.assessment_id:
+            self.skipTest("No assessment ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Step 1: Create project from assessment
+        project_data = {
+            "assessment_id": self.assessment_id,
+            "project_name": "Enhancement 4 Integration Test Project",
+            "description": "Complete workflow test for Enhancement 4 features",
+            "target_completion_date": (datetime.utcnow() + timedelta(days=180)).isoformat(),
+            "budget": 150000
+        }
+        
+        response = requests.post(f"{self.base_url}/projects/from-assessment", json=project_data, headers=headers)
+        self.assertEqual(response.status_code, 200)
+        project_data_response = response.json()
+        integration_project_id = project_data_response["id"]
+        
+        # Step 2: Generate phase intelligence for first phase
+        response = requests.post(f"{self.base_url}/projects/{integration_project_id}/phases/investigate/intelligence", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        intelligence_data = response.json()
+        
+        # Step 3: Update phase progress
+        progress_update = {
+            "phase_name": "investigate",
+            "completion_percentage": 100.0,
+            "status": "completed",
+            "success_status": "successful",
+            "success_reason": "All investigation objectives met",
+            "lessons_learned": "Thorough stakeholder analysis was crucial",
+            "budget_spent": 20000.0,
+            "scope_changes": ["Added additional stakeholder interviews"],
+            "tasks_completed": ["Stakeholder analysis", "Current state assessment"],
+            "deliverables_completed": ["Stakeholder Analysis Report", "Current State Analysis"],
+            "risks_identified": ["Resource availability", "Timeline constraints"]
+        }
+        
+        response = requests.put(f"{self.base_url}/projects/{integration_project_id}/phases/investigate/progress", 
+                               json=progress_update, headers=headers)
+        self.assertEqual(response.status_code, 200)
+        
+        # Step 4: Complete the phase
+        completion_data = {
+            "completion_percentage": 100.0,
+            "success_status": "successful",
+            "success_reason": "All objectives achieved with stakeholder approval",
+            "lessons_learned": "Early stakeholder engagement critical for success",
+            "budget_spent": 20000.0,
+            "scope_changes": ["Added stakeholder interviews"],
+            "deliverables_completed": ["Stakeholder Analysis Report", "Current State Analysis"],
+            "final_notes": "Phase completed successfully"
+        }
+        
+        response = requests.post(f"{self.base_url}/projects/{integration_project_id}/phases/investigate/complete", 
+                               json=completion_data, headers=headers)
+        self.assertEqual(response.status_code, 200)
+        completion_response = response.json()
+        
+        # Step 5: Get comprehensive workflow status
+        response = requests.get(f"{self.base_url}/projects/{integration_project_id}/workflow-status", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        workflow_status = response.json()
+        
+        # Step 6: Generate intelligence for next phase based on lessons learned
+        response = requests.post(f"{self.base_url}/projects/{integration_project_id}/phases/mobilize/intelligence", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        next_phase_intelligence = response.json()
+        
+        # Verify integration workflow results
+        self.assertIn("next_phase_readiness", completion_response)
+        self.assertIn("next_phase_recommendations", completion_response)
+        
+        # Verify workflow status reflects completed phase
+        phase_summary = workflow_status["phase_completion_summary"]
+        investigate_status = phase_summary["investigate"]
+        self.assertEqual(investigate_status["status"], "completed")
+        self.assertEqual(investigate_status["completion_percentage"], 100.0)
+        
+        # Verify next phase intelligence incorporates lessons learned
+        self.assertIn("lessons_learned", next_phase_intelligence)
+        lessons_learned = next_phase_intelligence["lessons_learned"]
+        self.assertIn("previous_phase_insights", lessons_learned)
+        
+        # Verify budget tracking across phases
+        budget_utilization = workflow_status["budget_utilization"]
+        self.assertGreater(budget_utilization["total_spent"], 0)
+        self.assertLess(budget_utilization["total_spent"], budget_utilization["total_budget"])
+        
+        print("✅ Enhancement 4 Integration Workflow testing successful")
+        print(f"   - Integration Project ID: {integration_project_id}")
+        print(f"   - Phase Intelligence Generated: ✓")
+        print(f"   - Phase Progress Tracked: ✓")
+        print(f"   - Phase Completion Analysis: ✓")
+        print(f"   - Workflow Status Monitoring: ✓")
+        print(f"   - Next Phase Intelligence: ✓")
+        print(f"   - Lessons Learned Integration: ✓")
+        print(f"   - Budget Tracking: ${budget_utilization['total_spent']:,} spent")
+        print(f"   - Project Health: {workflow_status['overall_progress']['project_health']}")
+
+    def test_54_enhancement_4_performance_validation(self):
+        """Test Enhancement 4: Performance validation for all new endpoints"""
+        if not self.project_id:
+            self.skipTest("No project ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test performance of all Enhancement 4 endpoints
+        endpoints_to_test = [
+            ("PUT", f"/projects/{self.project_id}", "Enhanced Project Editing", {
+                "project_name": "Performance Test Project",
+                "description": "Testing performance of enhanced editing"
+            }),
+            ("POST", f"/projects/{self.project_id}/phases/investigate/intelligence", "Phase Intelligence Generation", {}),
+            ("PUT", f"/projects/{self.project_id}/phases/investigate/progress", "Phase Progress Update", {
+                "phase_name": "investigate",
+                "completion_percentage": 50.0,
+                "status": "in_progress",
+                "budget_spent": 10000.0
+            }),
+            ("POST", f"/projects/{self.project_id}/phases/investigate/complete", "Phase Completion Analysis", {
+                "completion_percentage": 100.0,
+                "success_status": "successful",
+                "budget_spent": 20000.0
+            }),
+            ("GET", f"/projects/{self.project_id}/workflow-status", "Workflow Status Monitoring", {})
+        ]
+        
+        performance_results = {}
+        
+        for method, endpoint, name, payload in endpoints_to_test:
+            start_time = time.time()
+            
+            if method == "GET":
+                response = requests.get(f"{self.base_url}{endpoint}", headers=headers)
+            elif method == "POST":
+                response = requests.post(f"{self.base_url}{endpoint}", json=payload, headers=headers)
+            elif method == "PUT":
+                response = requests.put(f"{self.base_url}{endpoint}", json=payload, headers=headers)
+            
+            end_time = time.time()
+            response_time = (end_time - start_time) * 1000  # Convert to milliseconds
+            
+            self.assertEqual(response.status_code, 200, f"{name} endpoint failed")
+            self.assertLess(response_time, 100, f"{name} response time too slow: {response_time:.1f}ms")
+            
+            performance_results[name] = response_time
+        
+        print("✅ Enhancement 4 Performance Validation successful")
+        for name, response_time in performance_results.items():
+            print(f"   - {name}: {response_time:.1f}ms")
+        
+        # Verify average performance
+        avg_response_time = sum(performance_results.values()) / len(performance_results)
+        self.assertLess(avg_response_time, 75, f"Average response time too slow: {avg_response_time:.1f}ms")
+        print(f"   - Average response time: {avg_response_time:.1f}ms")
+
+    def test_55_enhancement_4_data_consistency(self):
+        """Test Enhancement 4: Data consistency across all workflow operations"""
+        if not self.project_id:
+            self.skipTest("No project ID available")
+            
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test data consistency across workflow operations
+        
+        # Step 1: Update project with specific budget
+        project_update = {
+            "project_name": "Data Consistency Test Project",
+            "total_budget": 100000.0,
+            "spent_budget": 0.0
+        }
+        
+        response = requests.put(f"{self.base_url}/projects/{self.project_id}", json=project_update, headers=headers)
+        self.assertEqual(response.status_code, 200)
+        updated_project = response.json()
+        
+        # Step 2: Update phase progress with budget spending
+        progress_update = {
+            "phase_name": "investigate",
+            "completion_percentage": 75.0,
+            "status": "in_progress",
+            "budget_spent": 15000.0,
+            "tasks_completed": ["Task 1", "Task 2"],
+            "deliverables_completed": ["Deliverable 1"],
+            "risks_identified": ["Risk 1", "Risk 2"]
+        }
+        
+        response = requests.put(f"{self.base_url}/projects/{self.project_id}/phases/investigate/progress", 
+                               json=progress_update, headers=headers)
+        self.assertEqual(response.status_code, 200)
+        progress_response = response.json()
+        
+        # Step 3: Get workflow status and verify consistency
+        response = requests.get(f"{self.base_url}/projects/{self.project_id}/workflow-status", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        workflow_status = response.json()
+        
+        # Verify project data consistency
+        self.assertEqual(workflow_status["project_name"], project_update["project_name"])
+        
+        # Verify budget consistency
+        budget_utilization = workflow_status["budget_utilization"]
+        self.assertEqual(budget_utilization["total_budget"], project_update["total_budget"])
+        
+        # Verify phase progress consistency
+        phase_summary = workflow_status["phase_completion_summary"]
+        investigate_phase = phase_summary["investigate"]
+        self.assertEqual(investigate_phase["completion_percentage"], progress_update["completion_percentage"])
+        self.assertEqual(investigate_phase["status"], progress_update["status"])
+        self.assertEqual(investigate_phase["budget_spent"], progress_update["budget_spent"])
+        
+        # Step 4: Generate phase intelligence and verify it reflects current state
+        response = requests.post(f"{self.base_url}/projects/{self.project_id}/phases/investigate/intelligence", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        intelligence_data = response.json()
+        
+        # Verify intelligence reflects current project state
+        self.assertEqual(intelligence_data["project_id"], self.project_id)
+        self.assertEqual(intelligence_data["phase_name"], "investigate")
+        
+        # Step 5: Complete phase and verify all data is consistent
+        completion_data = {
+            "completion_percentage": 100.0,
+            "success_status": "successful",
+            "budget_spent": 20000.0,
+            "deliverables_completed": ["Deliverable 1", "Deliverable 2"],
+            "lessons_learned": "Data consistency maintained throughout workflow"
+        }
+        
+        response = requests.post(f"{self.base_url}/projects/{self.project_id}/phases/investigate/complete", 
+                               json=completion_data, headers=headers)
+        self.assertEqual(response.status_code, 200)
+        completion_response = response.json()
+        
+        # Step 6: Final workflow status check
+        response = requests.get(f"{self.base_url}/projects/{self.project_id}/workflow-status", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        final_workflow_status = response.json()
+        
+        # Verify final consistency
+        final_phase_summary = final_workflow_status["phase_completion_summary"]
+        final_investigate_phase = final_phase_summary["investigate"]
+        
+        self.assertEqual(final_investigate_phase["completion_percentage"], 100.0)
+        self.assertEqual(final_investigate_phase["status"], "completed")
+        self.assertEqual(final_investigate_phase["budget_spent"], completion_data["budget_spent"])
+        
+        # Verify budget calculations are consistent
+        final_budget_utilization = final_workflow_status["budget_utilization"]
+        self.assertGreater(final_budget_utilization["total_spent"], 0)
+        self.assertLess(final_budget_utilization["total_spent"], final_budget_utilization["total_budget"])
+        
+        print("✅ Enhancement 4 Data Consistency testing successful")
+        print(f"   - Project data consistency: ✓")
+        print(f"   - Budget tracking consistency: ✓")
+        print(f"   - Phase progress consistency: ✓")
+        print(f"   - Intelligence data consistency: ✓")
+        print(f"   - Completion data consistency: ✓")
+        print(f"   - Final budget spent: ${final_budget_utilization['total_spent']:,}")
+        print(f"   - Final project health: {final_workflow_status['overall_progress']['project_health']}")
+
+    def test_56_enhancement_4_error_handling(self):
+        """Test Enhancement 4: Error handling and edge cases"""
+        if not self.token:
+            self.skipTest("No token available")
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test 1: Invalid project ID
+        invalid_project_id = "invalid-project-id-12345"
+        
+        response = requests.put(f"{self.base_url}/projects/{invalid_project_id}", 
+                               json={"project_name": "Test"}, headers=headers)
+        self.assertEqual(response.status_code, 404, "Invalid project ID should return 404")
+        
+        response = requests.get(f"{self.base_url}/projects/{invalid_project_id}/workflow-status", headers=headers)
+        self.assertEqual(response.status_code, 404, "Invalid project ID should return 404 for workflow status")
+        
+        # Test 2: Invalid phase name
+        if self.project_id:
+            response = requests.post(f"{self.base_url}/projects/{self.project_id}/phases/invalid_phase/intelligence", headers=headers)
+            self.assertEqual(response.status_code, 400, "Invalid phase name should return 400")
+            
+            response = requests.put(f"{self.base_url}/projects/{self.project_id}/phases/invalid_phase/progress", 
+                                   json={"completion_percentage": 50.0}, headers=headers)
+            self.assertEqual(response.status_code, 400, "Invalid phase name should return 400")
+        
+        # Test 3: Invalid completion percentage
+        if self.project_id:
+            invalid_progress = {
+                "phase_name": "investigate",
+                "completion_percentage": 150.0,  # Invalid: > 100
+                "status": "in_progress"
+            }
+            
+            response = requests.put(f"{self.base_url}/projects/{self.project_id}/phases/investigate/progress", 
+                                   json=invalid_progress, headers=headers)
+            self.assertNotEqual(response.status_code, 200, "Invalid completion percentage should be rejected")
+        
+        # Test 4: Invalid budget values
+        if self.project_id:
+            invalid_budget_update = {
+                "total_budget": -1000.0,  # Invalid: negative budget
+                "spent_budget": -500.0    # Invalid: negative spent
+            }
+            
+            response = requests.put(f"{self.base_url}/projects/{self.project_id}", 
+                                   json=invalid_budget_update, headers=headers)
+            self.assertNotEqual(response.status_code, 200, "Negative budget values should be rejected")
+        
+        # Test 5: Missing required fields
+        if self.project_id:
+            incomplete_progress = {
+                "completion_percentage": 50.0
+                # Missing required phase_name and status
+            }
+            
+            response = requests.put(f"{self.base_url}/projects/{self.project_id}/phases/investigate/progress", 
+                                   json=incomplete_progress, headers=headers)
+            self.assertNotEqual(response.status_code, 200, "Missing required fields should be rejected")
+        
+        # Test 6: Unauthorized access (no token)
+        response = requests.get(f"{self.base_url}/projects/test-id/workflow-status")
+        self.assertEqual(response.status_code, 401, "Missing token should return 401")
+        
+        response = requests.post(f"{self.base_url}/projects/test-id/phases/investigate/intelligence")
+        self.assertEqual(response.status_code, 401, "Missing token should return 401")
+        
+        print("✅ Enhancement 4 Error Handling testing successful")
+        print("   - Invalid project ID handling: ✓")
+        print("   - Invalid phase name handling: ✓")
+        print("   - Invalid completion percentage handling: ✓")
+        print("   - Invalid budget values handling: ✓")
+        print("   - Missing required fields handling: ✓")
+        print("   - Unauthorized access handling: ✓")
+
 def run_tests():
     """Run all tests in order"""
     test_suite = unittest.TestSuite()
