@@ -2292,28 +2292,29 @@ def generate_phase_based_intelligence(phase_name: str, assessment_data: dict, pr
     if full_phase_name not in impact_phases:
         return {"error": f"Unknown phase: {phase_name}"}
     
-    phase_info = impact_phases[phase_name]
+    phase_info = impact_phases[full_phase_name]
     
     # Calculate phase-specific recommendations based on assessment data
-    phase_recommendations = generate_phase_recommendations(phase_name, assessment_data, project_data, phase_info)
+    phase_recommendations = generate_phase_recommendations(full_phase_name, assessment_data, project_data, phase_info)
     
     # Generate budget recommendations
-    budget_recommendations = generate_phase_budget_recommendations(phase_name, assessment_data, project_data, phase_info)
+    budget_recommendations = generate_phase_budget_recommendations(full_phase_name, assessment_data, project_data, phase_info)
     
     # Generate scope recommendations
-    scope_recommendations = generate_phase_scope_recommendations(phase_name, assessment_data, project_data, phase_info)
+    scope_recommendations = generate_phase_scope_recommendations(full_phase_name, assessment_data, project_data, phase_info)
     
     # Generate success probability for this phase
-    phase_success_probability = calculate_phase_success_probability(phase_name, assessment_data, project_data, phase_info)
+    phase_success_probability = calculate_phase_success_probability(full_phase_name, assessment_data, project_data, phase_info)
     
     # Generate risks and mitigation strategies
-    phase_risks = identify_phase_risks(phase_name, assessment_data, project_data, phase_info)
+    phase_risks = identify_phase_risks(full_phase_name, assessment_data, project_data, phase_info)
     
     # Generate lessons learned from previous phases
     lessons_from_previous = extract_lessons_from_previous_phases(completed_phases) if completed_phases else []
     
     return {
-        "phase_name": phase_name,
+        "phase_name": phase_name,  # Return original short name
+        "full_phase_name": full_phase_name,  # Also return full name
         "phase_number": phase_info["phase_number"],
         "phase_intelligence": {
             "key_activities": phase_info["key_activities"],
