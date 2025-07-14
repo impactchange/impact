@@ -553,6 +553,56 @@ class User(BaseModel):
     role: str
     created_at: datetime
 
+class ProjectPhase(BaseModel):
+    phase_name: str
+    phase_number: int
+    status: str = "not_started"  # not_started, in_progress, completed, failed
+    start_date: Optional[datetime] = None
+    completion_date: Optional[datetime] = None
+    completion_percentage: float = 0.0
+    success_status: Optional[str] = None  # successful, failed, partially_successful
+    success_reason: Optional[str] = None
+    failure_reason: Optional[str] = None
+    lessons_learned: Optional[str] = None
+    budget_spent: float = 0.0
+    scope_changes: List[str] = []
+    recommendations: List[str] = []
+    next_phase_suggestions: List[str] = []
+    tasks: List[dict] = []
+    deliverables: List[dict] = []
+    risks_identified: List[str] = []
+    mitigation_actions: List[str] = []
+
+class ProjectUpdate(BaseModel):
+    project_name: Optional[str] = None
+    description: Optional[str] = None
+    client_organization: Optional[str] = None
+    objectives: Optional[List[str]] = None
+    scope: Optional[str] = None
+    total_budget: Optional[float] = None
+    estimated_end_date: Optional[str] = None
+    current_phase: Optional[str] = None
+    health_status: Optional[str] = None
+    spent_budget: Optional[float] = None
+    phases: Optional[List[ProjectPhase]] = None
+    team_members: Optional[List[str]] = None
+    stakeholders: Optional[List[str]] = None
+    key_milestones: Optional[List[dict]] = None
+    
+class PhaseProgressUpdate(BaseModel):
+    phase_name: str
+    completion_percentage: float
+    status: str
+    success_status: Optional[str] = None
+    success_reason: Optional[str] = None
+    failure_reason: Optional[str] = None
+    lessons_learned: Optional[str] = None
+    budget_spent: float = 0.0
+    scope_changes: Optional[List[str]] = None
+    tasks_completed: Optional[List[str]] = None
+    deliverables_completed: Optional[List[str]] = None
+    risks_identified: Optional[List[str]] = None
+
 class Deliverable(BaseModel):
     id: Optional[str] = None
     name: str
