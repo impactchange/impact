@@ -535,11 +535,38 @@ IMPACT_PHASES = {
 
 # Enhanced Pydantic models
 class UserRegistration(BaseModel):
+    username: str
     email: str
     password: str
     full_name: str
     organization: str
-    role: str = "Team Member"
+    role: str
+
+class UserApprovalRequest(BaseModel):
+    user_id: str
+    action: str  # approve, reject
+    rejection_reason: Optional[str] = None
+
+class ProjectAssignment(BaseModel):
+    project_id: str
+    user_id: str
+    role: str  # owner, collaborator, viewer
+    permissions: List[str] = []
+
+class UserActivity(BaseModel):
+    user_id: str
+    project_id: Optional[str] = None
+    action: str
+    details: str
+    timestamp: datetime
+    affected_users: List[str] = []
+
+class AdminDashboardStats(BaseModel):
+    total_users: int
+    pending_approvals: int
+    active_projects: int
+    total_assessments: int
+    platform_usage: dict
 
 class UserLogin(BaseModel):
     email: str
