@@ -2230,6 +2230,16 @@ def calculate_next_communication_date(budget_health: str, success_score: float) 
 def generate_phase_based_intelligence(phase_name: str, assessment_data: dict, project_data: dict, completed_phases: List[dict] = None) -> dict:
     """Generate intelligent recommendations for each IMPACT phase based on assessment data and project context"""
     
+    # Phase name mapping from short names to full names
+    phase_name_mapping = {
+        "investigate": "Investigate & Assess",
+        "mobilize": "Mobilize & Prepare", 
+        "pilot": "Pilot & Adapt",
+        "activate": "Activate & Deploy",
+        "cement": "Cement & Transfer",
+        "track": "Track & Optimize"
+    }
+    
     # IMPACT phases mapping
     impact_phases = {
         "Investigate & Assess": {
@@ -2276,7 +2286,10 @@ def generate_phase_based_intelligence(phase_name: str, assessment_data: dict, pr
         }
     }
     
-    if phase_name not in impact_phases:
+    # Map short phase name to full name
+    full_phase_name = phase_name_mapping.get(phase_name, phase_name)
+    
+    if full_phase_name not in impact_phases:
         return {"error": f"Unknown phase: {phase_name}"}
     
     phase_info = impact_phases[phase_name]
