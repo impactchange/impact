@@ -4328,6 +4328,263 @@ async def generate_manufacturing_excellence_tracking(
         print(f"Manufacturing Excellence Tracking Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to generate manufacturing excellence tracking: {str(e)}")
 
+@app.post("/api/projects/{project_id}/phases/{phase_name}/intelligence")
+async def generate_phase_intelligence(
+    project_id: str,
+    phase_name: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Generate phase-based intelligence and recommendations"""
+    try:
+        # Get project data
+        project = await db.projects.find_one({"id": project_id, "user_id": current_user.id})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Get associated assessment data
+        assessment_data = {}
+        assessment_id = project.get("assessment_id")
+        if assessment_id:
+            assessment = await db.assessments.find_one({"id": assessment_id, "user_id": current_user.id})
+            if assessment:
+                assessment_data = {
+                    "overall_score": assessment.get("overall_score", 3.0),
+                    "leadership_support": assessment.get("leadership_support", {}).get("score", 3),
+                    "resource_availability": assessment.get("resource_availability", {}).get("score", 3),
+                    "change_management_maturity": assessment.get("change_management_maturity", {}).get("score", 3),
+                    "communication_effectiveness": assessment.get("communication_effectiveness", {}).get("score", 3),
+                    "workforce_adaptability": assessment.get("workforce_adaptability", {}).get("score", 3),
+                    "technical_readiness": assessment.get("technical_readiness", {}).get("score", 3),
+                    "stakeholder_engagement": assessment.get("stakeholder_engagement", {}).get("score", 3)
+                }
+        
+        # Get completed phases for lessons learned
+        completed_phases = []
+        phases = project.get("phases", [])
+        for phase in phases:
+            if phase.get("status") == "completed":
+                completed_phases.append(phase)
+        
+        # Generate phase-based intelligence
+        phase_intelligence = generate_phase_based_intelligence(phase_name, assessment_data, project, completed_phases)
+        
+        return phase_intelligence
+        
+    except Exception as e:
+        print(f"Phase Intelligence Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate phase intelligence: {str(e)}")
+
+@app.put("/api/projects/{project_id}/phases/{phase_name}/progress")
+async def update_phase_progress(
+    project_id: str,
+    phase_name: str,
+    progress_data: PhaseProgressUpdate,
+    current_user: User = Depends(get_current_user)
+):
+    """Update progress for a specific phase"""
+    try:
+        # Get project
+        project = await db.projects.find_one({"id": project_id, "user_id": current_user.id})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Update phase progress
+        phases = project.get("phases", [])
+        phase_found = False
+        
+        for i, phase in enumerate(phases):
+            if phase.get("phase_name") == phase_name:
+                # Update phase with new progress data
+                phases[i].update({
+                    "completion_percentage": progress_data.completion_percentage,
+                    "status": progress_data.status,
+                    "success_status": progress_data.success_status,
+                    "success_reason": progress_data.success_reason,
+                    "failure_reason": progress_data.failure_reason,
+                    "lessons_learned": progress_data.lessons_learned,
+                    "budget_spent": progress_data.budget_spent,
+                    "updated_at": datetime.utcnow()
+                })
+                
+                # Add optional fields if provided
+                if progress_data.scope_changes:
+                    phases[i]["scope_changes"] = progress_data.scope_changes
+                if progress_data.tasks_completed:
+                    phases[i]["tasks_completed"] = progress_data.tasks_completed
+                if progress_data.deliverables_completed:
+                    phases[i]["deliverables_completed"] = progress_data.deliverables_completed
+                if progress_data.risks_identified:
+                    phases[i]["risks_identified"] = progress_data.risks_identified
+                
+                # Set completion date if phase is completed
+                if progress_data.status == "completed":
+                    phases[i]["completion_date"] = datetime.utcnow()
+                
+                phase_found = True
+                break
+        
+        if not phase_found:
+            raise HTTPException(status_code=404, detail="Phase not found in project")
+        
+        # Update project in database
+        result = await db.projects.update_one(
+            {"id": project_id, "user_id": current_user.id},
+            {"$set": {"phases": phases, "updated_at": datetime.utcnow()}}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=500, detail="Failed to update phase progress")
+        
+        # Get updated project
+        updated_project = await db.projects.find_one({"id": project_id, "user_id": current_user.id})
+        updated_project["_id"] = str(updated_project["_id"])
+        
+        return updated_project
+        
+    except Exception as e:
+        print(f"Phase Progress Update Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to update phase progress: {str(e)}")
+
+@app.post("/api/projects/{project_id}/phases/{phase_name}/complete")
+async def complete_phase_with_analysis(
+    project_id: str,
+    phase_name: str,
+    completion_data: PhaseProgressUpdate,
+    current_user: User = Depends(get_current_user)
+):
+    """Complete a phase and generate comprehensive analysis"""
+    try:
+        # First update the phase progress
+        await update_phase_progress(project_id, phase_name, completion_data, current_user)
+        
+        # Get updated project and assessment data
+        project = await db.projects.find_one({"id": project_id, "user_id": current_user.id})
+        assessment_data = {}
+        
+        assessment_id = project.get("assessment_id")
+        if assessment_id:
+            assessment = await db.assessments.find_one({"id": assessment_id, "user_id": current_user.id})
+            if assessment:
+                assessment_data = {
+                    "overall_score": assessment.get("overall_score", 3.0),
+                    "leadership_support": assessment.get("leadership_support", {}).get("score", 3),
+                    "resource_availability": assessment.get("resource_availability", {}).get("score", 3),
+                    "change_management_maturity": assessment.get("change_management_maturity", {}).get("score", 3),
+                    "communication_effectiveness": assessment.get("communication_effectiveness", {}).get("score", 3),
+                    "workforce_adaptability": assessment.get("workforce_adaptability", {}).get("score", 3),
+                    "technical_readiness": assessment.get("technical_readiness", {}).get("score", 3),
+                    "stakeholder_engagement": assessment.get("stakeholder_engagement", {}).get("score", 3)
+                }
+        
+        # Find the completed phase data
+        completed_phase_data = None
+        phases = project.get("phases", [])
+        for phase in phases:
+            if phase.get("phase_name") == phase_name:
+                completed_phase_data = phase
+                break
+        
+        if not completed_phase_data:
+            raise HTTPException(status_code=404, detail="Completed phase not found")
+        
+        # Generate comprehensive completion analysis
+        completion_analysis = generate_phase_completion_analysis(completed_phase_data, assessment_data, project)
+        
+        # Update the phase with analysis results
+        for i, phase in enumerate(phases):
+            if phase.get("phase_name") == phase_name:
+                phases[i]["completion_analysis"] = completion_analysis
+                phases[i]["analysis_generated_at"] = datetime.utcnow()
+                break
+        
+        # Update project in database
+        await db.projects.update_one(
+            {"id": project_id, "user_id": current_user.id},
+            {"$set": {"phases": phases, "updated_at": datetime.utcnow()}}
+        )
+        
+        return {
+            "phase_name": phase_name,
+            "completion_status": "completed",
+            "completion_analysis": completion_analysis,
+            "next_phase_recommendations": completion_analysis.get("recommendations_for_next_phase", []),
+            "generated_at": datetime.utcnow()
+        }
+        
+    except Exception as e:
+        print(f"Phase Completion Analysis Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to complete phase with analysis: {str(e)}")
+
+@app.get("/api/projects/{project_id}/workflow-status")
+async def get_project_workflow_status(
+    project_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Get comprehensive workflow status for a project"""
+    try:
+        # Get project
+        project = await db.projects.find_one({"id": project_id, "user_id": current_user.id})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Calculate workflow metrics
+        phases = project.get("phases", [])
+        
+        # Phase completion summary
+        phase_summary = {
+            "total_phases": len(phases),
+            "completed_phases": len([p for p in phases if p.get("status") == "completed"]),
+            "in_progress_phases": len([p for p in phases if p.get("status") == "in_progress"]),
+            "not_started_phases": len([p for p in phases if p.get("status") == "not_started"]),
+            "failed_phases": len([p for p in phases if p.get("status") == "failed"])
+        }
+        
+        # Overall progress calculation
+        total_progress = sum(p.get("completion_percentage", 0) for p in phases)
+        overall_progress = total_progress / len(phases) if phases else 0
+        
+        # Budget analysis
+        total_budget_spent = sum(p.get("budget_spent", 0) for p in phases)
+        total_budget = project.get("total_budget", 0)
+        budget_utilization = (total_budget_spent / total_budget * 100) if total_budget > 0 else 0
+        
+        # Current phase identification
+        current_phase = None
+        for phase in phases:
+            if phase.get("status") == "in_progress":
+                current_phase = phase
+                break
+        
+        if not current_phase:
+            # Find next phase to start
+            for phase in phases:
+                if phase.get("status") == "not_started":
+                    current_phase = phase
+                    break
+        
+        # Success metrics
+        successful_phases = [p for p in phases if p.get("success_status") == "successful"]
+        success_rate = (len(successful_phases) / len(phases) * 100) if phases else 0
+        
+        return {
+            "project_id": project_id,
+            "project_name": project.get("project_name", ""),
+            "workflow_status": {
+                "overall_progress": round(overall_progress, 1),
+                "current_phase": current_phase.get("phase_name") if current_phase else None,
+                "phase_summary": phase_summary,
+                "budget_utilization": round(budget_utilization, 1),
+                "total_budget_spent": total_budget_spent,
+                "success_rate": round(success_rate, 1),
+                "phases_detail": phases
+            },
+            "generated_at": datetime.utcnow()
+        }
+        
+    except Exception as e:
+        print(f"Workflow Status Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get workflow status: {str(e)}")
+
 def generate_recommended_actions(task_predictions: List[dict], budget_risk: dict, scope_creep_risk: dict) -> List[str]:
     """Generate recommended actions based on predictive analytics"""
     actions = []
