@@ -648,6 +648,146 @@ function App() {
     }
   };
 
+  // Enhancement 4: Advanced Project Workflow Functions
+  const updateProject = async (projectId, updateData) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.put(`${API_BASE_URL}/api/projects/${projectId}`, updateData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Update selected project if it's the one being edited
+      if (selectedProject && selectedProject.id === projectId) {
+        setSelectedProject(response.data);
+      }
+      
+      // Refresh projects list
+      fetchDashboardData();
+      
+      setProjectEditMode(false);
+      
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to update project');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generatePhaseIntelligence = async (projectId, phaseName) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/projects/${projectId}/phases/${phaseName}/intelligence`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setPhaseIntelligence(response.data);
+      setShowPhaseIntelligence(true);
+      
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to generate phase intelligence');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updatePhaseProgress = async (projectId, phaseName, progressData) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.put(`${API_BASE_URL}/api/projects/${projectId}/phases/${phaseName}/progress`, progressData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Update selected project
+      setSelectedProject(response.data);
+      
+      // Refresh projects list
+      fetchDashboardData();
+      
+      setShowPhaseProgressModal(false);
+      setSelectedPhaseForProgress(null);
+      
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to update phase progress');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const completePhaseWithAnalysis = async (projectId, phaseName, completionData) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/projects/${projectId}/phases/${phaseName}/complete`, completionData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Update selected project
+      const updatedProject = await axios.get(`${API_BASE_URL}/api/projects/${projectId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSelectedProject(updatedProject.data);
+      
+      // Show completion analysis
+      alert(`Phase ${phaseName} completed successfully! Analysis generated.`);
+      
+      // Refresh projects list
+      fetchDashboardData();
+      
+      setShowPhaseProgressModal(false);
+      setSelectedPhaseForProgress(null);
+      
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to complete phase with analysis');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getWorkflowStatus = async (projectId) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/projects/${projectId}/workflow-status`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setWorkflowStatus(response.data);
+      setShowWorkflowStatus(true);
+      
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to get workflow status');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openPhaseProgressModal = (phase) => {
+    setSelectedPhaseForProgress(phase);
+    setPhaseProgress({
+      phase_name: phase.phase_name,
+      completion_percentage: phase.completion_percentage || 0,
+      status: phase.status || 'not_started',
+      success_status: phase.success_status || '',
+      success_reason: phase.success_reason || '',
+      failure_reason: phase.failure_reason || '',
+      lessons_learned: phase.lessons_learned || '',
+      budget_spent: phase.budget_spent || 0,
+      scope_changes: phase.scope_changes || [],
+      tasks_completed: phase.tasks_completed || [],
+      deliverables_completed: phase.deliverables_completed || [],
+      risks_identified: phase.risks_identified || []
+    });
+    setShowPhaseProgressModal(true);
+  };
+
   const handleDeliverableUpdate = async (projectId, deliverableId, updates) => {
     try {
       await axios.put(`${API_BASE_URL}/api/projects/${projectId}/deliverables/${deliverableId}`, updates, {
