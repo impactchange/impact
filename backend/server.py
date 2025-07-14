@@ -3715,6 +3715,30 @@ async def create_project(
             "status": "active",
             "health_status": "green",
             "phase_progress": {phase: 0.0 for phase in IMPACT_PHASES.keys()},
+            "phases": [
+                {
+                    "phase_name": phase_key,
+                    "phase_display_name": phase_info["name"],
+                    "phase_number": phase_info["order"],
+                    "status": "not_started",
+                    "completion_percentage": 0.0,
+                    "budget_spent": 0.0,
+                    "start_date": None,
+                    "completion_date": None,
+                    "success_status": None,
+                    "success_reason": None,
+                    "failure_reason": None,
+                    "lessons_learned": None,
+                    "scope_changes": [],
+                    "tasks_completed": [],
+                    "deliverables_completed": [],
+                    "risks_identified": [],
+                    "mitigation_actions": [],
+                    "recommendations": [],
+                    "next_phase_suggestions": []
+                }
+                for phase_key, phase_info in IMPACT_PHASES.items()
+            ],
             "phase_start_dates": {},
             "phase_end_dates": {},
             "deliverables": [],
