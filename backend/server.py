@@ -15,6 +15,57 @@ import jwt
 import json
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 
+# Authentication helper functions
+def get_password_hash(password: str) -> str:
+    """Hash password using SHA-256"""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+async def create_admin_notification(notification_type: str, message: str, data: dict):
+    """Create notification for admin users"""
+    try:
+        notification_id = str(uuid.uuid4())
+        notification_data = {
+            "id": notification_id,
+            "type": notification_type,
+            "message": message,
+            "data": data,
+            "created_at": datetime.utcnow(),
+            "read": False,
+            "resolved": False
+        }
+        
+        await db.admin_notifications.insert_one(notification_data)
+        
+    except Exception as e:
+        print(f"Admin notification error: {str(e)}")
+
+async def log_user_activity(user_id: str, action: str, details: str, project_id: str = None, affected_users: List[str] = None):
+    """Log user activity for tracking and notifications"""
+    try:
+        activity_id = str(uuid.uuid4())
+        activity_data = {
+            "id": activity_id,
+            "user_id": user_id,
+            "project_id": project_id,
+            "action": action,
+            "details": details,
+            "timestamp": datetime.utcnow(),
+            "affected_users": affected_users or []
+        }
+        
+        await db.user_activities.insert_one(activity_data)
+        
+    except Exception as e:
+        print(f"Activity logging error: {str(e)}")
+
+def create_access_token(data: dict) -> str:
+    """Create JWT access token"""
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(hours=24)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm="HS256")
+    return encoded_jwt
+
 load_dotenv()
 
 app = FastAPI(title="IMPACT Methodology API", version="1.0.0")
