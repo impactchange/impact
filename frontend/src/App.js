@@ -1462,6 +1462,129 @@ function App() {
                   </button>
                 </div>
               </div>
+
+              {/* Enhancement 4: Advanced Project Workflow Management */}
+              <div className="mb-6 border-t pt-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                    <Settings className="h-5 w-5 mr-2" />
+                    Project Workflow Management
+                  </h3>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => setProjectEditMode(true)}
+                      className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit Project
+                    </button>
+                    <button
+                      onClick={() => getWorkflowStatus(selectedProject.id)}
+                      className="flex items-center px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      Workflow Status
+                    </button>
+                  </div>
+                </div>
+
+                {/* IMPACT Phases Progress */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-800 mb-3">IMPACT Phases Progress</h4>
+                  <div className="space-y-3">
+                    {impactPhases.map((phase, index) => {
+                      const phaseData = selectedProject.phases?.find(p => p.phase_name === phase.name) || {
+                        phase_name: phase.name,
+                        status: 'not_started',
+                        completion_percentage: 0
+                      };
+                      
+                      return (
+                        <div key={index} className="bg-white rounded-lg p-4 border">
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="flex items-center">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold mr-3 ${
+                                phaseData.status === 'completed' ? 'bg-green-500' :
+                                phaseData.status === 'in_progress' ? 'bg-blue-500' :
+                                phaseData.status === 'failed' ? 'bg-red-500' :
+                                'bg-gray-400'
+                              }`}>
+                                {index + 1}
+                              </div>
+                              <div>
+                                <h5 className="font-semibold text-gray-800">{phase.name}</h5>
+                                <p className="text-sm text-gray-600">{phase.description}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                phaseData.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                phaseData.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                                phaseData.status === 'failed' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {phaseData.status?.replace('_', ' ')}
+                              </span>
+                              <button
+                                onClick={() => generatePhaseIntelligence(selectedProject.id, phase.name)}
+                                className="px-2 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700"
+                              >
+                                Get Intelligence
+                              </button>
+                              <button
+                                onClick={() => openPhaseProgressModal(phaseData)}
+                                className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                              >
+                                Update Progress
+                              </button>
+                            </div>
+                          </div>
+                          
+                          {/* Progress Bar */}
+                          <div className="mt-2">
+                            <div className="flex justify-between text-sm text-gray-600 mb-1">
+                              <span>Progress</span>
+                              <span>{phaseData.completion_percentage || 0}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className={`h-2 rounded-full ${
+                                  phaseData.status === 'completed' ? 'bg-green-500' :
+                                  phaseData.status === 'in_progress' ? 'bg-blue-500' :
+                                  phaseData.status === 'failed' ? 'bg-red-500' :
+                                  'bg-gray-400'
+                                }`}
+                                style={{ width: `${phaseData.completion_percentage || 0}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          
+                          {/* Phase Details */}
+                          {phaseData.success_status && (
+                            <div className="mt-2 text-sm">
+                              <span className={`font-medium ${
+                                phaseData.success_status === 'successful' ? 'text-green-600' :
+                                phaseData.success_status === 'failed' ? 'text-red-600' :
+                                'text-yellow-600'
+                              }`}>
+                                {phaseData.success_status === 'successful' ? '✓ Successful' :
+                                 phaseData.success_status === 'failed' ? '✗ Failed' :
+                                 '! Partially Successful'}
+                              </span>
+                              {phaseData.success_reason && (
+                                <p className="text-gray-600 mt-1">{phaseData.success_reason}</p>
+                              )}
+                              {phaseData.failure_reason && (
+                                <p className="text-red-600 mt-1">{phaseData.failure_reason}</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
