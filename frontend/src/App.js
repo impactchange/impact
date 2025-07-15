@@ -202,6 +202,13 @@ function App() {
     }
   }, [token]);
 
+  useEffect(() => {
+    if (user && user.is_admin) {
+      fetchAdminDashboard();
+      fetchAllUsers();
+    }
+  }, [user]);
+
   const fetchAssessmentTypes = async () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/assessment-types`);
