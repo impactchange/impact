@@ -630,6 +630,7 @@ class User(BaseModel):
     organization: str
     role: str
     created_at: datetime
+    is_admin: bool = False
 
 class ProjectPhase(BaseModel):
     phase_name: str
