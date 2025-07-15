@@ -170,6 +170,24 @@ function App() {
   const [workflowStatus, setWorkflowStatus] = useState(null);
   const [showWorkflowStatus, setShowWorkflowStatus] = useState(false);
 
+  // Enhancement 5: Admin Center States
+  const [adminDashboard, setAdminDashboard] = useState(null);
+  const [allUsers, setAllUsers] = useState([]);
+  const [pendingUsers, setPendingUsers] = useState([]);
+  const [userFilter, setUserFilter] = useState('all'); // all, pending, approved, rejected
+  const [showUserDetails, setShowUserDetails] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showProjectAssignment, setShowProjectAssignment] = useState(false);
+  const [assignmentData, setAssignmentData] = useState({
+    project_id: '',
+    user_id: '',
+    role: 'collaborator',
+    permissions: []
+  });
+  const [projectActivities, setProjectActivities] = useState([]);
+  const [showProjectActivities, setShowProjectActivities] = useState(false);
+  const [selectedProjectForActivities, setSelectedProjectForActivities] = useState(null);
+
   useEffect(() => {
     fetchAssessmentTypes(); // Fetch assessment types on component mount
   }, []);
