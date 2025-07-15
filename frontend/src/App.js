@@ -321,9 +321,16 @@ function App() {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
       const response = await axios.post(`${API_BASE_URL}${endpoint}`, authData);
       
-      setToken(response.data.token);
-      setUser(response.data.user);
-      localStorage.setItem('token', response.data.token);
+      // Handle different response formats for login vs register
+      if (isLogin) {
+        setToken(response.data.access_token);
+        setUser(response.data.user);
+        localStorage.setItem('token', response.data.access_token);
+      } else {
+        // Registration successful, show success message
+        setError('Registration successful! Please wait for admin approval.');
+        return;
+      }
       
       setAuthData({
         email: '',
