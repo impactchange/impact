@@ -4128,7 +4128,7 @@ async def login_user(user: UserLogin):
             raise HTTPException(status_code=401, detail="Invalid credentials")
         
         # Create access token
-        access_token = create_access_token(data={"sub": user_data["email"]})
+        access_token = create_access_token(data={"user_id": user_data["id"], "sub": user_data["email"]})
         
         # Log user activity
         await log_user_activity(
