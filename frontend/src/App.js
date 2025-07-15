@@ -824,6 +824,103 @@ function App() {
     }
   };
 
+  // Enhancement 5: Admin Center Functions
+  const fetchAdminDashboard = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/admin/dashboard`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAdminDashboard(response.data);
+    } catch (err) {
+      console.error('Failed to fetch admin dashboard:', err);
+    }
+  };
+
+  const fetchAllUsers = async (status = null) => {
+    try {
+      const params = status ? { status } : {};
+      const response = await axios.get(`${API_BASE_URL}/api/admin/users`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params
+      });
+      setAllUsers(response.data.users);
+      
+      // Filter pending users
+      const pending = response.data.users.filter(user => user.status === 'pending_approval');
+      setPendingUsers(pending);
+    } catch (err) {
+      console.error('Failed to fetch users:', err);
+    }
+  };
+
+  const approveUser = async (userId, action, rejectionReason = null) => {
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/admin/users/approve`, {
+        user_id: userId,
+        action: action,
+        rejection_reason: rejectionReason
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      alert(`User ${action}d successfully!`);
+      
+      // Refresh users list
+      fetchAllUsers();
+      if (user.is_admin) {
+        fetchAdminDashboard();
+      }
+    } catch (err) {
+      setError(err.response?.data?.detail || `Failed to ${action} user`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const assignUserToProject = async (projectId, userId, role, permissions = []) => {
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/admin/projects/${projectId}/assign`, {
+        project_id: projectId,
+        user_id: userId,
+        role: role,
+        permissions: permissions
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      alert('User assigned to project successfully!');
+      
+      // Refresh projects and close modal
+      fetchDashboardData();
+      setShowProjectAssignment(false);
+      setAssignmentData({
+        project_id: '',
+        user_id: '',
+        role: 'collaborator',
+        permissions: []
+      });
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to assign user to project');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchProjectActivities = async (projectId) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/projects/${projectId}/activities`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setProjectActivities(response.data.activities);
+      setSelectedProjectForActivities(projectId);
+      setShowProjectActivities(true);
+    } catch (err) {
+      console.error('Failed to fetch project activities:', err);
+    }
+  };
+
   const logout = () => {
     setToken(null);
     setUser(null);
