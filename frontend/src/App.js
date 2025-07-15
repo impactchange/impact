@@ -2324,6 +2324,17 @@ function App() {
               >
                 AI Analytics
               </button>
+              
+              {user && user.is_admin && (
+                <button
+                  onClick={() => setActiveTab('admin')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    activeTab === 'admin' ? 'bg-red-600 text-white' : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  Admin Center
+                </button>
+              )}
             </div>
 
             <div className="flex items-center space-x-4">
