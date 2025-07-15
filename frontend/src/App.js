@@ -2265,6 +2265,8 @@ function App() {
         return renderAdvancedAnalytics();
       case 'projects':
         return renderProjectWorkflow();
+      case 'admin':
+        return renderAdminCenter();
       default:
         return renderDashboard();
     }
