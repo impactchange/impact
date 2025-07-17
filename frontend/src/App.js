@@ -24,7 +24,7 @@ const NEWTON_COLORS = {
 const IMPACT_PHASES = [
   {
     id: 'investigate',
-    name: 'Investigate & AssessSSSSSSSSS',
+    name: 'Investigate & AssessSSSS',
     color: '#ef4444',
     description: 'Understanding current state and establishing implementation foundation',
     icon: Target,
