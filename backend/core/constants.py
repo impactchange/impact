@@ -1,26 +1,4 @@
-ASSESSMENT_TYPES = {
-    "general_readiness": {
-        "dimensions": [
-            {"id": "change_management_maturity", "name": "Change Management Maturity"},
-            {"id": "communication_effectiveness", "name": "Communication Effectiveness"},
-            {"id": "leadership_support", "name": "Leadership Support"},
-            {"id": "workforce_adaptability", "name": "Workforce Adaptability"},
-            {"id": "resource_adequacy", "name": "Resource Adequacy"}
-        ]
-    },
-    "software_implementation": {
-        "dimensions": [
-            {"id": "change_management_maturity", "name": "Change Management Maturity"},
-            {"id": "communication_effectiveness", "name": "Communication Effectiveness"},
-            {"id": "leadership_support", "name": "Leadership Support"},
-            {"id": "workforce_adaptability", "name": "Workforce Adaptability"},
-            {"id": "resource_adequacy", "name": "Resource Adequacy"}
-        ]
-    }
-}
-
-# backend/data/constants.py
-
+# Assessment Types Configuration - Multiple Assessment Support
 ASSESSMENT_TYPES = {
     "general_readiness": {
         "name": "General Change Readiness Assessment",
@@ -35,7 +13,7 @@ ASSESSMENT_TYPES = {
             },
             {
                 "id": "organizational_culture",
-                "name": "Organizational Culture & Change History",
+                "name": "Organizational Culture & Change History", 
                 "description": "How well does the organization typically adapt to change?",
                 "category": "core"
             },
@@ -77,7 +55,7 @@ ASSESSMENT_TYPES = {
                 "category": "core"
             },
             {
-                "id": "resource_availability",
+                "id": "resource_availability", 
                 "name": "Resource Availability & Capability",
                 "description": "Are adequate resources available for software implementation?",
                 "category": "core"
@@ -90,7 +68,7 @@ ASSESSMENT_TYPES = {
             },
             {
                 "id": "training_capability",
-                "name": "Training & Development Capability",
+                "name": "Training & Development Capability", 
                 "description": "What technical training capabilities exist?",
                 "category": "core"
             },
@@ -133,7 +111,7 @@ ASSESSMENT_TYPES = {
             },
             {
                 "id": "resource_availability",
-                "name": "Resource Availability & Capability",
+                "name": "Resource Availability & Capability", 
                 "description": "Are adequate resources available for process transformation?",
                 "category": "core"
             },
@@ -176,7 +154,7 @@ ASSESSMENT_TYPES = {
         "dimensions": [
             {
                 "id": "leadership_commitment",
-                "name": "Leadership Commitment & Sponsorship",
+                "name": "Leadership Commitment & Sponsorship", 
                 "description": "How committed is leadership to operational improvements?",
                 "category": "core"
             },
@@ -232,6 +210,7 @@ ASSESSMENT_TYPES = {
     }
 }
 
+# Enhanced IMPACT Phases Configuration - Universal Change Management
 IMPACT_PHASES = {
     "investigate": {
         "name": "Investigate & Assess",
@@ -280,7 +259,7 @@ IMPACT_PHASES = {
         "universal_focus": "Understand the current organizational state and identify the specific factors that will impact transformation success for any type of change initiative."
     },
     "mobilize": {
-        "name": "Mobilize & Prepare",
+        "name": "Mobilize & Prepare", 
         "description": "Building infrastructure and preparing for transformation success",
         "order": 2,
         "newton_law": "Second Law - Measuring Forces and Preparing for Acceleration",
@@ -311,7 +290,7 @@ IMPACT_PHASES = {
         ],
         "tools": [
             "Change Management Plan Template",
-            "Communication Plan Template",
+            "Communication Plan Template", 
             "Training Strategy Framework",
             "Champion Network Development Guide",
             "Success Metrics Template"
@@ -329,12 +308,12 @@ IMPACT_PHASES = {
         "name": "Pilot & Adapt",
         "description": "Testing approach with limited group and refining strategies",
         "order": 3,
-        "newton_law": "Third Law - Testing Action-Reaction in Controlled Environment",
+        "newton_law": "Third Law - Testing Action-Reaction in Controlled Environment", 
         "newton_insight": "For every action, there is an equal and opposite reaction. Test with pilot group to measure and understand resistance patterns before full deployment.",
         "objectives": [
             "Validate change strategies in real manufacturing environment",
             "Test maintenance-operations integration in controlled setting",
-            "Identify and resolve issues before full-scale deployment",
+            "Identify and resolve issues before full-scale deployment", 
             "Build confidence through demonstrated maintenance excellence results",
             "Refine approaches based on manufacturing-specific feedback"
         ],
@@ -342,7 +321,7 @@ IMPACT_PHASES = {
             "Select representative pilot group from maintenance and operations",
             "Execute pilot implementation with intensive support",
             "Monitor pilot performance and gather comprehensive feedback",
-            "Demonstrate connection between maintenance improvements and operational results",
+            "Demonstrate connection between maintenance improvements and operational results", 
             "Capture lessons learned and refine strategies",
             "Develop success stories proving maintenance-manufacturing excellence connection",
             "Prepare scaling plan based on pilot learnings"
@@ -363,7 +342,7 @@ IMPACT_PHASES = {
             "Strategy Refinement Framework"
         ],
         "completion_criteria": [
-            "Pilot success metrics achieved demonstrating maintenance-operations benefits",
+            "Pilot success metrics achieved demonstrating maintenance-operations benefits", 
             "Key learnings captured and strategies refined",
             "Pilot participants serve as advocates for full deployment",
             "Success stories document clear maintenance-manufacturing performance connection",
@@ -379,7 +358,7 @@ IMPACT_PHASES = {
         "newton_insight": "Apply consistent force to maintain momentum and overcome organizational inertia during full manufacturing implementation.",
         "objectives": [
             "Execute full-scale deployment across entire manufacturing organization",
-            "Maintain momentum while managing resistance effectively",
+            "Maintain momentum while managing resistance effectively", 
             "Ensure maintenance excellence becomes embedded in operations",
             "Track performance improvements and demonstrate manufacturing impact",
             "Provide intensive support during transition period"
@@ -403,7 +382,7 @@ IMPACT_PHASES = {
         ],
         "tools": [
             "Deployment Management Dashboard",
-            "Resistance Management Toolkit",
+            "Resistance Management Toolkit", 
             "Performance Tracking System",
             "Communication Campaign Tools",
             "Manufacturing Metrics Monitor"
