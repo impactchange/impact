@@ -4,3 +4,4 @@ python-dotenv
 motor
 passlib[bcrypt]
 python-jose[cryptography]
+anthropic

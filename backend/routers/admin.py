@@ -1,19 +1,18 @@
 # backend/routers/admin.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Optional, List, Dict, Any
-from schemas.user import User, UserApprovalRequest
-from schemas.project import ProjectAssignment
+from schemas.user import User, UserApprovalRequest, ProjectAssignment
 from services.admin_services import (
-    get_admin_user, # This is the dependency for admin routes
+    get_admin_user, 
     get_admin_dashboard_metrics,
     get_all_users_data,
     approve_or_reject_user_registration,
     assign_user_to_project_logic,
     get_project_assignments_data,
     get_assigned_projects_for_user,
-    get_project_activities_data # This is a project activity, but used in admin context
+    get_project_activities_data
 )
-from core.security import get_current_user # Used by get_admin_user and for regular user project activities
+from core.security import get_current_user
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -57,18 +56,6 @@ async def get_project_assignments(
     """Get all user assignments for a project"""
     return await get_project_assignments_data(project_id)
 
-# Note: get_assigned_projects (for current user) and get_project_activities (for current user)
-# are not strictly "admin" only, but were listed under Enhancement 5.
-# They could go into projects router or stay here depending on access control.
-# For now, let's keep them here as they were presented in the Enhancement 5 block,
-# but using get_current_user instead of get_admin_user for access.
-
-# These next two routes are for any user (authenticated), not just admin,
-# but they were placed in the "Enhancement 5: Admin Center..." section in original server.py
-# If they should only be accessible via admin context, Depends(get_admin_user) should be used.
-# If they are for any logged-in user, Depends(get_current_user) is correct.
-# Given their placement in Enhancement 5, I'll put them here for now,
-# assuming they are part of the broader collaboration features described.
 @router.get("/projects/assigned")
 async def get_assigned_projects(current_user: User = Depends(get_current_user)):
     """Get projects assigned to current user"""
@@ -79,7 +66,7 @@ async def get_project_activities(
     project_id: str,
     limit: int = 20,
     offset: int = 0,
-    current_user: User = Depends(get_current_user) # Using get_current_user as per original function signature
+    current_user: User = Depends(get_current_user)
 ):
     """Get project activities for collaboration"""
     return await get_project_activities_data(project_id, limit, offset, current_user)
