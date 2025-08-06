@@ -1291,7 +1291,7 @@ function App() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {projects.map(project => (
+          {Array.isArray(projects) && projects.map(project => (
             <div key={project.id} className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
