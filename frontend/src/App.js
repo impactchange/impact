@@ -1281,11 +1281,11 @@ function App() {
   const handleEditProject = (project) => {
     setEditingProject(project);
     setEditProjectData({
-      name: project.name || project.project_name || '',
+      name: project.project_name || project.name || '',
       description: project.description || '',
       target_completion_date: project.target_completion_date ? 
         new Date(project.target_completion_date).toISOString().split('T')[0] : '',
-      budget: project.budget || project.total_budget || '',
+      budget: project.total_budget || project.budget || '',
       project_name: project.project_name || project.name || '',
       client_organization: project.client_organization || '',
       objectives: project.objectives || [''],
