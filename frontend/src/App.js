@@ -1188,10 +1188,7 @@ function App() {
             </div>
           </button>
           <button
-            onClick={() => {
-              console.log('New Project button clicked');
-              setShowNewProjectForm(true);
-            }}
+            onClick={() => setShowNewProjectForm(true)}
             className="flex items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
           >
             <Plus className="h-8 w-8 text-green-600 mr-3" />
