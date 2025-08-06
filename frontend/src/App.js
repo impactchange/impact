@@ -1395,7 +1395,7 @@ function App() {
               <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800">{project.name}</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">{project.project_name || project.name}</h3>
                     <p className="text-sm text-gray-600 mt-1">{project.description}</p>
                   </div>
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${{
