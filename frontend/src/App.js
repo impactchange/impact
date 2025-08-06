@@ -1231,7 +1231,19 @@ function App() {
     setLoading(true);
     
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/projects`, newProjectData, {
+      // Transform frontend field names to match backend expectations
+      const projectPayload = {
+        project_name: newProjectData.name,
+        description: newProjectData.description,
+        target_completion_date: newProjectData.target_completion_date,
+        total_budget: newProjectData.budget ? parseFloat(newProjectData.budget) : null,
+        client_organization: newProjectData.client_organization,
+        objectives: newProjectData.objectives,
+        scope: newProjectData.scope,
+        estimated_end_date: newProjectData.estimated_end_date
+      };
+
+      const response = await axios.post(`${API_BASE_URL}/api/projects`, projectPayload, {
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}` 
