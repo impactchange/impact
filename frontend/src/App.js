@@ -133,6 +133,20 @@ function App() {
     estimated_end_date: ''
   });
   const [showNewProjectForm, setShowNewProjectForm] = useState(false);
+  const [showEditProjectForm, setShowEditProjectForm] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
+  const [editProjectData, setEditProjectData] = useState({
+    name: '',
+    description: '',
+    target_completion_date: '',
+    budget: '',
+    project_name: '',
+    client_organization: '',
+    objectives: [''],
+    scope: '',
+    total_budget: '',
+    estimated_end_date: ''
+  });
   const [showAssessmentToProject, setShowAssessmentToProject] = useState(false);
   const [selectedAssessmentForProject, setSelectedAssessmentForProject] = useState(null);
   const [projectView, setProjectView] = useState('grid'); // grid or timeline
