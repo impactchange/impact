@@ -1303,7 +1303,19 @@ function App() {
     setLoading(true);
     
     try {
-      const response = await axios.put(`${API_BASE_URL}/api/projects/${editingProject.id}`, editProjectData, {
+      // Transform frontend field names to match backend expectations
+      const projectUpdatePayload = {
+        project_name: editProjectData.name,
+        description: editProjectData.description,
+        target_completion_date: editProjectData.target_completion_date,
+        total_budget: editProjectData.budget ? parseFloat(editProjectData.budget) : null,
+        client_organization: editProjectData.client_organization,
+        objectives: editProjectData.objectives,
+        scope: editProjectData.scope,
+        estimated_end_date: editProjectData.estimated_end_date
+      };
+
+      const response = await axios.put(`${API_BASE_URL}/api/projects/${editingProject.id}`, projectUpdatePayload, {
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}` 
