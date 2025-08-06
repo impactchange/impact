@@ -3786,6 +3786,89 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Edit Project Form Modal */}
+      {showEditProjectForm && editingProject && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Edit Project</h2>
+            <form onSubmit={handleUpdateProject} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
+                <input
+                  type="text"
+                  value={editProjectData.name}
+                  onChange={(e) => setEditProjectData({...editProjectData, name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter project name"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea
+                  value={editProjectData.description}
+                  onChange={(e) => setEditProjectData({...editProjectData, description: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter project description"
+                  rows="3"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Target Completion Date</label>
+                <input
+                  type="date"
+                  value={editProjectData.target_completion_date}
+                  onChange={(e) => setEditProjectData({...editProjectData, target_completion_date: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Budget</label>
+                <input
+                  type="number"
+                  value={editProjectData.budget}
+                  onChange={(e) => setEditProjectData({...editProjectData, budget: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter budget amount"
+                />
+              </div>
+              <div className="flex space-x-3">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {loading ? 'Updating...' : 'Update Project'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditProjectForm(false);
+                    setEditingProject(null);
+                    setEditProjectData({
+                      name: '',
+                      description: '',
+                      target_completion_date: '',
+                      budget: '',
+                      project_name: '',
+                      client_organization: '',
+                      objectives: [''],
+                      scope: '',
+                      total_budget: '',
+                      estimated_end_date: ''
+                    });
+                  }}
+                  className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
