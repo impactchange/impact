@@ -280,7 +280,7 @@ function App() {
 
       setDashboardMetrics(metricsRes.data);
       setAssessments(assessmentsRes.data);
-      setProjects(projectsRes.data);
+      setProjects(projectsRes.data.projects || []);
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
     }
