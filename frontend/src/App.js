@@ -1241,6 +1241,8 @@ function App() {
         setShowNewProjectForm(false);
         fetchProjects();
         fetchDashboardData();
+        // Fix: Add redirect to dashboard after project creation
+        setActiveTab('dashboard');
       }
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to create project');
