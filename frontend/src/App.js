@@ -1278,6 +1278,9 @@ function App() {
         </button>
       </div>
 
+      {/* Debug: Show modal state */}
+      {console.log('showNewProjectForm state:', showNewProjectForm)}
+      
       {/* New Project Form Modal */}
       {showNewProjectForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
