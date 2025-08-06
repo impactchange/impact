@@ -1397,6 +1397,11 @@ function App() {
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800">{project.project_name || project.name}</h3>
                     <p className="text-sm text-gray-600 mt-1">{project.description}</p>
+                    {(project.total_budget || project.budget) && (
+                      <p className="text-sm text-green-600 font-medium mt-1">
+                        Budget: ${parseFloat(project.total_budget || project.budget).toLocaleString()}
+                      </p>
+                    )}
                   </div>
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${{
                     'active': 'bg-green-100 text-green-800',
