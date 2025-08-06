@@ -1265,6 +1265,67 @@ function App() {
     }
   };
 
+  // Handle editing a project
+  const handleEditProject = (project) => {
+    setEditingProject(project);
+    setEditProjectData({
+      name: project.name || project.project_name || '',
+      description: project.description || '',
+      target_completion_date: project.target_completion_date ? 
+        new Date(project.target_completion_date).toISOString().split('T')[0] : '',
+      budget: project.budget || project.total_budget || '',
+      project_name: project.project_name || project.name || '',
+      client_organization: project.client_organization || '',
+      objectives: project.objectives || [''],
+      scope: project.scope || '',
+      total_budget: project.total_budget || project.budget || '',
+      estimated_end_date: project.estimated_end_date || project.target_completion_date ?
+        new Date(project.estimated_end_date || project.target_completion_date).toISOString().split('T')[0] : ''
+    });
+    setShowEditProjectForm(true);
+  };
+
+  // Handle updating a project
+  const handleUpdateProject = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const response = await axios.put(`${API_BASE_URL}/api/projects/${editingProject.id}`, editProjectData, {
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        }
+      });
+
+      if (response.status === 200) {
+        alert('Project updated successfully!');
+        setEditProjectData({
+          name: '',
+          description: '',
+          target_completion_date: '',
+          budget: '',
+          project_name: '',
+          client_organization: '',
+          objectives: [''],
+          scope: '',
+          total_budget: '',
+          estimated_end_date: ''
+        });
+        setShowEditProjectForm(false);
+        setEditingProject(null);
+        fetchProjects();
+        fetchDashboardData();
+        // Redirect to dashboard after successful update
+        setActiveTab('dashboard');
+      }
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to update project');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchProjects = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/projects`, {
