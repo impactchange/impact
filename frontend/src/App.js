@@ -1449,7 +1449,10 @@ function App() {
                   >
                     View Details
                   </button>
-                  <button className="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 text-sm">
+                  <button 
+                    onClick={() => handleEditProject(project)}
+                    className="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 text-sm"
+                  >
                     Edit
                   </button>
                 </div>
