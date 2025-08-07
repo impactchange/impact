@@ -1671,7 +1671,7 @@ function App() {
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h4 className="font-semibold text-gray-800 mb-3">IMPACT Phases Progress</h4>
                   <div className="space-y-3">
-                    {impactPhases.map((phase, index) => {
+                    {IMPACT_PHASES.map((phase, index) => {
                       const phaseData = selectedProject.phases?.find(p => p.phase_name === phase.name) || {
                         phase_name: phase.name,
                         status: 'not_started',
