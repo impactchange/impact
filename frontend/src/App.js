@@ -907,7 +907,7 @@ function App() {
         setShowMessage(`User "${userName}" deleted successfully. Removed ${data.cleanup_stats.projects_deleted} projects and ${data.cleanup_stats.assessments_deleted} assessments.`);
         
         // Refresh user lists and dashboard
-        fetchAdminUsers();
+        fetchAllUsers();
         fetchAdminDashboard();
       } else {
         const errorData = await response.json();
