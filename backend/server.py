@@ -4150,7 +4150,7 @@ async def login_user(user: UserLogin):
                 "organization": user_data["organization"],
                 "role": user_data["role"],
                 "is_admin": user_data.get("is_admin", False),
-                "status": user_data["status"]
+                "status": user_data.get("status", "approved")  # Legacy users default to approved
             }
         }
         
