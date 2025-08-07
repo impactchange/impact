@@ -1498,8 +1498,13 @@ function App() {
             <div className="p-6">
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">{selectedProject.name}</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">{selectedProject.project_name || selectedProject.name}</h2>
                   <p className="text-gray-600 mt-1">{selectedProject.description}</p>
+                  {(selectedProject.total_budget || selectedProject.budget) && (
+                    <p className="text-lg font-semibold text-green-600 mt-2">
+                      Budget: ${parseFloat(selectedProject.total_budget || selectedProject.budget).toLocaleString()}
+                    </p>
+                  )}
                 </div>
                 <button
                   onClick={() => setSelectedProject(null)}
