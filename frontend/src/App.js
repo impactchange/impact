@@ -201,6 +201,7 @@ function App() {
   const [projectActivities, setProjectActivities] = useState([]);
   const [showProjectActivities, setShowProjectActivities] = useState(false);
   const [selectedProjectForActivities, setSelectedProjectForActivities] = useState(null);
+  const [showMessage, setShowMessage] = useState('');
 
   useEffect(() => {
     fetchAssessmentTypes(); // Fetch assessment types on component mount
