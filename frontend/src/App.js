@@ -2543,14 +2543,30 @@ function App() {
                       </div>
                     )}
                     {userItem.status === 'approved' && (
+                      <div className="space-x-2">
+                        <button
+                          onClick={() => {
+                            setSelectedUser(userItem);
+                            setShowProjectAssignment(true);
+                          }}
+                          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                        >
+                          Assign to Project
+                        </button>
+                        <button
+                          onClick={() => deleteUser(userItem.id, userItem.full_name)}
+                          className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                    {userItem.status !== 'approved' && userItem.status !== 'pending_approval' && (
                       <button
-                        onClick={() => {
-                          setSelectedUser(userItem);
-                          setShowProjectAssignment(true);
-                        }}
-                        className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                        onClick={() => deleteUser(userItem.id, userItem.full_name)}
+                        className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
                       >
-                        Assign to Project
+                        Delete
                       </button>
                     )}
                   </div>
