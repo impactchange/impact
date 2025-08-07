@@ -5293,6 +5293,61 @@ async def update_project(
         print(f"Update Project Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to update project: {str(e)}")
 
+@app.post("/api/bootstrap/make-admin")
+async def bootstrap_make_admin(
+    email_request: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Bootstrap endpoint to make the first user admin when no admin exists"""
+    try:
+        # Check if there are any existing admins
+        admin_count = await db.users.count_documents({"is_admin": True})
+        
+        if admin_count > 0:
+            raise HTTPException(status_code=403, detail="Admin already exists in system")
+        
+        # Get the email from request
+        target_email = email_request.get("email")
+        if not target_email:
+            target_email = current_user.email  # Default to current user
+        
+        # Update the user to be admin
+        result = await db.users.update_one(
+            {"email": target_email},
+            {
+                "$set": {
+                    "is_admin": True,
+                    "is_active": True,
+                    "status": "approved",
+                    "role": "System Administrator",
+                    "approved_at": datetime.utcnow(),
+                    "approved_by": "bootstrap"
+                }
+            }
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Log the admin promotion
+        await log_user_activity(
+            current_user.id,
+            "bootstrap_admin",
+            f"Promoted to system administrator via bootstrap process"
+        )
+        
+        return {
+            "message": f"User {target_email} has been promoted to system administrator",
+            "email": target_email,
+            "is_admin": True
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Bootstrap Admin Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to promote user: {str(e)}")
+
 @app.delete("/api/projects/{project_id}")
 async def delete_project(
     project_id: str,
