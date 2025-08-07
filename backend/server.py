@@ -4113,11 +4113,13 @@ async def login_user(user: UserLogin):
             raise HTTPException(status_code=401, detail="Invalid credentials")
         
         # Check if user is approved
-        if user_data.get("status") != "approved":
-            status = user_data.get("status", "pending_approval")
-            if status == "pending_approval":
+        # For backward compatibility: users without status field are considered approved (legacy users)
+        user_status = user_data.get("status")
+        
+        if user_status is not None and user_status != "approved":
+            if user_status == "pending_approval":
                 raise HTTPException(status_code=403, detail="Account pending admin approval")
-            elif status == "rejected":
+            elif user_status == "rejected":
                 rejection_reason = user_data.get("rejection_reason", "No reason provided")
                 raise HTTPException(status_code=403, detail=f"Account rejected: {rejection_reason}")
             else:
