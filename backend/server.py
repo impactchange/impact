@@ -4126,7 +4126,11 @@ async def login_user(user: UserLogin):
                 raise HTTPException(status_code=403, detail="Account not approved")
         
         # Verify password
-        if not verify_password(user.password, user_data["hashed_password"]):
+        hashed_password = user_data.get("hashed_password")
+        if not hashed_password:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+            
+        if not verify_password(user.password, hashed_password):
             raise HTTPException(status_code=401, detail="Invalid credentials")
         
         # Create access token
