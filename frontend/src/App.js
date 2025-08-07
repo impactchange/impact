@@ -865,12 +865,57 @@ function App() {
   // Enhancement 5: Admin Center Functions
   const fetchAdminDashboard = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/admin/dashboard`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      
+      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/admin/dashboard`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
-      setAdminDashboard(response.data);
-    } catch (err) {
-      console.error('Failed to fetch admin dashboard:', err);
+
+      if (response.ok) {
+        const data = await response.json();
+        setAdminDashboard(data);
+      } else {
+        console.error('Failed to fetch admin dashboard');
+      }
+    } catch (error) {
+      console.error('Error fetching admin dashboard:', error);
+    }
+  };
+
+  const deleteUser = async (userId, userName) => {
+    if (!window.confirm(`Are you sure you want to delete user "${userName}"? This will permanently delete their account, projects, and assessments. This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setShowMessage(`User "${userName}" deleted successfully. Removed ${data.cleanup_stats.projects_deleted} projects and ${data.cleanup_stats.assessments_deleted} assessments.`);
+        
+        // Refresh user lists and dashboard
+        fetchAllUsers();
+        fetchAdminDashboard();
+      } else {
+        const errorData = await response.json();
+        setShowMessage(`Failed to delete user: ${errorData.detail}`);
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      setShowMessage('Error deleting user. Please try again.');
     }
   };
 
