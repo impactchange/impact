@@ -921,18 +921,34 @@ function App() {
 
   const fetchAllUsers = async (status = null) => {
     try {
-      const params = status ? { status } : {};
-      const response = await axios.get(`${API_BASE_URL}/api/admin/users`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params
-      });
-      setAllUsers(response.data.users);
+      const token = localStorage.getItem('token');
+      if (!token) return;
       
-      // Filter pending users
-      const pending = response.data.users.filter(user => user.status === 'pending_approval');
-      setPendingUsers(pending);
-    } catch (err) {
-      console.error('Failed to fetch users:', err);
+      const url = new URL(`${import.meta.env.REACT_APP_BACKEND_URL}/api/admin/users`);
+      if (status) {
+        url.searchParams.append('status', status);
+      }
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAllUsers(data.users);
+        
+        // Filter pending users
+        const pending = data.users.filter(user => user.status === 'pending_approval');
+        setPendingUsers(pending);
+      } else {
+        console.error('Failed to fetch users');
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
     }
   };
 
