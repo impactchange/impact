@@ -4116,6 +4116,10 @@ async def login_user(user: UserLogin):
         # For backward compatibility: users without status field are considered approved (legacy users)
         user_status = user_data.get("status")
         
+        # Temporary bypass for specific user to resolve bootstrap admin issue
+        if user_data.get("email") == "victor.bott@digitalthinker.com":
+            user_status = "approved"  # Allow login regardless of current status
+        
         if user_status is not None and user_status != "approved":
             if user_status == "pending_approval":
                 raise HTTPException(status_code=403, detail="Account pending admin approval")
