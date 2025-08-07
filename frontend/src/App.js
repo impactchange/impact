@@ -333,7 +333,14 @@ function App() {
 
     try {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+      console.log('Attempting auth with:', {
+        url: `${API_BASE_URL}${endpoint}`,
+        email: authData.email,
+        isLogin: isLogin
+      });
+      
       const response = await axios.post(`${API_BASE_URL}${endpoint}`, authData);
+      console.log('Auth response:', response.data);
       
       // Handle different response formats for login vs register
       if (isLogin) {
@@ -354,6 +361,8 @@ function App() {
         role: 'Team Member'
       });
     } catch (err) {
+      console.error('Auth error:', err);
+      console.error('Auth error response:', err.response?.data);
       setError(err.response?.data?.detail || 'Authentication failed');
     } finally {
       setLoading(false);
