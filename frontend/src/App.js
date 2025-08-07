@@ -868,7 +868,7 @@ function App() {
       const token = localStorage.getItem('token');
       if (!token) return;
       
-      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/admin/dashboard`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/dashboard`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -894,7 +894,7 @@ function App() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/admin/users/${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -907,7 +907,7 @@ function App() {
         setShowMessage(`User "${userName}" deleted successfully. Removed ${data.cleanup_stats.projects_deleted} projects and ${data.cleanup_stats.assessments_deleted} assessments.`);
         
         // Refresh user lists and dashboard
-        fetchAllUsers();
+        fetchAdminUsers();
         fetchAdminDashboard();
       } else {
         const errorData = await response.json();
@@ -919,12 +919,12 @@ function App() {
     }
   };
 
-  const fetchAllUsers = async (status = null) => {
+  const fetchAdminUsers = async (status = null) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
       
-      const url = new URL(`${import.meta.env.REACT_APP_BACKEND_URL}/api/admin/users`);
+      const url = new URL(`${API_BASE_URL}/api/admin/users`);
       if (status) {
         url.searchParams.append('status', status);
       }
