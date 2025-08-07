@@ -1361,6 +1361,46 @@ function App() {
     }
   };
 
+  // Handle deleting a project
+  const handleDeleteProject = async (project) => {
+    // Confirmation dialog
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete "${project.project_name || project.name}"?\n\nThis action cannot be undone and will permanently remove all project data.`
+    );
+    
+    if (!confirmDelete) {
+      return; // User cancelled deletion
+    }
+    
+    setLoading(true);
+    try {
+      const response = await axios.delete(`${API_BASE_URL}/api/projects/${project.id}`, {
+        headers: { 
+          'Authorization': `Bearer ${token}` 
+        }
+      });
+
+      if (response.status === 200) {
+        alert('Project deleted successfully!');
+        
+        // Refresh projects list and dashboard data
+        fetchProjects();
+        fetchDashboardData();
+        
+        // If the deleted project was selected in a modal, close it
+        if (selectedProject && selectedProject.id === project.id) {
+          setSelectedProject(null);
+        }
+      }
+    } catch (err) {
+      const errorMessage = err.response?.data?.detail || 'Failed to delete project';
+      alert(`Error: ${errorMessage}`);
+      console.error('Delete project error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const renderProjectWorkflow = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
