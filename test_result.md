@@ -463,7 +463,7 @@ Conduct final comprehensive testing and debugging to prepare the IMPACT Methodol
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
@@ -471,6 +471,9 @@ Conduct final comprehensive testing and debugging to prepare the IMPACT Methodol
       - working: true
         agent: "testing"
         comment: "COMPREHENSIVE ADMIN CENTER TESTING COMPLETED: All admin endpoints are properly implemented and secured. User registration with approval workflow is working correctly - new users get 'pending_approval' status and cannot login until approved. Admin authentication and authorization is properly implemented - non-admin users receive 403 Forbidden responses when accessing admin endpoints. Admin dashboard endpoint structure verified with total_users, pending_approvals, active_projects, total_assessments, and platform_usage fields. User management endpoint supports pagination (page, page_size, total_count, total_pages) and filtering (status, organization). User approval workflow endpoint accepts approve/reject actions and updates user status. Project assignment and assignment viewing endpoints are properly structured. All admin endpoints require proper authentication and admin privileges."
+      - working: "needs_testing"
+        agent: "main"
+        comment: "ADDED USER DELETION FEATURE: Implemented DELETE /api/admin/users/{user_id} endpoint for admin user deletion. Includes safety checks (cannot delete own admin account, cannot delete only admin), cascading deletion of user's projects/assessments/activities, and comprehensive logging. Added frontend delete buttons and confirmation dialog with cleanup statistics display."
 
   - task: "Enhancement 5 - Real-time User Collaboration"
     implemented: true
