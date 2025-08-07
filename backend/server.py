@@ -5291,6 +5291,48 @@ async def update_project(
         print(f"Update Project Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to update project: {str(e)}")
 
+@app.delete("/api/projects/{project_id}")
+async def delete_project(
+    project_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Delete a project"""
+    try:
+        # Find the project first to ensure it exists and user owns it
+        existing_project = await db.projects.find_one({"id": project_id, "user_id": current_user.id})
+        if not existing_project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Log the deletion activity
+        await log_user_activity(
+            current_user.id,
+            "project_deleted",
+            f"Deleted project: {existing_project.get('project_name', 'Unknown')}"
+        )
+        
+        # Delete the project from database
+        delete_result = await db.projects.delete_one({"id": project_id, "user_id": current_user.id})
+        
+        if delete_result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Project not found or could not be deleted")
+        
+        # Also delete related data (phases, activities, etc.)
+        await db.project_phases.delete_many({"project_id": project_id})
+        await db.project_activities.delete_many({"project_id": project_id})
+        await db.project_assignments.delete_many({"project_id": project_id})
+        
+        return {
+            "message": "Project deleted successfully", 
+            "project_id": project_id,
+            "deleted_project_name": existing_project.get('project_name', 'Unknown')
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Delete Project Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete project: {str(e)}")
+
 # Assessment routes - Enhanced for Manufacturing EAM
 @app.post("/api/assessments")
 async def create_enhanced_assessment(
