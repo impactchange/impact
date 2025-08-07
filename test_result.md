@@ -557,7 +557,7 @@ Conduct final comprehensive testing and debugging to prepare the IMPACT Methodol
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
@@ -565,6 +565,9 @@ Conduct final comprehensive testing and debugging to prepare the IMPACT Methodol
       - working: true
         agent: "testing"
         comment: "COMPREHENSIVE ADMIN CENTER TESTING COMPLETED: ✅ Admin authentication working correctly with admin@impact.com credentials. ✅ Admin Center tab is properly visible only to admin users and hidden from regular users (security verified). ✅ Admin dashboard displays statistics correctly (Total Users: 19, Pending Approvals: 2, Active Projects: 27, Total Assessments: 32). ✅ User management interface working with filtering options (All, Pending, Approved) and real-time updates. ✅ User approval workflow functional with 3 Approve and 2 Reject buttons for pending users. ✅ Project assignment modal opens correctly with project selection dropdown (4 project options) and role selection (collaborator, viewer, owner). ✅ Responsive design tested on desktop, tablet, and mobile views. ✅ Access control properly implemented - regular users cannot see Admin Center tab. ✅ No JavaScript console errors detected. All admin center features are production-ready."
+      - working: "needs_testing"
+        agent: "main"
+        comment: "ADDED USER DELETION UI: Implemented user deletion functionality with delete buttons for all user types (approved users get both 'Assign to Project' and 'Delete' buttons, other users get just 'Delete'). Added confirmation dialog with warning about permanent deletion. Added success/error message display area. Updated fetchAllUsers to use fetch API for consistency. Added showMessage state for user feedback."
 
   - task: "Enhancement 5 - Real-time Collaboration UI"
     implemented: true
