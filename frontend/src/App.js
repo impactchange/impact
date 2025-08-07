@@ -2439,6 +2439,25 @@ function App() {
 
     return (
       <div className="space-y-6">
+        {/* Message Display */}
+        {showMessage && (
+          <div className={`p-4 rounded-lg ${
+            showMessage.includes('successfully') || showMessage.includes('deleted successfully') 
+              ? 'bg-green-100 border border-green-200 text-green-800' 
+              : 'bg-red-100 border border-red-200 text-red-800'
+          }`}>
+            <div className="flex items-center justify-between">
+              <p>{showMessage}</p>
+              <button 
+                onClick={() => setShowMessage('')}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Admin Header */}
         <div className="bg-white rounded-lg shadow p-6">
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Admin Center</h1>
