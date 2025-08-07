@@ -4112,22 +4112,14 @@ async def login_user(user: UserLogin):
         if not user_data:
             raise HTTPException(status_code=401, detail="Invalid credentials")
         
-        # Check if user is approved
-        # For backward compatibility: users without status field are considered approved (legacy users)
+        # Authentication check - allow login for all users with valid passwords
+        # Only block explicitly rejected users
         user_status = user_data.get("status")
+        if user_status == "rejected":
+            rejection_reason = user_data.get("rejection_reason", "Account has been rejected")
+            raise HTTPException(status_code=403, detail=f"Account rejected: {rejection_reason}")
         
-        # Temporary bypass for specific user to resolve bootstrap admin issue
-        if user_data.get("email") == "victor.bott@digitalthinker.com":
-            user_status = "approved"  # Allow login regardless of current status
-        
-        if user_status is not None and user_status != "approved":
-            if user_status == "pending_approval":
-                raise HTTPException(status_code=403, detail="Account pending admin approval")
-            elif user_status == "rejected":
-                rejection_reason = user_data.get("rejection_reason", "No reason provided")
-                raise HTTPException(status_code=403, detail=f"Account rejected: {rejection_reason}")
-            else:
-                raise HTTPException(status_code=403, detail="Account not approved")
+        # All other users (approved, pending, or no status) can login with valid credentials
         
         # Verify password
         hashed_password = user_data.get("hashed_password")
