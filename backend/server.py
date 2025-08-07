@@ -2476,6 +2476,84 @@ async def approve_user_registration(
         print(f"User Approval Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to process user approval: {str(e)}")
 
+@app.delete("/api/admin/users/{user_id}")
+async def delete_user(
+    user_id: str,
+    admin_user: User = Depends(get_admin_user)
+):
+    """Delete a user account (admin only)"""
+    try:
+        # Prevent admin from deleting themselves
+        if user_id == admin_user.id:
+            raise HTTPException(status_code=400, detail="Cannot delete your own admin account")
+        
+        # Get user details before deletion for logging
+        user_to_delete = await db.users.find_one({"id": user_id})
+        if not user_to_delete:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Check if this is the only admin (if user is admin)
+        if user_to_delete.get("is_admin", False):
+            admin_count = await db.users.count_documents({"is_admin": True})
+            if admin_count <= 1:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="Cannot delete the only admin user. Promote another user to admin first."
+                )
+        
+        # Delete user's projects first (or you might want to reassign them)
+        user_projects = await db.projects.find({"user_id": user_id}).to_list(None)
+        project_count = len(user_projects)
+        
+        # Delete user's projects
+        await db.projects.delete_many({"user_id": user_id})
+        
+        # Delete user's assessments
+        user_assessments = await db.assessments.find({"user_id": user_id}).to_list(None)
+        assessment_count = len(user_assessments)
+        await db.assessments.delete_many({"user_id": user_id})
+        
+        # Remove user from project assignments
+        await db.project_assignments.delete_many({"user_id": user_id})
+        
+        # Delete user activity logs
+        await db.user_activities.delete_many({"user_id": user_id})
+        
+        # Delete admin notifications related to this user
+        await db.admin_notifications.delete_many({"data.user_id": user_id})
+        
+        # Finally, delete the user account
+        delete_result = await db.users.delete_one({"id": user_id})
+        
+        if delete_result.deleted_count == 0:
+            raise HTTPException(status_code=500, detail="Failed to delete user")
+        
+        # Log admin activity
+        await log_user_activity(
+            admin_user.id,
+            "user_deleted",
+            f"Admin {admin_user.full_name} deleted user {user_to_delete['full_name']} ({user_to_delete['email']}) along with {project_count} projects and {assessment_count} assessments"
+        )
+        
+        return {
+            "message": "User deleted successfully",
+            "deleted_user": {
+                "id": user_id,
+                "email": user_to_delete['email'],
+                "full_name": user_to_delete['full_name']
+            },
+            "cleanup_stats": {
+                "projects_deleted": project_count,
+                "assessments_deleted": assessment_count
+            },
+            "deleted_by": admin_user.full_name,
+            "deleted_at": datetime.utcnow()
+        }
+        
+    except Exception as e:
+        print(f"User Deletion Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete user: {str(e)}")
+
 @app.post("/api/admin/projects/{project_id}/assign")
 async def assign_user_to_project(
     project_id: str,
