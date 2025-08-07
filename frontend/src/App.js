@@ -919,7 +919,7 @@ function App() {
     }
   };
 
-  const fetchAdminUsers = async (status = null) => {
+  const fetchAllUsers = async (status = null) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
