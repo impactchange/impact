@@ -4135,10 +4135,18 @@ async def register_user(user: UserRegistration):
         if existing_user:
             raise HTTPException(status_code=400, detail="Email already registered")
         
-        # Check if username is taken
-        existing_username = await db.users.find_one({"username": user.username})
+        # Auto-generate username from email (before @ symbol)
+        username = user.email.split('@')[0]
+        
+        # If username already exists, append a number
+        existing_username = await db.users.find_one({"username": username})
         if existing_username:
-            raise HTTPException(status_code=400, detail="Username already taken")
+            counter = 1
+            while existing_username:
+                new_username = f"{username}{counter}"
+                existing_username = await db.users.find_one({"username": new_username})
+                counter += 1
+            username = new_username
         
         # Hash password
         hashed_password = get_password_hash(user.password)
@@ -4147,7 +4155,7 @@ async def register_user(user: UserRegistration):
         user_id = str(uuid.uuid4())
         user_data = {
             "id": user_id,
-            "username": user.username,
+            "username": username,  # Auto-generated from email
             "email": user.email,
             "hashed_password": hashed_password,
             "full_name": user.full_name,
