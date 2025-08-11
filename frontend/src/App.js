@@ -355,7 +355,6 @@ function App() {
       }
       
       setAuthData({
-        username: '',
         email: '',
         password: '',
         full_name: '',
