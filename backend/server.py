@@ -586,7 +586,6 @@ IMPACT_PHASES = {
 
 # Enhanced Pydantic models
 class UserRegistration(BaseModel):
-    username: str
     email: str
     password: str
     full_name: str
