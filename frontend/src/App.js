@@ -94,7 +94,6 @@ function App() {
   // Auth states
   const [isLogin, setIsLogin] = useState(true);
   const [authData, setAuthData] = useState({
-    username: '',
     email: '',
     password: '',
     full_name: '',
