@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import './App.css';
 
-const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+const API_BASE_URL = '';
 
 // Color schemes for charts
 const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
@@ -186,7 +186,7 @@ function App() {
 
   const fetchAssessmentTypes = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/assessment-types`);
+      const response = await fetch(`/api/assessments/types`);
       if (response.ok) {
         const data = await response.json();
         setAssessmentTypes(data.assessment_types);
