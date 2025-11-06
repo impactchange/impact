@@ -98,9 +98,22 @@ class PhaseProgressUpdate(BaseModel):
     deliverables_completed: Optional[List[str]] = None
     risks_identified: Optional[List[str]] = None
 
+# <-- ADD THIS NEW CLASS
+class ProjectCreate(BaseModel):
+    name: str
+    description: str
+    target_completion_date: Optional[datetime] = None
+    budget: Optional[float] = None
+    # Add other fields from your frontend 'newProjectData' state if needed
+    client_organization: Optional[str] = None
+    objectives: Optional[List[str]] = None
+    scope: Optional[str] = None
+    total_budget: Optional[float] = None
+    estimated_end_date: Optional[str] = None
+
 # Main Project Models
 class ProjectUpdate(BaseModel):
-    project_name: Optional[str] = None
+    name: Optional[str] = None  # <-- FIX: Was 'project_name'
     description: Optional[str] = None
     client_organization: Optional[str] = None
     objectives: Optional[List[str]] = None

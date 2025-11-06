@@ -14,12 +14,13 @@ router = APIRouter(prefix="/api/auth", tags=["Auth"])
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register_user(user: UserRegistration):
-    """Register a new user with admin approval required"""
+    """Register a new user (now with automatic approval)"""
     try:
         existing_user = await db.users.find_one({"email": user.email})
         if existing_user:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
 
+        # Optional: Keep username check if you want usernames to be unique too
         existing_username = await db.users.find_one({"username": user.username})
         if existing_username:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already taken")
@@ -27,6 +28,7 @@ async def register_user(user: UserRegistration):
         hashed_password = hash_password(user.password)
 
         user_id = str(uuid.uuid4())
+        now = datetime.utcnow() # Define 'now' once
         user_data = {
             "id": user_id,
             "username": user.username,
@@ -35,27 +37,29 @@ async def register_user(user: UserRegistration):
             "full_name": user.full_name,
             "organization": user.organization,
             "role": user.role,
-            "status": "pending_approval",
-            "created_at": datetime.utcnow(),
-            "approved_at": None,
-            "approved_by": None,
+            "status": "approved",           # <-- CHANGED from "pending_approval"
+            "created_at": now,
+            "approved_at": now,             # <-- CHANGED from None
+            "approved_by": "automatic",     # <-- CHANGED from None
             "rejection_reason": None,
-            "is_admin": False,
-            "is_active": False
+            "is_admin": False,              # Assuming new users aren't admins by default
+            "is_active": True               # <-- CHANGED from False
         }
 
         await db.users.insert_one(user_data)
 
-        await create_admin_notification(
-            "user_registration",
-            f"New user registration: {user.full_name} ({user.email})",
-            {"user_id": user_id, "user_email": user.email, "user_name": user.full_name}
-        )
+        # Admin notification is likely not needed for auto-approved users, so commented out
+        # await create_admin_notification(
+        #     "user_registration",
+        #     f"New user registration: {user.full_name} ({user.email})",
+        #     {"user_id": user_id, "user_email": user.email, "user_name": user.full_name}
+        # )
 
+        # Updated return message
         return {
-            "message": "Registration submitted successfully. Your account is pending admin approval.",
+            "message": "Registration successful. Your account is active.",
             "user_id": user_id,
-            "status": "pending_approval"
+            "status": "approved"
         }
     except HTTPException:
         raise
@@ -65,12 +69,13 @@ async def register_user(user: UserRegistration):
 
 @router.post("/login")
 async def login_user(user_credentials: UserLogin):
-    """Login user with approval status check"""
+    """Login user (approval check remains but should pass for new users)"""
     try:
         user_data = await db.users.find_one({"email": user_credentials.email})
         if not user_data:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
+        # This check remains, but new users will be 'approved'
         if user_data.get("status") != "approved":
             status_message = user_data.get("status", "pending_approval")
             if status_message == "pending_approval":
@@ -78,13 +83,20 @@ async def login_user(user_credentials: UserLogin):
             elif status_message == "rejected":
                 rejection_reason = user_data.get("rejection_reason", "No reason provided")
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Account rejected: {rejection_reason}")
-            else:
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account not approved")
+            else: # Handle unexpected statuses
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account not approved or in an unknown state")
+
+        if not user_data.get("is_active", False): # Add check for is_active flag
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is inactive.")
+
 
         if not verify_password(user_credentials.password, user_data["hashed_password"]):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
-        access_token = create_access_token(data={"sub": user_data["email"], "user_id": user_data["id"]})
+        # --- REFACACTORING FIX ---
+        # Standardize on user_id as the subject 'sub' to match core/security.py
+        access_token = create_access_token(data={"sub": user_data["id"]})
+        # --- END FIX ---
 
         await log_user_activity(
             user_data["id"],
@@ -92,10 +104,15 @@ async def login_user(user_credentials: UserLogin):
             f"User {user_data['full_name']} logged in successfully"
         )
 
+        # Ensure the user object returned matches the User schema
+        # Fetching again or cleaning the dict might be needed if fields differ
+        user_response_data = User(**user_data).model_dump()
+
+
         return {
             "access_token": access_token,
             "token_type": "bearer",
-            "user": User(**user_data)
+            "user": user_response_data # Return Pydantic model dict
         }
     except HTTPException:
         raise

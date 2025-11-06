@@ -1,6 +1,6 @@
 from typing import Dict, Any, List
 from data.constants import ASSESSMENT_TYPES
-from readiness_engine import (
+from .readiness_engine import (
     calculate_universal_readiness_analysis,
     generate_typed_ai_analysis,
     calculate_success_probability,

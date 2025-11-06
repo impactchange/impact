@@ -191,3 +191,16 @@ def generate_recommended_actions(task_predictions: List[dict], budget_risk: dict
         recommendations.append("Project analytics are within acceptable parameters. Continue with standard monitoring.")
 
     return recommendations
+
+def generate_real_time_recommendations(risk_alerts: List[dict], progress: float, budget_utilization: float) -> List[str]:
+    """Generate real-time recommendations for project management"""
+    recommendations = []
+    if len(risk_alerts) > 2:
+        recommendations.append("Implement immediate risk mitigation measures")
+    if budget_utilization > progress + 10:
+        recommendations.append("Review and optimize resource allocation")
+    if progress < 50:
+        recommendations.append("Accelerate critical path activities")
+    if not recommendations:
+        recommendations.append("Project health is good. Maintain current pace and focus on communication.")
+    return recommendations

@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import './App.css';
 
-const API_BASE_URL = '';
+const API_BASE_URL = 'http://54.85.142.227:8001';
 
 // Color schemes for charts
 const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
@@ -96,6 +96,7 @@ function App() {
   const [authData, setAuthData] = useState({
     email: '',
     password: '',
+    username: '',
     full_name: '',
     organization: '',
     role: 'Team Member'
@@ -294,12 +295,21 @@ function App() {
 
     try {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+      console.log("Requesting URL:", `${API_BASE_URL}${endpoint}`);
       const response = await axios.post(`${API_BASE_URL}${endpoint}`, authData);
       
-      setToken(response.data.token);
-      setUser(response.data.user);
-      localStorage.setItem('token', response.data.token);
-      
+      if (isLogin) {
+        // FIX 1: Use 'access_token' which is the correct key returned by the FastAPI login endpoint
+        setToken(response.data.access_token);
+        setUser(response.data.user);
+        localStorage.setItem('token', response.data.access_token);
+      } else {
+        // FIX 2: Handle successful registration (which does NOT return a token/user for immediate login)
+        alert(response.data.message || "Registration successful! Please log in.");
+        setError(''); // Clear any previous error before switching
+        setIsLogin(true); // Switch to the login form
+      }
+
       setAuthData({
         email: '',
         password: '',
@@ -886,6 +896,18 @@ function App() {
 
           {!isLogin && (
             <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <input
+                  type="text"
+                  value={authData.username}
+                  onChange={(e) => setAuthData({...authData, username: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" // Adjusted focus style
+                  required
+                  autoComplete="username" // Add autocomplete hint
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
                 <input

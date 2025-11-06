@@ -1,9 +1,15 @@
-# backend/services/admin_services.py
+# backend/services/admin_services.py (INTEGRATED)
+
+import uuid
+from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
-from datetime import datetime
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException, Depends, status
+
 from db.mongo import db
 from schemas.user import User, UserApprovalRequest, ProjectAssignment
+from schemas.project import Project, ProjectCreate, ProjectUpdate, ProjectPhase # New imports
+from data.constants import IMPACT_PHASES # New import
+
 from services.user_management_utils import (
     create_admin_notification,
     log_user_activity,
@@ -14,7 +20,195 @@ from services.user_management_utils import (
     calculate_project_completion_rate,
     calculate_assessment_completion_rate
 )
+from services.workflow_management import ( # New imports
+    generate_comprehensive_tasks_for_phase,
+    generate_deliverables_for_phase,
+    generate_milestones_for_phase,
+    calculate_project_progress,
+    calculate_phase_progress
+)
 from core.security import get_current_user
+
+# --- NEW PROJECT SERVICE FUNCTIONS ---
+
+async def get_project_document(project_id: str, user_id: str) -> Dict[str, Any]:
+    """Retrieves a project document by ID, ensuring user ownership/access."""
+    project_doc = await db.projects.find_one({"id": project_id, "owner_id": user_id})
+
+    if not project_doc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project not found or you are not authorized to view it."
+        )
+    project_doc.pop("_id", None)
+    return project_doc
+
+async def create_new_project_service(project_data: ProjectCreate, current_user: User) -> Project:
+    """Handles logic for creating a standard new project."""
+    project_id = str(uuid.uuid4())
+    now = datetime.utcnow()
+
+    existing_project = await db.projects.find_one({
+        "name": project_data.name,
+        "organization": current_user.organization
+    })
+    if existing_project:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Project with this name already exists in your organization.")
+
+    # 1. Initialization and Task Generation (investigate phase)
+    initial_phases = [
+        ProjectPhase(
+            phase_name=phase_key,
+            phase_display_name=phase_info["name"],
+            phase_number=phase_info["order"]
+        )
+        for phase_key, phase_info in IMPACT_PHASES.items()
+    ]
+
+    initial_tasks_raw = generate_comprehensive_tasks_for_phase("investigate", project_id)
+    initial_deliverables_raw = generate_deliverables_for_phase("investigate", project_id)
+    initial_milestones_raw = generate_milestones_for_phase("investigate", project_id, now)
+
+    # 2. Construct Project Document
+    new_project_data = project_data.model_dump(exclude_unset=True)
+    new_project_data.update({
+        "id": project_id,
+        "owner_id": current_user.id,
+        "organization": current_user.organization,
+        "current_phase": "investigate",
+        "start_date": now,
+        "created_at": now,
+        "updated_at": now,
+        "last_update": now,
+        "phases": [p.model_dump() for p in initial_phases],
+        "phase_progress": {phase: 0.0 for phase in IMPACT_PHASES.keys()},
+        "tasks": initial_tasks_raw,
+        "deliverables": initial_deliverables_raw,
+        "milestones": initial_milestones_raw,
+        "status": "active",
+        "spent_budget": 0.0,
+    })
+
+    # 3. Final Validation and Progress Calculation
+    project_instance = Project(**new_project_data)
+    project_instance.progress_percentage = calculate_project_progress(project_instance.model_dump())
+    
+    if project_instance.phases:
+        project_instance.phases[0].completion_percentage = calculate_phase_progress(project_instance.model_dump(), "investigate")
+
+    # 4. Database Insertion
+    project_doc = project_instance.model_dump()
+    await db.projects.insert_one(project_doc)
+
+    return project_instance
+
+
+async def update_project_details(project_id: str, update_dict: Dict[str, Any], user_id: str) -> Project:
+    """Handles updating non-nested project fields and recalculating overall progress."""
+    await get_project_document(project_id, user_id) # Validates ownership
+
+    if "estimated_end_date" in update_dict and update_dict["estimated_end_date"]:
+        if isinstance(update_dict["estimated_end_date"], str):
+            try:
+                update_dict["estimated_end_date"] = datetime.fromisoformat(update_dict["estimated_end_date"])
+            except ValueError:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid date format for estimated_end_date")
+
+    update_dict["updated_at"] = datetime.utcnow()
+    update_dict["last_update"] = datetime.utcnow()
+
+    # 1. Update Database
+    result = await db.projects.update_one(
+        {"id": project_id, "owner_id": user_id},
+        {"$set": update_dict}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found or no changes made")
+
+    # 2. Re-fetch and return
+    updated_project_doc = await db.projects.find_one({"id": project_id})
+    if not updated_project_doc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Updated project not found after update operation.")
+
+    updated_project_doc.pop("_id", None)
+    return Project(**updated_project_doc)
+
+
+async def create_project_from_assessment_service(project_data_from_assessment: Any, current_user: User, assessment_data: Dict[str, Any]) -> Project:
+    """Handles logic for creating a project based on an existing assessment."""
+    
+    project_id = str(uuid.uuid4())
+    now = datetime.utcnow()
+
+    recommended_project_config = assessment_data.get("recommended_project", {})
+    suggested_duration_weeks = recommended_project_config.get("suggested_duration_weeks", 16)
+    target_completion = project_data_from_assessment.target_completion_date or (now + timedelta(weeks=suggested_duration_weeks))
+
+    # 1. Initialize Phases
+    initial_phases = [
+        ProjectPhase(
+            phase_name=phase_key,
+            phase_display_name=phase_info["name"],
+            phase_number=phase_info["order"]
+        )
+        for phase_key, phase_info in IMPACT_PHASES.items()
+    ]
+    
+    # 2. Generate Content for ALL Phases
+    all_tasks_raw = []
+    all_deliverables_raw = []
+    all_milestones_raw = []
+
+    for phase_name_short in IMPACT_PHASES.keys():
+        phase_tasks = generate_comprehensive_tasks_for_phase(phase_name_short, project_id)
+        phase_deliverables = generate_deliverables_for_phase(phase_name_short, project_id)
+        phase_milestones = generate_milestones_for_phase(phase_name_short, project_id, now)
+
+        all_tasks_raw.extend(phase_tasks)
+        all_deliverables_raw.extend(phase_deliverables)
+        all_milestones_raw.extend(phase_milestones)
+
+    # 3. Construct Project Document
+    new_project_data = {
+        "id": project_id,
+        "name": project_data_from_assessment.project_name,
+        "description": project_data_from_assessment.description,
+        "organization": current_user.organization,
+        "owner_id": current_user.id,
+        "current_phase": "investigate",
+        "status": "active",
+        "start_date": now,
+        "target_completion_date": target_completion,
+        "budget": project_data_from_assessment.budget,
+        "assessment_id": project_data_from_assessment.assessment_id,
+        "newton_insights": assessment_data.get("newton_analysis", {}),
+        "created_at": now,
+        "updated_at": now,
+        "last_update": now,
+        "phases": [p.model_dump() for p in initial_phases],
+        "phase_progress": {phase: 0.0 for phase in IMPACT_PHASES.keys()},
+        "tasks": all_tasks_raw,
+        "deliverables": all_deliverables_raw,
+        "milestones": all_milestones_raw,
+        "spent_budget": 0.0,
+    }
+
+    # 4. Final Validation and Progress Calculation
+    project_instance = Project(**new_project_data)
+    project_instance.progress_percentage = calculate_project_progress(project_instance.model_dump())
+    
+    for phase_name_short in IMPACT_PHASES.keys():
+        progress = calculate_phase_progress(project_instance.model_dump(), phase_name_short)
+        project_instance.phase_progress[phase_name_short] = progress
+
+    # 5. Database Insertion
+    project_doc = project_instance.model_dump(by_alias=False)
+    await db.projects.insert_one(project_doc)
+
+    return project_instance
+
+# --- ORIGINAL ADMIN FUNCTIONS (BELOW) ---
 
 async def get_admin_user(current_user: User = Depends(get_current_user)):
     """Dependency to check if current user is admin"""
@@ -239,3 +433,4 @@ async def get_project_activities_data(project_id: str, limit: int = 20, offset: 
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get project activities: {str(e)}")
+

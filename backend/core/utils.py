@@ -1,12 +1,34 @@
+# backend/core/utils.py
+
 import uuid
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
+from fastapi import HTTPException, status
 
-# This file will need access to your asynchronous database client (db)
-# from ..database import db # Example: adjust import path as needed
+# Correct relative import for the MongoDB client
+from ..db.mongo import db
 
 
-async def create_admin_notification(db, notification_type: str, message: str, data: dict):
+# --- MOVED PROJECT RETRIEVAL FUNCTION (Critical to fix circular import) ---
+
+async def get_project_document(project_id: str, user_id: str) -> Dict[str, Any]:
+    """Retrieves a project document by ID, ensuring user ownership/access."""
+    project_doc = await db.projects.find_one({"id": project_id, "owner_id": user_id})
+
+    if not project_doc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project not found or you are not authorized to view it."
+        )
+
+    # Standard cleanup before returning
+    project_doc.pop("_id", None)
+    return project_doc
+
+
+# --- ORIGINAL UTILITY FUNCTIONS (Corrected to use global db and remove obsolete 'db' argument) ---
+
+async def create_admin_notification(notification_type: str, message: str, data: dict):
     """Creates a notification for admin users in the database."""
     try:
         notification_id = str(uuid.uuid4())
@@ -24,7 +46,7 @@ async def create_admin_notification(db, notification_type: str, message: str, da
         print(f"Admin notification error: {str(e)}")
 
 
-async def log_user_activity(db, user_id: str, action: str, details: str, project_id: Optional[str] = None, affected_users: Optional[List[str]] = None):
+async def log_user_activity(user_id: str, action: str, details: str, project_id: Optional[str] = None, affected_users: Optional[List[str]] = None):
     """Logs a user's activity for tracking and notification purposes."""
     try:
         activity_id = str(uuid.uuid4())

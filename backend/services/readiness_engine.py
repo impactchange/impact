@@ -1,9 +1,78 @@
-from typing import Dict, Any, List
-from data.constants import ASSESSMENT_TYPES, IMPACT_PHASES
+# backend/services/readiness_engine.py
+
+import uuid # Needed for assessment_id generation
 from datetime import datetime, timedelta
-# Assuming ChangeReadinessAssessment schema is imported or defined elsewhere for calculate_newton_laws_analysis
-# For now, I'll comment out the type hint to avoid import errors if not strictly necessary for this file.
-# from schemas.assessment import ChangeReadinessAssessment
+from typing import Dict, Any, List, Any as AnyType # Using AnyType to avoid conflict
+from fastapi import HTTPException, status
+from schemas.user import User # Needed for current_user type hint
+from data.constants import ASSESSMENT_TYPES, IMPACT_PHASES
+from services.assessment_utils import insert_new_assessment # CRITICAL: For final DB write
+
+# backend/services/readiness_engine.py (Insert this function)
+
+async def create_new_assessment_analysis(assessment_data: Dict[str, Any], current_user: User) -> Dict[str, Any]:
+    """
+    Handles all core business logic for assessment creation:
+    1. Score calculation and validation.
+    2. Calls internal analysis engines (Newton's Laws, etc.).
+    3. Orchestrates AI analysis and recommendations calls.
+    4. Prepares final document for database insertion.
+    """
+    assessment_type = assessment_data.get("assessment_type", "general_readiness")
+    if assessment_type not in ASSESSMENT_TYPES:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid assessment type")
+    
+    assessment_id = str(uuid.uuid4())
+    now = datetime.utcnow()
+    type_config = ASSESSMENT_TYPES[assessment_type]
+    
+    all_scores = []
+    dimension_scores = {}
+    
+    # Extract scores and validate existence
+    for dimension in type_config["dimensions"]:
+        dim_id = dimension["id"]
+        if dim_id in assessment_data and "score" in assessment_data[dim_id]:
+            score = assessment_data[dim_id]["score"]
+            all_scores.append(score)
+            dimension_scores[dim_id] = score
+    
+    overall_score = sum(all_scores) / len(all_scores) if all_scores else 0
+    readiness_level = "Excellent" if overall_score >= 4.5 else "Good" if overall_score >= 3.5 else "Fair" if overall_score >= 2.5 else "Poor" if overall_score >= 1.5 else "Critical"
+
+    # 1. Internal Analysis Engine Calls (Uses functions defined below)
+    if assessment_type == "manufacturing_operations":
+        analysis_data = calculate_manufacturing_readiness_analysis(assessment_data)
+    else:
+        # NOTE: Mocking the input object needed by the original function signature
+        mock_assessment_obj = type('obj', (object,), {dim: type('dim_obj', (object,), {'score': score})() for dim, score in dimension_scores.items()})
+        analysis_data = calculate_newton_laws_analysis(mock_assessment_obj) # Assuming a simple implementation
+
+    # 2. AI/Recommendation Generation Calls
+    ai_analysis = generate_typed_ai_analysis(assessment_data, assessment_type, overall_score, readiness_level, analysis_data)
+    recommendations = generate_typed_recommendations(assessment_type, dimension_scores, overall_score)
+    
+    base_probability = (overall_score / 5) * 100
+    type_bonus = get_type_specific_bonus(assessment_type, dimension_scores)
+    success_probability = min(95, base_probability + type_bonus)
+
+    # 3. Final Document Construction
+    assessment_doc = {
+        "id": assessment_id, "user_id": current_user.id, "organization": current_user.organization,
+        "assessment_type": assessment_type, "project_name": assessment_data.get("project_name", ""),
+        "project_type": type_config["name"], "assessment_version": "3.0",
+        **assessment_data, "overall_score": round(overall_score, 2), "readiness_level": readiness_level,
+        "ai_analysis": ai_analysis, "recommendations": recommendations, "success_probability": round(success_probability, 1),
+        "newton_analysis": analysis_data, "risk_factors": get_type_specific_risks(assessment_type, dimension_scores),
+        "phase_recommendations": get_phase_recommendations_for_type(assessment_type),
+        "implementation_plan": generate_implementation_plan(assessment_type, overall_score),
+        "guarantee_eligibility": overall_score >= 3.0, "created_at": now, "updated_at": now
+    }
+    
+    # 4. Database Insertion (using the new utility function)
+    await insert_new_assessment(assessment_doc)
+
+    return assessment_doc
 
 def calculate_universal_readiness_analysis(assessment_data: dict, assessment_type: str) -> Dict[str, Any]:
     scores = []
