@@ -22,6 +22,7 @@ app = FastAPI(title="IMPACT Methodology API", version="1.0.0")
 # --- THIS IS THE SECTION TO REPLACE ---
 # Define the allowed origins
 origins = [
+    "http://54.85.142.227",
     "http://54.85.142.227:3000",
     "https://5d518271-577f-499a-b42d-258b110b5820.preview.emergentagent.com",
     "http://localhost:3000",  # For local development
@@ -37,12 +38,12 @@ app.add_middleware(
 # --- END OF REPLACEMENT SECTION ---
 
 # Database configuration
-# MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
-# DB_NAME = os.getenv("DB_NAME", "impact_methodology")
+MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
+DB_NAME = os.getenv("DB_NAME", "impact_methodology")
 
 # MongoDB client
-# client = AsyncIOMotorClient(MONGO_URL)
-# db = client[DB_NAME]
+client = AsyncIOMotorClient(MONGO_URL)
+db = client[DB_NAME]
 
 # Include routers
 app.include_router(auth_router.router)

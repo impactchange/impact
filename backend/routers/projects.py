@@ -9,6 +9,7 @@ from datetime import datetime
 from db.mongo import db
 from schemas.project import Project, ProjectUpdate, PhaseProgressUpdate, PhaseTransition, PhaseGateReview, ProjectFromAssessment, ProjectCreate
 from schemas.user import User
+from core.security import get_current_user
 from data.constants import IMPACT_PHASES
 
 # --- SERVICE LAYER IMPORTS ---

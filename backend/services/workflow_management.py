@@ -10,7 +10,7 @@ from schemas.project import ProjectPhase, PhaseTransition
 from data.constants import IMPACT_PHASES, ASSESSMENT_TYPES
 
 # NOTE: Imports the project retrieval service to avoid direct 'db' access here
-from services.admin_services import get_project_document 
+# from services.admin_services import get_project_document 
 
 
 # --- Existing Functions (User's definitions kept, assumed to contain core logic) ---
@@ -117,6 +117,7 @@ async def recalculate_and_save_progress(project_id: str, project_doc: Dict[str, 
 
 async def update_project_task(project_id: str, task_id: str, updates: Dict[str, Any], user_id: str):
     """Updates a nested task array and triggers progress recalculation."""
+    from services.admin_services import get_project_document # <-- ADD THIS LINE
     await get_project_document(project_id, user_id)
     
     # 1. Update the nested array using MongoDB positional operator (more efficient)
@@ -143,6 +144,7 @@ async def update_project_task(project_id: str, task_id: str, updates: Dict[str, 
 
 async def update_project_deliverable(project_id: str, deliverable_id: str, updates: Dict[str, Any], user_id: str):
     """Updates a nested deliverable array and triggers progress recalculation."""
+    from services.admin_services import get_project_document # <-- ADD THIS LINE
     await get_project_document(project_id, user_id)
     
     # 1. Update the nested array using MongoDB positional operator
@@ -166,9 +168,9 @@ async def update_project_deliverable(project_id: str, deliverable_id: str, updat
     updated_project_doc = await db.projects.find_one({"id": project_id})
     await recalculate_and_save_progress(project_id, updated_project_doc)
 
-
 async def perform_phase_transition(project_id: str, transition: PhaseTransition, user_id: str) -> Dict[str, Any]:
     """Performs validation, updates the project document, and generates content for the next phase."""
+    from services.admin_services import get_project_document # <-- ADD THIS LINE
     project = await get_project_document(project_id, user_id)
     
     # 1. Validation Logic

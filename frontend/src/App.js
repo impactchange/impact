@@ -230,7 +230,8 @@ function App() {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/user/profile`, {
+      // UPDATED: /api/user/profile changed to /api/auth/me
+      const response = await axios.get(`${API_BASE_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUser(response.data);
@@ -243,13 +244,16 @@ function App() {
   const fetchDashboardData = async () => {
     try {
       const [metricsRes, assessmentsRes, projectsRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/api/dashboard/metrics`, {
+        // UPDATED: /api/dashboard/metrics changed to /api/admin/dashboard
+        axios.get(`${API_BASE_URL}/api/admin/dashboard`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get(`${API_BASE_URL}/api/assessments`, {
+        // UPDATED: /api/assessments changed to /api/assessments/
+        axios.get(`${API_BASE_URL}/api/assessments/`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get(`${API_BASE_URL}/api/projects`, {
+        // UPDATED: /api/projects changed to /api/projects/
+        axios.get(`${API_BASE_URL}/api/projects/`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -1144,7 +1148,8 @@ function App() {
 
   const fetchProjects = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/projects`, {
+      // UPDATED: /api/projects changed to /api/projects/
+      const response = await axios.get(`${API_BASE_URL}/api/projects/`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setProjects(response.data.projects || []);
@@ -1729,7 +1734,7 @@ function App() {
               <Target className="h-5 w-5 mr-2" />
               Organizational Readiness Profile
             </h2>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="10D%" height={300}>
               <RadarChart data={radarData}>
                 <PolarGrid />
                 <PolarAngleAxis dataKey="dimension" />
@@ -3326,7 +3331,7 @@ function App() {
                         <div>
                           <p className="font-medium text-gray-800">{phase.phase_name}</p>
                           <p className="text-sm text-gray-600">{phase.completion_percentage || 0}% complete</p>
-                        </div>
+CSS</div>
                       </div>
                       <div className="text-right">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${

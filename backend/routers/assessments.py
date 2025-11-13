@@ -9,7 +9,7 @@ from core.security import get_current_user
 from typing import Dict, Any
 
 # --- SERVICE LAYER IMPORTS ---
-from services.readiness_service import get_assessment_types_data, get_assessment_type_config_data
+#from services.readiness_service import get_assessment_types_data, get_assessment_type_config_data
 from services.readiness_engine import create_new_assessment_analysis
 from services.assessment_utils import get_assessment_document, get_all_user_assessments_data
 from services.llm_service import generate_customized_playbook
