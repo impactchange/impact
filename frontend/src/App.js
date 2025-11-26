@@ -328,8 +328,12 @@ function App() {
     }
   };
 
-  const handleTypedAssessmentSubmit = async (e) => {
+const handleTypedAssessmentSubmit = async (e) => {
     e.preventDefault();
+    
+    // Prevent double submission if already loading
+    if (loading) return; 
+
     setLoading(true);
     
     try {
@@ -340,7 +344,8 @@ function App() {
         }
       });
 
-      if (response.status === 200) {
+      // FIX: Accept both 200 (OK) and 201 (Created) as success
+      if (response.status === 200 || response.status === 201) {
         const result = response.data;
         alert(`${assessmentTypes[selectedAssessmentType]?.name || 'Assessment'} completed successfully! AI analysis has been generated.`);
         
@@ -360,7 +365,6 @@ function App() {
       setLoading(false);
     }
   };
-
   const handleAssessmentSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);

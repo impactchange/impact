@@ -12,6 +12,8 @@ from routers import auth as auth_router
 from routers import assessments as assessments_router
 from routers import projects as projects_router
 from routers import admin as admin_router
+from routers import impact as impact_router
+from routers import analytics as analytics_router
 
 # Load environment variables
 load_dotenv()
@@ -23,9 +25,9 @@ app = FastAPI(title="IMPACT Methodology API", version="1.0.0")
 # Define the allowed origins
 origins = [
     "http://54.85.142.227",
-    "http://54.85.142.227:3000",
+#    "http://54.85.142.227:8001",
     "https://5d518271-577f-499a-b42d-258b110b5820.preview.emergentagent.com",
-    "http://localhost:3000",  # For local development
+#    "http://localhost:3000",  # For local development
 ]
 
 app.add_middleware(
@@ -50,6 +52,8 @@ app.include_router(auth_router.router)
 app.include_router(assessments_router.router)
 app.include_router(projects_router.router)
 app.include_router(admin_router.router)
+app.include_router(impact_router.router)
+app.include_router(analytics_router.router)
 
 # Basic health check endpoint
 @app.get("/api/health")

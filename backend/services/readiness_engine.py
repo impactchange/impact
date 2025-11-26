@@ -69,8 +69,12 @@ async def create_new_assessment_analysis(assessment_data: Dict[str, Any], curren
         "guarantee_eligibility": overall_score >= 3.0, "created_at": now, "updated_at": now
     }
     
-    # 4. Database Insertion (using the new utility function)
+# 4. Database Insertion (using the new utility function)
     await insert_new_assessment(assessment_doc)
+
+    # --- FIX: Convert Mongo ID to string so FastAPI doesn't crash ---
+    if "_id" in assessment_doc:
+        assessment_doc["_id"] = str(assessment_doc["_id"])
 
     return assessment_doc
 
@@ -732,23 +736,50 @@ def calculate_manufacturing_readiness_analysis(assessment_data: dict) -> Dict[st
 
 # This function might need ChangeReadinessAssessment schema from schemas/assessment.py
 # If that's the case, add the import and ensure the schema is available.
-def calculate_newton_laws_analysis(assessment: Any) -> Dict[str, Any]: # Changed type hint from ChangeReadinessAssessment
-    """Calculate Newton's laws analysis for organizational change"""
+def calculate_newton_laws_analysis(assessment: Any) -> Dict[str, Any]:
+    """Calculate Newton's laws analysis for organizational change (Robust Version)"""
+    
+    # Helper to safely extract score from either object or dictionary
+    def get_score(source, keys):
+        for key in keys:
+            # 1. Try as Object Attribute
+            if hasattr(source, key):
+                val = getattr(source, key)
+                if hasattr(val, 'score'): return val.score
+                if isinstance(val, dict): return val.get('score', 3)
+                return val
+            
+            # 2. Try as Dictionary Key
+            if isinstance(source, dict) and key in source:
+                val = source[key]
+                if isinstance(val, dict): return val.get('score', 3)
+                return val
+            
+            # 3. Try Mock Object internal dict
+            if hasattr(source, '__dict__') and key in source.__dict__:
+                 val = source.__dict__[key]
+                 if hasattr(val, 'score'): return val.score
+                 return val
+                 
+        return 3 # Default to 3 (Average) if data is missing
+
+    # Extract scores using multiple possible key names to match any assessment type
     scores = [
-        assessment.change_management_maturity.score,
-        assessment.communication_effectiveness.score,
-        assessment.leadership_support.score,
-        assessment.workforce_adaptability.score,
-        assessment.resource_adequacy.score
+        get_score(assessment, ['change_management_maturity', 'organizational_culture', 'change_readiness']),
+        get_score(assessment, ['communication_effectiveness', 'stakeholder_engagement']),
+        get_score(assessment, ['leadership_support', 'leadership_commitment']),
+        get_score(assessment, ['workforce_adaptability', 'training_capability', 'technical_readiness']),
+        get_score(assessment, ['resource_adequacy', 'resource_availability'])
     ]
+    
     avg_score = sum(scores) / len(scores)
 
     # First Law (Inertia) - resistance to change
-    organizational_inertia = (5 - avg_score) * 20  # Higher score = lower inertia
+    organizational_inertia = (5 - avg_score) * 20
 
     # Second Law (Force) - effort required
-    force_required = 100 - (avg_score * 15)  # Higher readiness = less force needed
-    acceleration_potential = avg_score * 20  # How fast change can happen
+    force_required = 100 - (avg_score * 15)
+    acceleration_potential = avg_score * 20
 
     # Third Law (Action-Reaction) - expected resistance
     resistance_magnitude = organizational_inertia * 0.8
